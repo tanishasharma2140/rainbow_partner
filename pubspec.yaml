@@ -1,0 +1,64 @@
+name: rainbow_partner
+description: "A new Flutter project."
+publish_to: 'none'
+
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.0
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  pinput: ^5.0.2
+  image_picker: ^1.0.7
+  confetti: ^0.7.0
+  marquee: ^2.2.3
+  dotted_border: ^2.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+
+  flutter_lints: ^6.0.0
+
+
+flutter:
+
+  uses-material-design: true
+  assets:
+    - assets/
+
+  fonts:
+    - family: poppins_regular
+      fonts:
+        - asset: fonts/poppins_regular.ttf
+    - family: roboto_regular
+      fonts:
+        - asset: fonts/roboto_regular.ttf
+    - family: kanit_regular
+      fonts:
+        - asset: fonts/kanit_regular.ttf
+    - family: poppins_black
+      fonts:
+        - asset: fonts/poppins_black.ttf
+    - family: protestRiot_regular
+      fonts:
+        - asset: fonts/protestRiot-regular.ttf
+    - family: bold.otf
+      fonts:
+        - asset: fonts/sf_pro/bold.otf
+    - family: medium.otf
+      fonts:
+        - asset: fonts/sf_pro/medium.otf
+    - family: regular.otf
+      fonts:
+        - asset: fonts/sf_pro/regular.otf
+    - family: light_italic.otf
+      fonts:
+        - asset: fonts/sf_pro/light_italic.otf
