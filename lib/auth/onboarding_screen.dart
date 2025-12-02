@@ -2,10 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
-import 'package:rainbow_partner/res/car_loader_screen.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/register/choose_vehicle.dart';
+import 'package:rainbow_partner/view/Service%20Man/register/register_service_screen.dart';
 import 'package:rainbow_partner/view/Service%20Provider/register/register_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -22,14 +22,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       top: false,
       bottom: true,
       child: Scaffold(
-        backgroundColor: AppColor.royalBlue,
+        backgroundColor: AppColor.white,
         appBar: AppBar(
-          backgroundColor: AppColor.royalBlue,
+          backgroundColor: AppColor.white,
           leading: GestureDetector(
               onTap: (){
                 Navigator.pop(context);
               },
-              child: Icon(Icons.arrow_back,color: AppColor.white,)),
+              child: Icon(Icons.arrow_back,color: AppColor.black,)),
         ),
         body: SingleChildScrollView(
           padding: EdgeInsets.symmetric(
@@ -42,7 +42,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               /// Title
               TextConst(
                 title: "Choose your profile",
-                color: Colors.white,
+                color: AppColor.black,
                 size: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -52,7 +52,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Text(
                 "*Please Note : One mobile number one Profile",
                 style: TextStyle(
-                  color: Colors.white70,
+                  color: Colors.black38,
                   fontSize: 13,
                 ),
               ),
@@ -62,6 +62,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Container(height: 1, color: Colors.white30),
 
               const SizedBox(height: 32),
+
+              _profileTile(
+                image: "assets/cab_driver.png",
+                title: "Cab Driver",
+                subtitle:
+                "Drive customers safely with real-time navigation and trip updates.",
+                onTap: () {
+                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> ChooseVehicle()));
+                },
+              ),
+              _bigDivider(),
 
               _profileTile(
                 image: "assets/service_provider.png",
@@ -80,20 +91,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 title: "Service Man",
                 subtitle:
                 "Offer professional repair, installation and maintenance services.",
-                onTap: () {},
-              ),
-
-              _bigDivider(),
-
-              _profileTile(
-                image: "assets/cab_driver.png",
-                title: "Cab Driver",
-                subtitle:
-                "Drive customers safely with real-time navigation and trip updates.",
                 onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> ChooseVehicle()));
+                  Navigator.push(context, CupertinoPageRoute(builder: (context)=>RegisterServiceScreen()));
                 },
               ),
+
+
+
+
             ],
           ),
         ),
@@ -105,7 +110,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Column(
       children: [
         SizedBox(height: 32),
-        Container(height: 1, color: Colors.white24),
+        Container(height: 1, color: Colors.black26),
         SizedBox(height: 32),
       ],
     );
@@ -123,38 +128,50 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.all(2), // border thickness
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white, // border color
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 18,
+                  spreadRadius: 2,
+                  offset: Offset(0, 6),
+                ),
+              ],
             ),
-            child: ClipOval(
-              child: Image.asset(
-                image,
-                height: 105, // bigger image
-                width: 105,
-                fit: BoxFit.cover,
+            child: Container(
+              padding: EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black54
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  image,
+                  height: 105,
+                  width: 105,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
 
           SizedBox(width: 18),
 
-          /// Texts
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextConst(
                   title: title,
-                  color: Colors.white,
+                  color: AppColor.black,
                   size: 21,
                   fontWeight: FontWeight.w600,
                 ),
                 SizedBox(height: 8),
                 TextConst(
                   title: subtitle,
-                  color: Colors.white70,
+                  color: Colors.black38,
                   size: 14,
                   fontFamily: AppFonts.poppinsReg,
                 ),
@@ -165,11 +182,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           /// Arrow
           const Icon(
             Icons.arrow_forward_ios_rounded,
-            color: Colors.white,
+            color: AppColor.black,
             size: 20,
           ),
         ],
       ),
     );
   }
+
 }

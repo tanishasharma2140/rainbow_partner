@@ -147,112 +147,116 @@ class _DrivingLicenseState extends State<DrivingLicense> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColor.white,
-      appBar: ConstantAppbar(
-        onBack: () => Navigator.pop(context),
-        onClose: () => Navigator.pop(context),
-      ),
+    return SafeArea(
+      top: false,
+      bottom: true,
+      child: Scaffold(
+        backgroundColor: AppColor.white,
+        appBar: ConstantAppbar(
+          onBack: () => Navigator.pop(context),
+          onClose: () => Navigator.pop(context),
+        ),
 
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 22),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 22),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-            SizedBox(height: topPadding),
+              SizedBox(height: topPadding),
 
-            TextConst(
-              title: "Driver license",
-              size: 25,
-              fontWeight: FontWeight.w700,
-            ),
+              TextConst(
+                title: "Driver license",
+                size: 25,
+                fontWeight: FontWeight.w700,
+              ),
 
-            const SizedBox(height: 25),
+              const SizedBox(height: 25),
 
-            /// 2 IMAGE PICKERS ONLY
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                _imageBox(
-                  image: licenseFront,
-                  label: "Driver license\n(front)",
-                  onTap: () => showPicker((file) => licenseFront = file),
-                ),
+              /// 2 IMAGE PICKERS ONLY
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _imageBox(
+                    image: licenseFront,
+                    label: "Driver license\n(front)",
+                    onTap: () => showPicker((file) => licenseFront = file),
+                  ),
 
-                const SizedBox(width: 35),
+                  const SizedBox(width: 35),
 
-                _imageBox(
-                  image: licenseBack,
-                  label: "Driver license\n(back side)",
-                  onTap: () => showPicker((file) => licenseBack = file),
-                ),
-              ],
-            ),
+                  _imageBox(
+                    image: licenseBack,
+                    label: "Driver license\n(back side)",
+                    onTap: () => showPicker((file) => licenseBack = file),
+                  ),
+                ],
+              ),
 
-            /// Text Fields
-            _textField(
-              hint: "Driver license number",
-              controller: licenseNumberController,
-            ),
+              /// Text Fields
+              _textField(
+                hint: "Driver license number",
+                controller: licenseNumberController,
+              ),
 
-            _textField(
-              hint: "Validity date",
-              controller: validityDateController,
-            ),
+              _textField(
+                hint: "Validity date",
+                controller: validityDateController,
+              ),
 
-            const Spacer(),
+              const Spacer(),
 
-            /// FOOTER — same as INDrive
-            Row(
-              children: [
-                TextConst(
-                  title: "2 of 5",
-                  size: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-                const SizedBox(width: 12),
+              /// FOOTER — same as INDrive
+              Row(
+                children: [
+                  TextConst(
+                    title: "2 of 5",
+                    size: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  const SizedBox(width: 12),
 
-                Expanded(
-                  child: Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 50,
-                          decoration: BoxDecoration(
-                            color: AppColor.royalBlue,
-                            borderRadius: BorderRadius.circular(12),
+                  Expanded(
+                    child: Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 50,
+                            decoration: BoxDecoration(
+                              color: AppColor.royalBlue,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                const SizedBox(width: 16),
+                  const SizedBox(width: 16),
 
-                SizedBox(
-                  height: 50,
-                  width: 110,
-                  child: CustomButton(
-                    bgColor: AppColor.royalBlue,
-                    textColor: AppColor.white,
-                    title: "Next",
-                    onTap: () {
-                      Navigator.push(context, CupertinoPageRoute(builder: (context)=>AadhaarInfo()));
-                    },
+                  SizedBox(
+                    height: 50,
+                    width: 110,
+                    child: CustomButton(
+                      bgColor: AppColor.royalBlue,
+                      textColor: AppColor.white,
+                      title: "Next",
+                      onTap: () {
+                        Navigator.push(context, CupertinoPageRoute(builder: (context)=>AadhaarInfo()));
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
 
-            const SizedBox(height: 15),
-          ],
+              const SizedBox(height: 15),
+            ],
+          ),
         ),
       ),
     );

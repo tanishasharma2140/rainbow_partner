@@ -3,14 +3,14 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 
-class WithdrawRequest extends StatefulWidget {
-  const WithdrawRequest({super.key});
+class ServiceWithdrawRequest extends StatefulWidget {
+  const ServiceWithdrawRequest({super.key});
 
   @override
-  State<WithdrawRequest> createState() => _WithdrawRequestState();
+  State<ServiceWithdrawRequest> createState() => _ServiceWithdrawRequestState();
 }
 
-class _WithdrawRequestState extends State<WithdrawRequest> {
+class _ServiceWithdrawRequestState extends State<ServiceWithdrawRequest> {
   String? selectedMethod;
   List<String> methodList = [
     "Bank Transfer",
@@ -66,14 +66,14 @@ class _WithdrawRequestState extends State<WithdrawRequest> {
                   TextConst(
                     title:
                     "₹0.00",
-                      size: 18,
-                      color: AppColor.royalBlue,
-                      fontWeight: FontWeight.bold,
+                    size: 18,
+                    color: AppColor.royalBlue,
+                    fontWeight: FontWeight.bold,
                   ),
                 ],
               ),
               const SizedBox(height: 30),
-               TextConst(
+              TextConst(
                 title:
                 "Enter Amount",
                 size: 17,
@@ -134,10 +134,10 @@ class _WithdrawRequestState extends State<WithdrawRequest> {
               const SizedBox(height: 40),
 
               // ---------------- WITHDRAW BUTTON ----------------
-             CustomButton(
-                 textColor: AppColor.white,
-                 bgColor: AppColor.royalBlue,
-                 title: "Withdraw", onTap: (){}),
+              CustomButton(
+                  textColor: AppColor.white,
+                  bgColor: AppColor.royalBlue,
+                  title: "Withdraw", onTap: (){}),
             ],
           ),
         ),

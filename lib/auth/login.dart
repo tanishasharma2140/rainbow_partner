@@ -39,7 +39,10 @@ class _LoginState extends State<Login> {
                 Align(
                   alignment: Alignment.topLeft,
                   child: IconButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      SystemNavigator.pop();
+
+                    },
                     icon: const Icon(
                       Icons.arrow_back,
                       size: 26,
@@ -123,7 +126,7 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 SizedBox(height: Sizes.screenHeight * 0.03),
-                SizedBox(height: bottomPadding),
+                // SizedBox(height: bottomPadding),
               ],
             ),
           ),

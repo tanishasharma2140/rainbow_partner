@@ -19,6 +19,7 @@ dependencies:
   confetti: ^0.7.0
   marquee: ^2.2.3
   dotted_border: ^2.0.0
+  fl_chart: ^0.70.0
 
 dev_dependencies:
   flutter_test:

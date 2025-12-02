@@ -6,6 +6,8 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Service%20Provider/home/service/add_services.dart';
 
+import 'all_service_detail.dart';
+
 class AllServicesPage extends StatefulWidget {
   const AllServicesPage({super.key});
 
@@ -22,42 +24,42 @@ class _AllServicesPageState extends State<AllServicesPage> {
     {
       "img": "assets/ac_maintenance.png",
       "tag": "AC MAINTENANCE",
-      "price": "\$15.00",
+      "price": "\₹15.00",
       "title": "Filter Replacement",
       "status": "pending"
     },
     {
       "img": "assets/home_sanitizing.png",
       "tag": "HOME SANITIZATION",
-      "price": "\$43.00",
+      "price": "\₹43.00",
       "title": "Full Home Sanitization",
       "status": "approved"
     },
     {
       "img": "assets/office_cleaning.png",
       "tag": "OFFICE CLEANING",
-      "price": "\$32.00",
+      "price": "\₹32.00",
       "title": "Office Cleaning",
       "status": "rejected"
     },
     {
       "img": "assets/custom_cake_creation.png",
       "tag": "BAKING AND PASTRY",
-      "price": "\$35.00/hr",
+      "price": "\₹35.00/hr",
       "title": "Custom Cake Creation",
       "status": "approved"
     },
     {
       "img": "assets/seam_repair.png",
       "tag": "CLOTHING ALTERATIONS",
-      "price": "\$45.00/hr",
+      "price": "\₹45.00/hr",
       "title": "Seam Repair & Reinforcement",
       "status": "pending"
     },
     {
       "img": "assets/facial.png",
       "tag": "SKIN CARE & FACIAL",
-      "price": "\$28.00",
+      "price": "\₹28.00",
       "title": "Exfoliation and Peels",
       "status": "approved"
     },
@@ -218,119 +220,139 @@ class _AllServicesPageState extends State<AllServicesPage> {
 
   // ------------------------- SERVICE CARD -------------------------
   Widget serviceCard(Map<String, dynamic> data) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.07),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(14),
-                  topRight: Radius.circular(14),
-                ),
-                child: Image.asset(
-                  data["img"],
-                  height: 140,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-
-              // CATEGORY TAG
-              Positioned(
-                top: 8,
-                left: 8,
-                right: 60,
-                child: Container(
-                  height: 22,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Marquee(
-                    text: data["tag"],
-                    velocity: 30,
-                    blankSpace: 40,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xff6D7BFB),
-                    ),
-                  ),
-                ),
-              ),
-
-              // PRICE TAG
-              Positioned(
-                top: 110,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xff6D7BFB),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    data["price"],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // STAR RATING
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              children: List.generate(
-                5,
-                    (i) => const Icon(Icons.star_border, size: 16, color: Colors.grey),
-              ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          CupertinoPageRoute(
+            builder: (context) => AllServiceDetail(
+              img: data["img"],
+              title: data["title"],
+              price: data["price"],
+              tag: data["tag"],
+              rating: "0.0",
+              duration: "30 min",
+              description:
+              "Breathe clean air. We promptly replace filters, improving air quality and ensuring efficient circulation throughout your space.",
+              location: "Lucknow, India",
             ),
           ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.07),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(14),
+                    topRight: Radius.circular(14),
+                  ),
+                  child: Image.asset(
+                    data["img"],
+                    height: 140,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
 
-          const SizedBox(height: 5),
+                // CATEGORY TAG
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  right: 60,
+                  child: Container(
+                    height: 22,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Marquee(
+                      text: data["tag"],
+                      velocity: 30,
+                      blankSpace: 40,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xff6D7BFB),
+                      ),
+                    ),
+                  ),
+                ),
 
-          // TITLE MARQUEE
-          SizedBox(
-            height: 20,
-            child: Padding(
+                // PRICE TAG
+                Positioned(
+                  top: 110,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xff6D7BFB),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      data["price"],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // STAR RATING
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Marquee(
-                text: data["title"],
-                velocity: 30,
-                blankSpace: 40,
-                pauseAfterRound: const Duration(milliseconds: 800),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+              child: Row(
+                children: List.generate(
+                  5,
+                      (i) => const Icon(Icons.star_border, size: 16, color: Colors.grey),
                 ),
               ),
             ),
-          ),
 
-          const SizedBox(height: 10),
-        ],
+            const SizedBox(height: 5),
+
+            // TITLE MARQUEE
+            SizedBox(
+              height: 20,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Marquee(
+                  text: data["title"],
+                  velocity: 30,
+                  blankSpace: 40,
+                  pauseAfterRound: const Duration(milliseconds: 800),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+          ],
+        ),
       ),
     );
   }

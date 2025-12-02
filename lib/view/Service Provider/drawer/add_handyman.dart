@@ -165,7 +165,6 @@ class _AddHandymanState extends State<AddHandyman> {
                  bgColor: AppColor.royalBlue,
                  textColor: AppColor.white,
                  title: "Save", onTap: (){}),
-
               const SizedBox(height: 20),
             ],
           ),

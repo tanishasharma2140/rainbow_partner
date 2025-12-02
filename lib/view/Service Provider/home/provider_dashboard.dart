@@ -21,25 +21,25 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
     {
       "img": "assets/ac_maintenance.png",
       "tag": "AC MAINTENANCE",
-      "price": "\$15.00",
+      "price": "\₹15.00",
       "title": "Filter Replacement"
     },
     {
       "img": "assets/home_sanitizing.png",
       "tag": "RESIDENTIAL SAN",
-      "price": "\$43.00",
+      "price": "\₹43.00",
       "title": "Full Home Sanitization"
     },
     {
       "img": "assets/office_cleaning.png",
       "tag": "HOUSE & OFFICE",
-      "price": "\$32.00",
+      "price": "\₹32.00",
       "title": "Office Cleaning"
     },
     {
       "img": "assets/custom_cake_creation.png",
       "tag": "BAKING AND PASTRY",
-      "price": "\$35.00/hr",
+      "price": "\₹35.00/hr",
       "title": "Custom Cake Creation"
     },
   ];
@@ -132,7 +132,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                       ),
                       TextConst(
                         title:
-                        "\$0.00",
+                        "\₹0.00",
                           size: 18,
                           fontWeight: FontWeight.bold,
                           color: AppColor.royalBlue
@@ -176,7 +176,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                   children: [
                     Expanded(
                       child: statBox(
-                        value: "\$0.00",
+                        value: "\₹0.00",
                         title: "Remaining Payout",
                         icon: Icons.access_time,
                         onTap: (){}
@@ -185,7 +185,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                     const SizedBox(width: 15),
                     Expanded(
                       child: statBox(
-                        value: "\$0.00",
+                        value: "\₹0.00",
                         title: "Total Revenue",
                         icon: Icons.monetization_on_outlined,
                         onTap: (){}

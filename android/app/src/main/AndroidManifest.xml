@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
-        android:label="rainbow_partner"
+        android:label="rainboW Partner"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

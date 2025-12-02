@@ -5,6 +5,8 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Service%20Provider/drawer/bank_detail.dart';
 import 'package:rainbow_partner/view/Service%20Provider/drawer/handyman_list.dart';
+import 'package:rainbow_partner/view/Service%20Provider/drawer/provider_help.dart';
+import 'package:rainbow_partner/view/Service%20Provider/drawer/provider_privacy_policy.dart';
 import 'package:rainbow_partner/view/Service%20Provider/drawer/wallet_history.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -202,22 +204,22 @@ class _CustomDrawerState extends State<CustomDrawer> {
             ),
             _drawerItem(
               icon: Icons.help_outline,
-              title: "Help",
+              title: "Help & Support",
               onTap: () {
-                // Navigator.push(
-                //   context,
-                //   CupertinoPageRoute(builder: (_) => Help()),
-                // );
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(builder: (_) => ProviderHelp()),
+                );
               },
             ),
             _drawerItem(
-              icon: Icons.message_rounded,
-              title: "Support",
+              icon: Icons.privacy_tip_outlined,
+              title: "Privacy & Policy",
               onTap: () {
-                // Navigator.push(
-                //   context,
-                //   CupertinoPageRoute(builder: (_) => Support()),
-                // );
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(builder: (_) => ProviderPrivacyPolicy()),
+                );
               },
             ),
             _drawerItem(

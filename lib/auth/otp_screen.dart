@@ -197,7 +197,6 @@ class _OtpScreenState extends State<OtpScreen> {
               ),
 
               SizedBox(height: Sizes.screenHeight * 0.03),
-              SizedBox(height: bottomPadding),
             ],
           ),
         ),

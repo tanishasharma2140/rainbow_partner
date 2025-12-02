@@ -6,6 +6,7 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
+import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/register/vehicle_document.dart';
@@ -351,8 +352,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
 
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
+            // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: topPadding),
 
@@ -367,6 +368,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
               GestureDetector(
                 onTap: showPicker,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       height: 110,
@@ -396,8 +398,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
               inputField("Plate number"),
               inputField("Vehicle production year"),
 
-              const Spacer(),
-
+              SizedBox(height: Sizes.screenHeight*0.02,),
               /// FOOTER
               Row(
                 children: [

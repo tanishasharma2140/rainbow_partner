@@ -35,7 +35,11 @@ class _ChooseVehicleState extends State<ChooseVehicle> {
             children: [
 
               const SizedBox(height: 8),
-               Icon(Icons.arrow_back,color: AppColor.black,),
+               GestureDetector(
+                   onTap: (){
+                     Navigator.pop(context);
+                   },
+                   child: Icon(Icons.arrow_back,color: AppColor.black,)),
                SizedBox(height: Sizes.screenHeight*0.02),
                TextConst(
                  title:

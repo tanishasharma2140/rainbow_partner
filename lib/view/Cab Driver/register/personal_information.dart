@@ -18,7 +18,6 @@ class PersonalInformation extends StatefulWidget {
 }
 
 class _PersonalInformationState extends State<PersonalInformation> {
-
   // Controllers
   TextEditingController nameController = TextEditingController();
   TextEditingController surnameController = TextEditingController();
@@ -54,7 +53,6 @@ class _PersonalInformationState extends State<PersonalInformation> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-
               ListTile(
                 leading: Icon(Icons.photo, color: AppColor.royalBlue),
                 title: Text("Select from Gallery"),
@@ -72,7 +70,6 @@ class _PersonalInformationState extends State<PersonalInformation> {
                   pickImage(true);
                 },
               ),
-
             ],
           ),
         );
@@ -80,13 +77,13 @@ class _PersonalInformationState extends State<PersonalInformation> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
       bottom: true,
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         backgroundColor: Colors.white,
 
         appBar: ConstantAppbar(
@@ -94,149 +91,160 @@ class _PersonalInformationState extends State<PersonalInformation> {
           onClose: () => Navigator.pop(context),
         ),
 
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              SizedBox(height: topPadding),
-
-              TextConst(
-                title: "Personal information",
-                size: 25,
-                fontWeight: FontWeight.w700,
-              ),
-
-              const SizedBox(height: 25),
-
-              /// ⭐ PROFILE IMAGE PICKER
-              GestureDetector(
-                onTap: showImagePickerOptions,
-                child: Column(
-                  children: [
-                    Container(
-                      height: 110,
-                      width: 110,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(20),
-                        image: selectedImage != null
-                            ? DecorationImage(
-                          image: FileImage(selectedImage!),
-                          fit: BoxFit.cover,
-                        )
-                            : null,
-                      ),
-                      child: selectedImage == null
-                          ? const Center(
-                        child: Icon(Icons.add, size: 35, color: Colors.black),
-                      )
-                          : null,
-                    ),
-                    const SizedBox(height: 8),
-                    TextConst(
-                      title: "Personal picture",
-                      color: Colors.black87,
-                      size: 14,
-                    ),
-                  ],
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight:
+                      constraints.maxHeight, // <-- gives natural full height
                 ),
-              ),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 22),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: topPadding),
 
-              const SizedBox(height: 35),
+                        TextConst(
+                          title: "Personal information",
+                          size: 25,
+                          fontWeight: FontWeight.w700,
+                        ),
 
-              _textFieldContainer(
-                child: TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    hintText: "Name",
-                    hintStyle: TextStyle(color: Colors.grey, fontSize: 17,fontFamily: AppFonts.kanitReg),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
+                        SizedBox(height: 25),
 
-              const SizedBox(height: 18),
+                        /// IMAGE PICKER (your code)
+                        GestureDetector(
+                          onTap: showImagePickerOptions,
+                          child: Column(
+                            children: [
+                              Container(
+                                height: 110,
+                                width: 110,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(20),
+                                  image: selectedImage != null
+                                      ? DecorationImage(
+                                          image: FileImage(selectedImage!),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null,
+                                ),
+                                child: selectedImage == null
+                                    ? const Center(
+                                        child: Icon(Icons.add, size: 35),
+                                      )
+                                    : null,
+                              ),
+                              SizedBox(height: 8),
+                              TextConst(title: "Personal picture", size: 14),
+                            ],
+                          ),
+                        ),
 
-              _textFieldContainer(
-                child: TextField(
-                  controller: surnameController,
-                  decoration: const InputDecoration(
-                    hintText: "Surname",
-                    hintStyle: TextStyle(color: Colors.grey, fontSize: 17,fontFamily: AppFonts.kanitReg),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
+                        SizedBox(height: 35),
 
-              const SizedBox(height: 18),
-
-              _textFieldContainer(
-                child: TextField(
-                  controller: dobController,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    hintText: "Date of birth",
-                    hintStyle: TextStyle(color: Colors.grey, fontSize: 17,fontFamily: AppFonts.kanitReg),
-                    border: InputBorder.none,
-                  ),
-                  onTap: () => _selectDate(context),
-                ),
-              ),
-
-              const Spacer(),
-
-              Row(
-                children: [
-                  TextConst(
-                    title: "1 of 5",
-                    size: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  const SizedBox(width: 12),
-
-                  Expanded(
-                    child: Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 35,
-                            decoration: BoxDecoration(
-                              color: AppColor.royalBlue,
-                              borderRadius: BorderRadius.circular(12),
+                        _textFieldContainer(
+                          child: TextField(
+                            controller: nameController,
+                            decoration: InputDecoration(
+                              hintText: "Name",
+                              border: InputBorder.none,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+
+                        SizedBox(height: 18),
+
+                        _textFieldContainer(
+                          child: TextField(
+                            controller: surnameController,
+                            decoration: InputDecoration(
+                              hintText: "Surname",
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: 18),
+
+                        _textFieldContainer(
+                          child: TextField(
+                            controller: dobController,
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              hintText: "Date of birth",
+                              border: InputBorder.none,
+                            ),
+                            onTap: () => _selectDate(context),
+                          ),
+                        ),
+
+                        Spacer(), // 🔥 NOW Spacer Works PERFECT!
+                        /// ---------------- FOOTER -----------------
+                        Row(
+                          children: [
+                            TextConst(
+                              title: "1 of 5",
+                              size: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            SizedBox(width: 12),
+
+                            Expanded(
+                              child: Container(
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade300,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 35,
+                                      decoration: BoxDecoration(
+                                        color: AppColor.royalBlue,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(width: 16),
+
+                            SizedBox(
+                              height: 50,
+                              width: 110,
+                              child: CustomButton(
+                                bgColor: AppColor.royalBlue,
+                                textColor: AppColor.white,
+                                title: "Next",
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                      builder: (context) => DrivingLicense(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: 15),
+                      ],
                     ),
                   ),
-
-                  const SizedBox(width: 16),
-
-                  SizedBox(
-                    height: 50,
-                    width: 110,
-                    child: CustomButton(
-                      bgColor: AppColor.royalBlue,
-                      textColor: AppColor.white,
-                      title: "Next",
-                      onTap: () {
-                        Navigator.push(context, CupertinoPageRoute(builder: (context)=>DrivingLicense()));
-                      },
-                    ),
-                  ),
-                ],
+                ),
               ),
-
-              const SizedBox(height: 15),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -273,7 +281,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
 
     if (pickedDate != null) {
       dobController.text =
-      "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+          "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
       setState(() {});
     }
   }

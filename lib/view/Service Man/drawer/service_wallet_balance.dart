@@ -3,16 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view/Service%20Man/drawer/service_withdraw_request.dart';
 import 'package:rainbow_partner/view/Service%20Provider/drawer/withdraw_request.dart';
 
-class WalletHistory extends StatefulWidget {
-  const WalletHistory({super.key});
+class ServiceWalletBalance extends StatefulWidget {
+  const ServiceWalletBalance({super.key});
 
   @override
-  State<WalletHistory> createState() => _WalletHistoryState();
+  State<ServiceWalletBalance> createState() => _ServiceWalletBalanceState();
 }
 
-class _WalletHistoryState extends State<WalletHistory> {
+class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
   // Dummy wallet history data
   List<Map<String, dynamic>> history = [
     {
@@ -86,8 +87,8 @@ class _WalletHistoryState extends State<WalletHistory> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children:  [
                             TextConst(
-                              title:
-                              "Available Balance",
+                                title:
+                                "Available Balance",
                                 size: 15, color: Colors.grey
                             ),
                             // SizedBox(height: ),
@@ -108,7 +109,7 @@ class _WalletHistoryState extends State<WalletHistory> {
                       // Withdraw Button Row
                       GestureDetector(
                         onTap: (){
-                          Navigator.push(context, CupertinoPageRoute(builder: (context)=>WithdrawRequest()));
+                          Navigator.push(context, CupertinoPageRoute(builder: (context)=>ServiceWithdrawRequest()));
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -135,11 +136,11 @@ class _WalletHistoryState extends State<WalletHistory> {
                 const SizedBox(height: 30),
 
                 // ---------------- TITLE ----------------
-                 TextConst(
-                   title:
+                TextConst(
+                  title:
                   "Wallet History",
-                   size: 18,
-                   fontWeight: FontWeight.w600,
+                  size: 18,
+                  fontWeight: FontWeight.w600,
                 ),
 
                 const SizedBox(height: 25),
@@ -169,16 +170,16 @@ class _WalletHistoryState extends State<WalletHistory> {
             color: Colors.grey.shade400,
           ),
           const SizedBox(height: 20),
-           TextConst(
-             title:
-            "No Wallet History Found",
-               size: 18, fontWeight: FontWeight.w600
+          TextConst(
+              title:
+              "No Wallet History Found",
+              size: 18, fontWeight: FontWeight.w600
           ),
           const SizedBox(height: 6),
           TextConst(
-            title:
-            "You didn’t top-up yet. Top-up your wallet to see here",
-            textAlign: TextAlign.center,
+              title:
+              "You didn’t top-up yet. Top-up your wallet to see here",
+              textAlign: TextAlign.center,
               size: 14, color: Colors.grey.shade600
           ),
         ],
@@ -210,15 +211,15 @@ class _WalletHistoryState extends State<WalletHistory> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextConst(
-                    title:
-                    item["title"],
+                      title:
+                      item["title"],
                       size: 14, fontWeight: FontWeight.w600
                   ),
                   const SizedBox(height: 4),
                   TextConst(
-                    title:
-                    item["date"],
-                    fontFamily: AppFonts.poppinsReg,
+                      title:
+                      item["date"],
+                      fontFamily: AppFonts.poppinsReg,
                       size: 11, color: Colors.grey.shade600
                   ),
                 ],
