@@ -5,6 +5,7 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/edit_serviceman_profile.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/help_desk.dart';
+import 'package:rainbow_partner/view/Service%20Man/drawer/service_due_wallet.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_help_support.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_privacy_policy.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_wallet_balance.dart';
@@ -318,6 +319,17 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                 );
               },
             ),
+            _drawerItem(
+              icon: Icons.account_balance_wallet_outlined,
+              title: "Due Wallet",
+              onTap: () {
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(builder: (_) => ServiceDueWallet()),
+                );
+              },
+            ),
+
             _drawerItem(
               icon: Icons.support_agent,
               title: "Help Desk",

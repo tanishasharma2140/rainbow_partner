@@ -9,41 +9,38 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
-import 'package:rainbow_partner/view/Cab%20Driver/register/popper_screen.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/register/vehicle_information.dart';
 
-class VehicleDocument extends StatefulWidget {
-  const VehicleDocument({super.key});
+class RequiredCertificates extends StatefulWidget {
+  const RequiredCertificates({super.key});
 
   @override
-  State<VehicleDocument> createState() => _VehicleDocumentState();
+  State<RequiredCertificates> createState() => _RequiredCertificatesState();
 }
 
-class _VehicleDocumentState extends State<VehicleDocument> {
+class _RequiredCertificatesState extends State<RequiredCertificates> {
   final picker = ImagePicker();
 
-  /// Store images/pdf for each document
-  Map<String, File?> documentFiles = {
-    "Vehicle permit -\npart A": null,
-    "Vehicle permit -\npart B": null,
-    "Vehicle registration...": null,
-    "Back side of\nregistration...": null,
+  /// Store certificate images / PDF files
+  Map<String, File?> certificateFiles = {
+    "Fitness\nCertificate": null,
+    "Pollution (PUC)\nCertificate": null,
+    "Insurance\nCertificate": null,
+    "Police Verification\nCertificate": null,
   };
 
-  // ---------------------------
-  // PICK IMAGE (camera + gallery)
-  // ---------------------------
   Future<void> pickImage(String key, ImageSource source) async {
-    final picked = await picker.pickImage(source: source, imageQuality: 70);
+    final XFile? file = await picker.pickImage(
+      source: source,
+      imageQuality: 70,
+    );
 
-    if (picked != null) {
-      documentFiles[key] = File(picked.path);
+    if (file != null) {
+      certificateFiles[key] = File(file.path);
       setState(() {});
     }
   }
 
-  // ---------------------------
-  // PICK PDF DOCUMENT
-  // ---------------------------
   Future<void> pickDocument(String key) async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -52,23 +49,23 @@ class _VehicleDocumentState extends State<VehicleDocument> {
       );
 
       if (result != null && result.files.single.path != null) {
-        documentFiles[key] = File(result.files.single.path!);
+        certificateFiles[key] = File(result.files.single.path!);
         setState(() {});
       }
     } catch (e) {
-      print("Document pick error => $e");
+      print("File Picker Error: $e");
     }
   }
 
   // ---------------------------
-  // OPEN PICKED FILE (PDF/Image)
+  // OPEN PDF / FILE VIEWER
   // ---------------------------
   void openFile(File file) {
     OpenFilex.open(file.path);
   }
 
   // ---------------------------
-  // BOTTOM SHEET OPTIONS
+  // BOTTOM SHEET
   // ---------------------------
   void showPicker(String key) {
     showModalBottomSheet(
@@ -83,7 +80,6 @@ class _VehicleDocumentState extends State<VehicleDocument> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              /// PDF PICK
               ListTile(
                 leading: const Icon(Icons.picture_as_pdf, color: AppColor.royalBlue),
                 title: const Text("Upload PDF Document"),
@@ -92,21 +88,17 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                   pickDocument(key);
                 },
               ),
-
-              /// GALLERY IMAGE
               ListTile(
                 leading: const Icon(Icons.photo_library, color: AppColor.royalBlue),
-                title: const Text("Choose From Gallery"),
+                title: const Text("Choose Image From Gallery"),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(key, ImageSource.gallery);
                 },
               ),
-
-              /// CAMERA IMAGE
               ListTile(
                 leading: const Icon(Icons.camera_alt, color: AppColor.royalBlue),
-                title: const Text("Take a Photo"),
+                title: const Text("Take Photo"),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(key, ImageSource.camera);
@@ -119,11 +111,8 @@ class _VehicleDocumentState extends State<VehicleDocument> {
     );
   }
 
-  // ---------------------------
-  // UPLOAD BOX
-  // ---------------------------
-  Widget uploadBox(String title, {bool optional = false}) {
-    File? file = documentFiles[title];
+  Widget uploadBox(String title) {
+    File? file = certificateFiles[title];
     bool isPDF = file != null && file.path.toLowerCase().endsWith(".pdf");
 
     return GestureDetector(
@@ -131,7 +120,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
         if (file == null) {
           showPicker(title);
         } else {
-          openFile(file);
+          openFile(file); // Open the uploaded file
         }
       },
       child: SizedBox(
@@ -146,10 +135,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                     color: Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(20),
                     image: file != null && !isPDF
-                        ? DecorationImage(
-                      image: FileImage(file),
-                      fit: BoxFit.cover,
-                    )
+                        ? DecorationImage(image: FileImage(file), fit: BoxFit.cover)
                         : null,
                   ),
 
@@ -157,55 +143,33 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                       ? const Center(child: Icon(Icons.add, size: 35))
                       : isPDF
                       ? const Center(
-                    child: Icon(Icons.picture_as_pdf,
-                        size: 50, color: Colors.red),
+                    child: Icon(
+                      Icons.picture_as_pdf,
+                      size: 50,
+                      color: Colors.red,
+                    ),
                   )
                       : null,
                 ),
 
-                /// OPTIONAL TAG
-                if (optional)
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: const BoxDecoration(
-                        color: Colors.black12,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          bottomRight: Radius.circular(20),
-                        ),
-                      ),
-                      child: const Text(
-                        "Optional",
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ),
-
-                /// REMOVE BUTTON
+                /// REMOVE (X) BUTTON
                 if (file != null)
                   Positioned(
                     right: 6,
                     top: 6,
                     child: GestureDetector(
                       onTap: () {
-                        documentFiles[title] = null;
+                        certificateFiles[title] = null;
                         setState(() {});
                       },
                       child: Container(
                         height: 28,
                         width: 28,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.red,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.close,
-                            color: Colors.white, size: 18),
+                        child: const Icon(Icons.close, color: Colors.white, size: 18),
                       ),
                     ),
                   ),
@@ -233,7 +197,6 @@ class _VehicleDocumentState extends State<VehicleDocument> {
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
-      bottom: true,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: ConstantAppbar(
@@ -249,7 +212,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
               const SizedBox(height: 15),
 
               const TextConst(
-                title: "Vehicle documents",
+                title: "Upload Required Certificates",
                 size: 25,
                 fontWeight: FontWeight.w700,
               ),
@@ -259,21 +222,17 @@ class _VehicleDocumentState extends State<VehicleDocument> {
               Wrap(
                 spacing: 20,
                 runSpacing: 25,
-                children: [
-                  uploadBox("Vehicle permit -\npart A"),
-                  uploadBox("Vehicle permit -\npart B"),
-                  uploadBox("Vehicle registration..."),
-                  uploadBox("Back side of\nregistration...", optional: true),
-                ],
+                children: certificateFiles.keys
+                    .map((e) => uploadBox(e))
+                    .toList(),
               ),
 
               const Spacer(),
 
-              /// BOTTOM BAR
               Row(
                 children: [
                   const TextConst(
-                    title: "6 of 6",
+                    title: "4 of 6",
                     size: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -289,12 +248,11 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                       ),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppColor.royalBlue,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                          Container(
+                            width: 80,
+                            decoration: BoxDecoration(
+                              color: AppColor.royalBlue,
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         ],
@@ -314,7 +272,9 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          CupertinoPageRoute(builder: (_) => const PopperScreen()),
+                          CupertinoPageRoute(
+                            builder: (context) => const VehicleInformation(),
+                          ),
                         );
                       },
                     ),

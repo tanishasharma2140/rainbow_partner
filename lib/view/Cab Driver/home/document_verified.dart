@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
@@ -5,6 +6,7 @@ import 'package:rainbow_partner/res/constant_appbar.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/home/document_verification_steps.dart';
 
 class DocumentVerified extends StatefulWidget {
   const DocumentVerified({super.key});
@@ -179,7 +181,9 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
               // -------------------------
               CustomButton(
                   bgColor: AppColor.royalBlue,
-                  title: "Go to setup", onTap: (){}),
+                  title: "Go to setup", onTap: (){
+                    Navigator.push(context, CupertinoPageRoute(builder: (context)=>DocumentVerificationSteps()));
+              }),
               SizedBox(height: Sizes.screenHeight*0.025,)
             ],
           ),

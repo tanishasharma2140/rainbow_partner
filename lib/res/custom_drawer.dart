@@ -4,6 +4,8 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Service%20Provider/drawer/bank_detail.dart';
+import 'package:rainbow_partner/view/Service%20Provider/drawer/due_wallet.dart';
+import 'package:rainbow_partner/view/Service%20Provider/drawer/edit_profile.dart';
 import 'package:rainbow_partner/view/Service%20Provider/drawer/handyman_list.dart';
 import 'package:rainbow_partner/view/Service%20Provider/drawer/provider_help.dart';
 import 'package:rainbow_partner/view/Service%20Provider/drawer/provider_privacy_policy.dart';
@@ -134,10 +136,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
               padding: const EdgeInsets.all(16),
               child: GestureDetector(
                 onTap: () {
-                  // Navigator.push(
-                  //   context,
-                  //   CupertinoPageRoute(builder: (_) => EditProfile()),
-                  // );
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(builder: (_) => EditProfile()),
+                  );
                 },
                 child: Row(
                   children: [
@@ -182,6 +184,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 );
               },
             ),
+            _drawerItem(
+              icon: Icons.account_balance_wallet_outlined,
+              title: "Due Wallet",
+              onTap: () {
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(builder: (_) => DueWallet()),
+                );
+              },
+            ),
+
             _drawerItem(
               icon: Icons.people_alt_outlined,
               title: "Handyman List",

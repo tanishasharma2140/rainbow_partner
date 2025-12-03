@@ -398,11 +398,11 @@ class _VehicleInformationState extends State<VehicleInformation> {
               inputField("Plate number"),
               inputField("Vehicle production year"),
 
-              SizedBox(height: Sizes.screenHeight*0.02,),
+              SizedBox(height: Sizes.screenHeight*0.03,),
               /// FOOTER
               Row(
                 children: [
-                  TextConst(title: "4 of 5", size: 18, fontWeight: FontWeight.w600),
+                  TextConst(title: "5 of 6", size: 18, fontWeight: FontWeight.w600),
 
                   const SizedBox(width: 12),
 
@@ -416,7 +416,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
                       child: Row(
                         children: [
                           Container(
-                            width: 95,
+                            width: 94,
                             decoration: BoxDecoration(
                               color: AppColor.royalBlue,
                               borderRadius: BorderRadius.circular(12),

@@ -6,9 +6,11 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
+import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
-import 'package:rainbow_partner/view/Cab%20Driver/register/vehicle_information.dart';
+import 'package:rainbow_partner/view/Cab Driver/register/vehicle_information.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/register/required_certificate.dart';
 
 class AadhaarInfo extends StatefulWidget {
   const AadhaarInfo({super.key});
@@ -21,7 +23,11 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
   File? aadhaarFront;
   File? aadhaarBack;
 
+  File? panFront;
+  File? panBack;
+
   TextEditingController aadhaarNumberController = TextEditingController();
+  TextEditingController panNumberController = TextEditingController();
 
   final ImagePicker picker = ImagePicker();
 
@@ -43,7 +49,7 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (_) {
@@ -82,24 +88,65 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
     required VoidCallback onTap,
   }) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        if (image == null) onTap(); // Only open picker if image not selected
+      },
       child: Column(
         children: [
-          Container(
-            height: 105,
-            width: 105,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(20),
-              image: image != null
-                  ? DecorationImage(image: FileImage(image), fit: BoxFit.cover)
-                  : null,
-            ),
-            child: image == null
-                ? const Center(child: Icon(Icons.add, size: 32))
-                : null,
+          Stack(
+            children: [
+              /// IMAGE BOX
+              Container(
+                height: 105,
+                width: 105,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(20),
+                  image: image != null
+                      ? DecorationImage(image: FileImage(image), fit: BoxFit.cover)
+                      : null,
+                ),
+                child: image == null
+                    ? const Center(child: Icon(Icons.add, size: 32))
+                    : null,
+              ),
+
+              /// REMOVE BUTTON
+              if (image != null)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: GestureDetector(
+                    onTap: () {
+                      /// Remove image
+                      if (label.contains("Aadhaar") && label.contains("Front")) {
+                        aadhaarFront = null;
+                      } else if (label.contains("Aadhaar") && label.contains("Back")) {
+                        aadhaarBack = null;
+                      } else if (label.contains("PAN") && label.contains("Front")) {
+                        panFront = null;
+                      } else if (label.contains("PAN") && label.contains("Back")) {
+                        panBack = null;
+                      }
+                      setState(() {});
+                    },
+                    child: Container(
+                      height: 28,
+                      width: 28,
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, color: Colors.white, size: 18),
+                    ),
+                  ),
+                ),
+            ],
           ),
+
           const SizedBox(height: 8),
+
+          /// LABEL
           Text(
             label,
             style: const TextStyle(fontSize: 13),
@@ -110,23 +157,26 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
     );
   }
 
+
   // TEXT FIELD
-  Widget _aadhaarField() {
+  Widget _inputField({
+    required String hint,
+    required TextEditingController controller,
+  }) {
     return Container(
       height: 55,
       padding: const EdgeInsets.symmetric(horizontal: 18),
-      margin: const EdgeInsets.only(top: 25),
+      margin: const EdgeInsets.only(top: 20),
       alignment: Alignment.centerLeft,
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(15),
       ),
       child: TextField(
-        controller: aadhaarNumberController,
-        keyboardType: TextInputType.number,
-        decoration: const InputDecoration(
-          hintText: "Aadhaar card number",
-          hintStyle: TextStyle(fontFamily: AppFonts.kanitReg),
+        controller: controller,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(fontFamily: AppFonts.kanitReg),
           border: InputBorder.none,
         ),
       ),
@@ -148,50 +198,80 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
 
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: [
-
               SizedBox(height: topPadding),
 
-              /// TITLE
-              TextConst(
+              /// ------------------ AADHAAR SECTION ------------------
+              const TextConst(
                 title: "Aadhaar card",
                 size: 25,
                 fontWeight: FontWeight.w700,
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 26),
 
-              /// 2 Aadhaar Upload Boxes
               Row(
                 children: [
                   _imageBox(
                     image: aadhaarFront,
-                    label: "Aadhaar card\nfront side",
+                    label: "Aadhaar\nFront Side",
                     onTap: () => showPicker((file) => aadhaarFront = file),
                   ),
-
                   const SizedBox(width: 35),
-
                   _imageBox(
                     image: aadhaarBack,
-                    label: "Aadhaar card\nback side",
+                    label: "Aadhaar\nBack Side",
                     onTap: () => showPicker((file) => aadhaarBack = file),
                   ),
                 ],
               ),
 
-              /// Aadhaar number field
-              _aadhaarField(),
+              _inputField(
+                hint: "Aadhaar Number",
+                controller: aadhaarNumberController,
+              ),
 
-              const Spacer(),
+              const SizedBox(height: 20),
 
-              /// FOOTER — (3 of 5)
+              const TextConst(
+                title: "PAN Card",
+                size: 25,
+                fontWeight: FontWeight.w700,
+              ),
+
+              const SizedBox(height: 26),
+
               Row(
                 children: [
-                  TextConst(
-                    title: "3 of 5",
+                  _imageBox(
+                    image: panFront,
+                    label: "PAN Card\nFront Side",
+                    onTap: () => showPicker((file) => panFront = file),
+                  ),
+                  const SizedBox(width: 35),
+                  _imageBox(
+                    image: panBack,
+                    label: "PAN Card\nBack Side",
+                    onTap: () => showPicker((file) => panBack = file),
+                  ),
+                ],
+              ),
+
+              _inputField(
+                hint: "PAN Number",
+                controller: panNumberController,
+              ),
+
+               SizedBox(
+                 height: Sizes.screenHeight*0.025,
+               ),
+
+              /// ------------------ FOOTER ------------------
+              Row(
+                children: [
+                  const TextConst(
+                    title: "3 of 6",
                     size: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -207,7 +287,7 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                       child: Row(
                         children: [
                           Container(
-                            width: 65,
+                            width: 55,
                             decoration: BoxDecoration(
                               color: AppColor.royalBlue,
                               borderRadius: BorderRadius.circular(12),
@@ -228,7 +308,11 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                       textColor: AppColor.white,
                       title: "Next",
                       onTap: () {
-                        Navigator.push(context, CupertinoPageRoute(builder: (context)=>VehicleInformation()));
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                              builder: (context) => RequiredCertificates()),
+                        );
                       },
                     ),
                   ),

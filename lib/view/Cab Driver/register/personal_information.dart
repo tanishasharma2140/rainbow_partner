@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/res/app_color.dart';
@@ -21,6 +22,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
   // Controllers
   TextEditingController nameController = TextEditingController();
   TextEditingController surnameController = TextEditingController();
+  TextEditingController mobileController = TextEditingController();
   TextEditingController dobController = TextEditingController();
 
   File? selectedImage; // ⭐ Picked image file
@@ -97,7 +99,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   minHeight:
-                      constraints.maxHeight, // <-- gives natural full height
+                      constraints.maxHeight,
                 ),
                 child: IntrinsicHeight(
                   child: Padding(
@@ -116,42 +118,79 @@ class _PersonalInformationState extends State<PersonalInformation> {
                         SizedBox(height: 25),
 
                         /// IMAGE PICKER (your code)
+                        /// IMAGE PICKER (with remove option)
                         GestureDetector(
-                          onTap: showImagePickerOptions,
+                          onTap: selectedImage == null ? showImagePickerOptions : null,
                           child: Column(
                             children: [
-                              Container(
-                                height: 110,
-                                width: 110,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(20),
-                                  image: selectedImage != null
-                                      ? DecorationImage(
-                                          image: FileImage(selectedImage!),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null,
-                                ),
-                                child: selectedImage == null
-                                    ? const Center(
-                                        child: Icon(Icons.add, size: 35),
+                              Stack(
+                                children: [
+                                  Container(
+                                    height: 110,
+                                    width: 110,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade100,
+                                      borderRadius: BorderRadius.circular(20),
+                                      image: selectedImage != null
+                                          ? DecorationImage(
+                                        image: FileImage(selectedImage!),
+                                        fit: BoxFit.cover,
                                       )
-                                    : null,
+                                          : null,
+                                    ),
+                                    child: selectedImage == null
+                                        ? const Center(
+                                      child: Icon(Icons.add, size: 35),
+                                    )
+                                        : null,
+                                  ),
+
+                                  /// ❌ REMOVE ICON (only show when image selected)
+                                  if (selectedImage != null)
+                                    Positioned(
+                                      right: 6,
+                                      top: 6,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            selectedImage = null;
+                                          });
+                                        },
+                                        child: Container(
+                                          height: 26,
+                                          width: 26,
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.close, color: Colors.white, size: 18),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
-                              SizedBox(height: 8),
-                              TextConst(title: "Personal picture", size: 14),
+
+                              const SizedBox(height: 8),
+                              const TextConst(title: "Personal picture", size: 14),
                             ],
                           ),
                         ),
+
 
                         SizedBox(height: 35),
 
                         _textFieldContainer(
                           child: TextField(
                             controller: nameController,
+                            maxLength: 20,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[a-zA-Z ]'),  // ← only letters and space
+                              ),
+                            ],
                             decoration: InputDecoration(
                               hintText: "Name",
+                              counterText: "",
                               border: InputBorder.none,
                             ),
                           ),
@@ -162,8 +201,32 @@ class _PersonalInformationState extends State<PersonalInformation> {
                         _textFieldContainer(
                           child: TextField(
                             controller: surnameController,
+                            maxLength: 20,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[a-zA-Z ]'),  // ← only letters and space
+                              ),
+                            ],
                             decoration: InputDecoration(
                               hintText: "Surname",
+                              counterText: "",
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 18),
+
+                        _textFieldContainer(
+                          child: TextField(
+                            controller: mobileController,
+                            keyboardType: TextInputType.number,
+                            maxLength: 10,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,  // ← only numbers allowed
+                            ],
+                            decoration: InputDecoration(
+                              hintText: "Mob No.",
+                              counterText: "",
                               border: InputBorder.none,
                             ),
                           ),
@@ -188,7 +251,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
                         Row(
                           children: [
                             TextConst(
-                              title: "1 of 5",
+                              title: "1 of 6",
                               size: 18,
                               fontWeight: FontWeight.w600,
                             ),
@@ -204,7 +267,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
                                 child: Row(
                                   children: [
                                     Container(
-                                      width: 35,
+                                      width: 25,
                                       decoration: BoxDecoration(
                                         color: AppColor.royalBlue,
                                         borderRadius: BorderRadius.circular(12),

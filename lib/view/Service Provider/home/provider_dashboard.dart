@@ -7,6 +7,7 @@ import 'package:rainbow_partner/res/custom_drawer.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Service%20Provider/home/service/all_services_page.dart';
 import 'package:rainbow_partner/view/Service%20Provider/home/service/total_booking.dart';
+import 'package:rainbow_partner/view/Service%20Provider/home/service/total_revenue_earning.dart';
 
 class ProviderDashboard extends StatefulWidget {
   const ProviderDashboard({super.key});
@@ -176,7 +177,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                   children: [
                     Expanded(
                       child: statBox(
-                        value: "\₹0.00",
+                        value: "₹0.00",
                         title: "Remaining Payout",
                         icon: Icons.access_time,
                         onTap: (){}
@@ -185,10 +186,12 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                     const SizedBox(width: 15),
                     Expanded(
                       child: statBox(
-                        value: "\₹0.00",
+                        value: "₹0.00",
                         title: "Total Revenue",
                         icon: Icons.monetization_on_outlined,
-                        onTap: (){}
+                        onTap: (){
+                          Navigator.push(context, CupertinoPageRoute(builder: (context)=> TotalRevenueEarning()));
+                        }
                       ),
                     ),
                   ],

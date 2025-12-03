@@ -78,37 +78,83 @@ class _DrivingLicenseState extends State<DrivingLicense> {
   }
 
   /// UPLOAD BOX
-  Widget _imageBox({required File? image, required String label, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
+  Widget _imageBox({
+    required File? image,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: 110,
       child: Column(
         children: [
-          Container(
-            height: 100,
-            width: 100,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(20),
-              image: image != null
-                  ? DecorationImage(image: FileImage(image), fit: BoxFit.cover)
-                  : null,
-            ),
-            child: image == null
-                ? const Center(child: Icon(Icons.add, size: 32))
-                : null,
+          Stack(
+            children: [
+              /// IMAGE BOX
+              GestureDetector(
+                onTap: () {
+                  if (image == null) onTap();
+                },
+                child: Container(
+                  height: 105,
+                  width: 105,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    image: image != null
+                        ? DecorationImage(
+                      image: FileImage(image),
+                      fit: BoxFit.cover,
+                    )
+                        : null,
+                  ),
+                  child: image == null
+                      ? const Center(child: Icon(Icons.add, size: 32))
+                      : null,
+                ),
+              ),
+
+              /// REMOVE ICON
+              if (image != null)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (label.contains("front")) {
+                        licenseFront = null;
+                      } else if (label.contains("back")) {
+                        licenseBack = null;
+                      }
+                      setState(() {});
+                    },
+                    child: Container(
+                      height: 26,
+                      width: 26,
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, size: 18, color: Colors.white),
+                    ),
+                  ),
+                ),
+            ],
           ),
+
           const SizedBox(height: 8),
+
+          /// LABEL TEXT
           TextConst(
-            title:
-            label,
+            title: label,
             size: 13,
-            fontFamily: AppFonts.poppinsReg,
+            fontWeight: FontWeight.w500,
             textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
+
 
   Widget _textField({required String hint, required TextEditingController controller}) {
     return Container(
@@ -210,7 +256,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
               Row(
                 children: [
                   TextConst(
-                    title: "2 of 5",
+                    title: "2 of 6",
                     size: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -226,7 +272,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
                       child: Row(
                         children: [
                           Container(
-                            width: 50,
+                            width: 38,
                             decoration: BoxDecoration(
                               color: AppColor.royalBlue,
                               borderRadius: BorderRadius.circular(12),

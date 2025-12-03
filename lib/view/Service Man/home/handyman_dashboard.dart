@@ -2,11 +2,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rainbow_partner/res/app_color.dart';
-import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/service_custom_drawer.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/complete_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/service_total_booking.dart';
+import 'package:rainbow_partner/view/Service%20Man/home/service_total_revenue_earning.dart';
 
 class HandymanDashboard extends StatefulWidget {
   const HandymanDashboard({super.key});
@@ -189,7 +189,10 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                         value: "₹0.00",
                         title: "Total Revenue",
                         icon: Icons.monetization_on_outlined,
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(context,
+                              CupertinoPageRoute(builder: (_) => ServiceTotalRevenueEarning()));
+                        },
                       ),
                     ),
                   ],

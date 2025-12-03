@@ -65,7 +65,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               _profileTile(
                 image: "assets/cab_driver.png",
-                title: "Cab Driver",
+                title: "rainboW Driver",
                 subtitle:
                 "Drive customers safely with real-time navigation and trip updates.",
                 onTap: () {
@@ -88,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               _profileTile(
                 image: "assets/service_man.png",
-                title: "Service Man",
+                title: "Need a Job",
                 subtitle:
                 "Offer professional repair, installation and maintenance services.",
                 onTap: () {
