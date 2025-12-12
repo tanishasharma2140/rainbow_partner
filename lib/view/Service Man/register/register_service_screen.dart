@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rainbow_partner/main.dart';
-
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -333,17 +332,17 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
               textColor: Colors.white,
               onTap: () {
                 // Validation (basic)
-                if (firstNameController.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter first name")));
-                  return;
-                }
-                if (mobileController.text.trim().length != 10) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Enter 10 digit mobile number")));
-                  return;
-                }
+                // if (firstNameController.text.trim().isEmpty) {
+                //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter first name")));
+                //   return;
+                // }
+                // if (mobileController.text.trim().length != 10) {
+                //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Enter 10 digit mobile number")));
+                //   return;
+                // }
 
                 // proceed — demo navigate to dashboard
-                Navigator.push(context, CupertinoPageRoute(builder: (_) => const HandymanDashboard()));
+                // Navigator.push(context, CupertinoPageRoute(builder: (_) => const HandymanDashboard()));
               },
             ),
 

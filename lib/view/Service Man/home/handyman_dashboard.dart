@@ -1,12 +1,14 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/service_custom_drawer.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/complete_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/service_total_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/service_total_revenue_earning.dart';
+import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 
 class HandymanDashboard extends StatefulWidget {
   const HandymanDashboard({super.key});
@@ -23,16 +25,24 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
   List<double> animatedValues = List.filled(8, 0.0);
   List<double> finalValues = [10000, 5000, 8000]; // animate only first 3
 
+
+
   @override
   void initState() {
     super.initState();
 
-    /// START ANIMATION AFTER 300 ms
-    Future.delayed(const Duration(milliseconds: 300), () {
-      setState(() {
-        animatedValues[0] = finalValues[0]; // Jan
-        animatedValues[1] = finalValues[1]; // Feb
-        animatedValues[2] = finalValues[2]; // Mar
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // SAFE Provider call
+      context.read<ServicemanProfileViewModel>()
+          .servicemanProfileApi(context);
+
+      // SAFE Animation delay
+      Future.delayed(const Duration(milliseconds: 300), () {
+        setState(() {
+          animatedValues[0] = finalValues[0];
+          animatedValues[1] = finalValues[1];
+          animatedValues[2] = finalValues[2];
+        });
       });
     });
   }
@@ -65,6 +75,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final serviceProfileVm = Provider.of<ServicemanProfileViewModel>(context);
     return SafeArea(
       top: false,
       child: Scaffold(
@@ -108,7 +119,11 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
               children: [
 
                 const SizedBox(height: 20),
-                TextConst(title: "Hello, John Doe", size: 18, fontWeight: FontWeight.w600),
+                TextConst(
+                  title: "Hello, ${serviceProfileVm.servicemanProfileModel!.data!.firstName} ${serviceProfileVm.servicemanProfileModel!.data!.lastName}",
+                  size: 18,
+                  fontWeight: FontWeight.w600,
+                ),
                 TextConst(title: "Welcome back!", size: 13, color: Colors.grey),
 
                 const SizedBox(height: 25),

@@ -12,6 +12,13 @@ class AppColor{
   static const  lightBlue = Color(0xff435178);
   static const  grey = Color(0xFFababab);
   static const  greyLight = Color(0xFF9e9e9e);
+  static const Color progressIndicator = Color(0xff2A4066);
+  static const Color indicatorBlue = Color(0xff007AFF);
+
+  static const LinearGradient circularIndicator = LinearGradient(
+      colors: [white, indicatorBlue, progressIndicator],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight);
 
 
 

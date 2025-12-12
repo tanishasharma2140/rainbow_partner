@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 
 class EditServicemanProfile extends StatefulWidget {
   const EditServicemanProfile({super.key});
@@ -11,12 +13,36 @@ class EditServicemanProfile extends StatefulWidget {
 }
 
 class _EditServicemanProfileState extends State<EditServicemanProfile> {
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final vm = Provider.of<ServicemanProfileViewModel>(context, listen: false);
+
+      vm.servicemanProfileApi(context).then((_) {
+        final d = vm.servicemanProfileModel?.data;
+
+        setState(() {
+          firstName.text = d?.firstName ?? "";
+          lastName.text = d?.lastName ?? "";
+          email.text = d?.email ?? "";
+          username.text = d?.serviceName ?? "";
+          designation.text = d?.serviceCategory.toString() ?? "";
+          imagePath = d?.profilePhoto; // API image URL
+        });
+      });
+    });
+  }
+
+
   // TEXT CONTROLLERS
-  final TextEditingController firstName = TextEditingController(text: "John");
-  final TextEditingController lastName = TextEditingController(text: "Doe");
-  final TextEditingController email = TextEditingController(text: "johndoe@gmail.com");
-  final TextEditingController username = TextEditingController(text: "john_24");
-  final TextEditingController designation = TextEditingController(text: "Cleaning Expert");
+  final TextEditingController firstName = TextEditingController();
+  final TextEditingController lastName = TextEditingController();
+  final TextEditingController email = TextEditingController();
+  final TextEditingController username = TextEditingController();
+  final TextEditingController designation = TextEditingController();
 
   String? imagePath;
 
@@ -107,7 +133,7 @@ class _EditServicemanProfileState extends State<EditServicemanProfile> {
               fieldTitle("Email"),
               profileField(email),
 
-              fieldTitle("Username"),
+              fieldTitle("Service Name"),
               profileField(username),
 
               fieldTitle("Designation"),

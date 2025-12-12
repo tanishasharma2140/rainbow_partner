@@ -1,14 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/edit_serviceman_profile.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/help_desk.dart';
+import 'package:rainbow_partner/view/Service%20Man/drawer/service_add_bank.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_due_wallet.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_help_support.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_privacy_policy.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_wallet_balance.dart';
+import 'package:rainbow_partner/view_model/service_man/service_online_status_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 
 class ServiceCustomDrawer extends StatefulWidget {
   const ServiceCustomDrawer({super.key});
@@ -21,15 +25,31 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
   bool isOnline = false;
 
-  // -------------------------------------------------------
-  //                 AVAILABLE STATUS POPUP
-  // -------------------------------------------------------
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final vm = Provider.of<ServicemanProfileViewModel>(context, listen: false);
+
+      vm.servicemanProfileApi(context).then((_) {
+        setState(() {
+          isOnline = vm.servicemanProfileModel!.data!.onlineStatus == 1;
+        });
+      });
+    });
+  }
+
+
   void showAvailableStatusPopup(BuildContext context) {
+    final serviceOnlineVm = Provider.of<ServiceOnlineStatusViewModel>(context, listen: false);
+    final profileVm = Provider.of<ServicemanProfileViewModel>(context, listen: false);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) {
+      builder: (_) {
         return StatefulBuilder(
           builder: (context, setSheet) {
             return Container(
@@ -45,9 +65,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
-                  // TITLE
-                  Text(
-                    "Available Status",
+                  Text("Available Status",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -57,31 +75,28 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
                   const SizedBox(height: 14),
 
-                  // MAIN STATUS BOX
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 18),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
                     decoration: BoxDecoration(
                       color: const Color(0xffe9f6ee),
                       borderRadius: BorderRadius.circular(18),
                     ),
+
                     child: Row(
                       children: [
-
-                        /// LEFT SIDE TEXT
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Available Status",
+                            Text("Available Status",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.black87,
                               ),
                             ),
+
                             const SizedBox(height: 6),
+
                             Text(
                               isOnline ? "You are Online" : "You are Offline",
                               style: TextStyle(
@@ -95,23 +110,40 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
                         Spacer(),
 
-                        /// SWITCH BUTTON
                         Transform.scale(
                           scale: 1.1,
                           child: CupertinoSwitch(
                             value: isOnline,
                             activeColor: Colors.green,
-                            onChanged: (value) {
+                            onChanged: (value) async {
                               setSheet(() => isOnline = value);
-                              setState(() {}); // 🔥 UPDATE DRAWER TOO
+                              setState(() {});
+
+                              int statusVal = value ? 1 : 0;
+
+                              await serviceOnlineVm.serviceOnlineStatusApi(
+                                statusVal,
+                                "86768768.09",
+                                "55465789.09",
+                                context,
+                              );
+
+                              // REFRESH PROFILE AFTER STATUS UPDATE
+                              await profileVm.servicemanProfileApi(context);
+
+                              setState(() {
+                                isOnline = profileVm.servicemanProfileModel!.data!.onlineStatus == 1;
+                              });
+
+                              setSheet(() {
+                                isOnline = profileVm.servicemanProfileModel!.data!.onlineStatus == 1;
+                              });
                             },
                           ),
                         ),
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 10),
                 ],
               ),
             );
@@ -121,105 +153,10 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
     );
   }
 
-  // -------------------------------------------------------
-  //                   LOGOUT POPUP
-  // -------------------------------------------------------
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.logout, color: Colors.black, size: 32),
-                const SizedBox(height: 14),
-
-                TextConst(
-                  title: "Sign Out?",
-                  size: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-
-                const SizedBox(height: 6),
-                TextConst(
-                  title: "Sign in again to continue",
-                  textAlign: TextAlign.center,
-                  size: 13,
-                  color: Colors.grey,
-                ),
-
-                const SizedBox(height: 20),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => Navigator.pop(context),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey),
-                          ),
-                          child: Center(
-                            child: TextConst(
-                              title: "CANCEL",
-                              color: Colors.grey,
-                              size: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => Navigator.pop(context),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.red),
-                          ),
-                          child: Center(
-                            child: TextConst(
-                              title: "SIGN OUT",
-                              color: Colors.red,
-                              size: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // -------------------------------------------------------
-  //                       UI
-  // -------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    final profileVm = Provider.of<ServicemanProfileViewModel>(context);
+
     return Drawer(
       backgroundColor: AppColor.white,
       width: 280,
@@ -228,34 +165,39 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // ---------------------------------------------------
-            //                PROFILE HEADER
-            // ---------------------------------------------------
+            // ---------------- PROFILE HEADER ----------------
             Padding(
               padding: const EdgeInsets.all(16),
               child: GestureDetector(
-                onTap: (){
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> EditServicemanProfile()));
+                onTap: () {
+                  Navigator.push(context,
+                      CupertinoPageRoute(builder: (_) => EditServicemanProfile()));
                 },
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundColor: Colors.grey.shade300,
-                      child: Icon(Icons.person, size: 40),
+                      backgroundImage: NetworkImage(
+                        profileVm.servicemanProfileModel!.data!.profilePhoto,
+                      ),
                     ),
+
                     SizedBox(width: 12),
+
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextConst(
-                          title: "John Doe",
+                          title:
+                          "${profileVm.servicemanProfileModel!.data!.firstName} "
+                              "${profileVm.servicemanProfileModel!.data!.lastName}",
                           size: 18,
                           fontWeight: FontWeight.bold,
                           color: AppColor.royalBlue,
                         ),
+
                         TextConst(
-                          title: "demo@handyman.com",
+                          title: profileVm.servicemanProfileModel!.data!.email,
                           size: 13,
                           color: Colors.grey,
                         ),
@@ -268,9 +210,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             Divider(),
 
-            // ---------------------------------------------------
-            //           AVAILABLE STATUS ITEM (LIVE)
-            // ---------------------------------------------------
+            // ---------------- AVAILABLE STATUS ----------------
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: InkWell(
@@ -284,15 +224,19 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Available Status",
-                            style: TextStyle(fontSize: 16)),
+                        Text("Available Status", style: TextStyle(fontSize: 16)),
                         SizedBox(height: 3),
+
                         Text(
-                          isOnline ? "Online" : "Offline",
+                          profileVm.servicemanProfileModel!.data!.onlineStatus == 1
+                              ? "Online"
+                              : "Offline",
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: isOnline ? Colors.green : Colors.red,
+                            color: profileVm.servicemanProfileModel!.data!.onlineStatus == 1
+                                ? Colors.green
+                                : Colors.red,
                           ),
                         ),
                       ],
@@ -306,27 +250,31 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               ),
             ),
 
-            // ---------------------------------------------------
-            //                   OTHER ITEMS
-            // ---------------------------------------------------
+            // ---------------- OTHER DRAWER ITEMS ----------------
             _drawerItem(
               icon: Icons.wallet,
               title: "Wallet Balance",
               onTap: () {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(builder: (_) => ServiceWalletBalance()),
-                );
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceWalletBalance()));
               },
             ),
+
             _drawerItem(
               icon: Icons.account_balance_wallet_outlined,
               title: "Due Wallet",
               onTap: () {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(builder: (_) => ServiceDueWallet()),
-                );
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceDueWallet()));
+              },
+            ),
+
+            _drawerItem(
+              icon: Icons.account_balance,
+              title: "Add Bank",
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceAddBank()));
               },
             ),
 
@@ -334,10 +282,8 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               icon: Icons.support_agent,
               title: "Help Desk",
               onTap: () {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(builder: (_) => HelpDesk()),
-                );
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => HelpDesk()));
               },
             ),
 
@@ -345,10 +291,8 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               icon: Icons.help,
               title: "Help & Support",
               onTap: () {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(builder: (_) => ServiceHelpSupport()),
-                );
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceHelpSupport()));
               },
             ),
 
@@ -356,17 +300,9 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               icon: Icons.privacy_tip_outlined,
               title: "Privacy Policy",
               onTap: () {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(builder: (_) => ServicePrivacyPolicy()),
-                );
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServicePrivacyPolicy()));
               },
-            ),
-
-            _drawerItem(
-              icon: Icons.logout,
-              title: "Logout",
-              onTap: () => _showLogoutDialog(context),
             ),
 
             Spacer(),

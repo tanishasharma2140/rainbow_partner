@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rainbow_partner/auth/login.dart';
 import 'package:rainbow_partner/auth/onboarding_screen.dart';
+import 'package:rainbow_partner/auth/otp_screen.dart';
 import 'package:rainbow_partner/auth/splash.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 
@@ -13,6 +14,8 @@ class Routers {
         return (context) => const Login();
       case RoutesName.onboardingScreen:
         return (context) => const OnboardingScreen();
+      case RoutesName.otpScreen:
+        return (context) => const OtpScreen();
 
       default:
         return (context) => const Scaffold(

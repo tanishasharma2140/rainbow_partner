@@ -18,6 +18,9 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final mobileNumber = args["mobileNumber"];
+    print("User Mobile Number: $mobileNumber");
     return SafeArea(
       top: false,
       bottom: true,
@@ -80,8 +83,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 subtitle:
                 "Provide on-demand home services at customer's location.",
                 onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=>RegisterScreen()));
-                },
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (context)=> RegisterScreen(mobileNumber: mobileNumber,),
+                    ),
+                  );             },
               ),
 
               _bigDivider(),
@@ -95,10 +102,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=>RegisterServiceScreen()));
                 },
               ),
-
-
-
-
             ],
           ),
         ),
