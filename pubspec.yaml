@@ -27,6 +27,15 @@ dependencies:
   shared_preferences: ^2.3.3
   provider:
   another_flushbar: ^1.12.30
+  firebase_messaging:
+  flutter_local_notifications: ^19.4.1
+  permission_handler:
+  app_settings:
+  device_info_plus: ^10.0.0
+  firebase_core: ^3.8.1
+  cloud_firestore: ^5.5.1
+  geolocator: ^10.1.0
+  geocoding: ^2.1.0
 
 dev_dependencies:
   flutter_test:

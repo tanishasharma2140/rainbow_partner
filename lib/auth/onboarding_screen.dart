@@ -72,7 +72,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 subtitle:
                 "Drive customers safely with real-time navigation and trip updates.",
                 onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> ChooseVehicle()));
+                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> ChooseVehicle(
+                    profileId: 1,
+                  )));
                 },
               ),
               _bigDivider(),
@@ -86,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Navigator.push(
                     context,
                     CupertinoPageRoute(
-                      builder: (context)=> RegisterScreen(mobileNumber: mobileNumber,),
+                      builder: (context)=> RegisterScreen(mobileNumber: mobileNumber, profileId: 2,),
                     ),
                   );             },
               ),
@@ -99,7 +101,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 subtitle:
                 "Offer professional repair, installation and maintenance services.",
                 onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=>RegisterServiceScreen()));
+                  Navigator.push(context, CupertinoPageRoute(builder: (context)=>RegisterServiceScreen(
+                    profileId: 3,
+                  )));
                 },
               ),
             ],

@@ -8,7 +8,8 @@ import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/register/personal_information.dart';
 
 class ChooseVehicle extends StatefulWidget {
-  const ChooseVehicle({super.key});
+  final int profileId;
+  const ChooseVehicle({super.key, required this.profileId});
 
   @override
   State<ChooseVehicle> createState() => _ChooseVehicleState();

@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/auth/splash.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view/Service%20Man/drawer/bank_update_request.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/edit_serviceman_profile.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/help_desk.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_add_bank.dart';
@@ -13,6 +15,7 @@ import 'package:rainbow_partner/view/Service%20Man/drawer/service_privacy_policy
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_wallet_balance.dart';
 import 'package:rainbow_partner/view_model/service_man/service_online_status_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
+import 'package:rainbow_partner/view_model/user_view_model.dart';
 
 class ServiceCustomDrawer extends StatefulWidget {
   const ServiceCustomDrawer({super.key});
@@ -39,6 +42,117 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
       });
     });
   }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white, // WHITE BACKGROUND
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.logout,
+                  color: Colors.black, // BLACK ICON
+                  size: 32,
+                ),
+
+                const SizedBox(height: 14),
+
+                TextConst(
+                  title: "Sign Out?",
+                  size: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+
+                const SizedBox(height: 6),
+
+                TextConst(
+                  title: "Sign in again to continue",
+                  textAlign: TextAlign.center,
+                  size: 13,
+                  color: Colors.grey,
+                  fontFamily: AppFonts.poppinsReg,
+                ),
+
+                const SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    // CANCEL BUTTON
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => Navigator.pop(context),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey, width: 1),
+                          ),
+                          child: Center(
+                            child: TextConst(
+                              title: "CANCEL",
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                              size: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    // SIGN OUT BUTTON
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          UserViewModel().remove();
+                          Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Splash()),
+                                  (context) => false);
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red, width: 1),
+                          ),
+                          child: Center(
+                            child: TextConst(
+                              title: "SIGN OUT",
+                              color: Colors.red,
+                              fontWeight: FontWeight.w600,
+                              size: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 
 
   void showAvailableStatusPopup(BuildContext context) {
@@ -279,6 +393,15 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
             ),
 
             _drawerItem(
+              icon: Icons.food_bank,
+              title: "Bank Update Request",
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => BankUpdateRequest()));
+              },
+            ),
+
+            _drawerItem(
               icon: Icons.support_agent,
               title: "Help Desk",
               onTap: () {
@@ -302,6 +425,13 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServicePrivacyPolicy()));
+              },
+            ),
+            _drawerItem(
+              icon: Icons.logout,
+              title: "Logout",
+              onTap: () {
+                _showLogoutDialog(context);
               },
             ),
 

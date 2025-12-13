@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/model/auth_model.dart';
 import 'package:rainbow_partner/repo/auth_repo.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
+import 'package:rainbow_partner/view_model/device_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
 import '../utils/routes/routes_name.dart' show RoutesName;
@@ -45,14 +47,14 @@ class AuthViewModel with ChangeNotifier {
   Future<void> loginApi(dynamic phone, BuildContext context) async {
     setLoginLoading(true);
 
-    // final deviceVm = Provider.of<DeviceViewModel>(context, listen: false);
-    // await deviceVm.fetchDeviceId();
-    // final deviceId = deviceVm.deviceId ??"unknown";
+    final deviceVm = Provider.of<DeviceViewModel>(context, listen: false);
+    await deviceVm.fetchDeviceId();
+    final deviceId = deviceVm.deviceId ??"unknown";
 
     Map<String, dynamic> data = {
       "phone": phone,
-      "device_id": "fcguhyi",
-      "fcm_token": "kjhgv" ,
+      "device_id": deviceId,
+      "fcm_token": fcmToken,
     };
 
     try {
@@ -66,9 +68,11 @@ class AuthViewModel with ChangeNotifier {
       // ---------------- SUCCESS ----------------
       if (statusCode == 200 || statusCode == 201) {
         final authModel = AuthModel.fromJson(body);
+        UserViewModel userViewModel = UserViewModel();
+        int role = await userViewModel.getRole() ?? 0;
 
         final userPref = Provider.of<UserViewModel>(context, listen: false);
-        userPref.saveUser(authModel.servicemanId.toString(),2);
+        userPref.saveUser(authModel.servicemanId.toString(),role);
 
         Utils.showSuccessMessage(context, authModel.message ?? 'Login Successful');
 

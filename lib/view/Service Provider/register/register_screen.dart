@@ -2,19 +2,25 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view_model/device_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/categories_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_register_view_model.dart';
 
 class RegisterScreen extends StatefulWidget {
+  final int profileId;
   final String mobileNumber;
-  const RegisterScreen({super.key, required this.mobileNumber});
+  const RegisterScreen({super.key, required this.mobileNumber,required this.profileId});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -28,16 +34,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final ImagePicker picker = ImagePicker();
 
-  // CATEGORY LIST
-  final List<String> categoryList = [
-    "AC Maintenance",
-    "Cooking & Gardening",
-    "Salon",
-    "Plumber"
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CategoriesViewModel>(context, listen: false).categoriesApi();
+    });
+  }
+
 
   String? selectedCategory;
+  String? selectedCategoryId;
   String? gender;
+  Position? _currentPosition;
+  String currentLat = "";
+  String currentLng = "";
 
   // CONTROLLERS
   final TextEditingController firstController = TextEditingController();
@@ -46,6 +57,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
+
+  Future<void> getCurrentAddress(TextEditingController addressController) async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await Geolocator.openLocationSettings();
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      Utils.showErrorMessage(context, "Location permission denied permanently");
+      return;
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    _currentPosition = position;
+    currentLat = position.latitude.toString();
+    currentLng = position.longitude.toString();
+
+    List<Placemark> placemarks =
+    await placemarkFromCoordinates(position.latitude, position.longitude);
+
+    Placemark place = placemarks.first;
+
+    String address =
+        "${place.street}, ${place.subLocality}, ${place.locality}, "
+        "${place.administrativeArea}, ${place.postalCode}";
+
+    addressController.text = address;
+  }
+
+
+
+
 
   bool noSkill = false;
 
@@ -126,6 +182,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final serviceRegisterVm = Provider.of<ServicemanRegisterViewModel>(context);
+    final categoriesVm = Provider.of<CategoriesViewModel>(context);
+
     return SafeArea(
       top: false,
       bottom: true,
@@ -200,9 +258,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // INPUT FIELDS
                     cardField("First Name", firstController),
                     cardField("Last Name", lastController),
-                    cardField("User Name", userController),
+                    cardField("City", userController),
                     cardField("Email Address", emailController),
-                    cardField("Full Address", addressController),
+                    cardField(
+                      "Full Address",
+                      addressController,
+                      isAddress: true,
+                    ),
 
                     // CATEGORY DROPDOWN
                     pickerCard(
@@ -358,24 +420,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   // CARD FIELD
-  Widget cardField(String hint, TextEditingController c) {
+  Widget cardField(
+      String hint,
+      TextEditingController c, {
+        bool isAddress = false,
+      }) {
     return Container(
       height: 58,
-      margin: const EdgeInsets.only(bottom: 18),
+      alignment: Alignment.center,
+      margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
+        border: Border.all(color: AppColor.blackLight),
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(14),
       ),
       child: TextField(
         controller: c,
+        readOnly: isAddress, // 👈 auto fill only
         decoration: InputDecoration(
           hintText: hint,
           border: InputBorder.none,
+          suffixIcon: isAddress
+              ? IconButton(
+            icon: const Icon(Icons.my_location),
+            onPressed: () {
+              getCurrentAddress(c); // 👈 fetch location
+            },
+          )
+              : null,
         ),
       ),
     );
   }
+
 
   // MOBILE
   // Widget mobileField() {
@@ -435,36 +513,79 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // CATEGORY BOTTOM SHEET
   void showCategoryBottomSheet() {
+    final categoriesVm =
+    Provider.of<CategoriesViewModel>(context, listen: false);
+
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
-      builder: (context) {
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (_) {
+        final categories = categoriesVm.categoriesModel?.data ?? [];
+
         return SizedBox(
-          height: 350,
+          height: MediaQuery.of(context).size.height * 0.65,
           child: Column(
             children: [
               const SizedBox(height: 12),
-              Container(height: 4, width: 40, color: Colors.grey),
 
-              const SizedBox(height: 12),
-              const Text("Select Category",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-              const Divider(),
+              // drag handle
+              Container(
+                height: 4,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              const Text(
+                "Select Category",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+              Divider(color: Colors.grey.shade300),
 
               Expanded(
-                child: ListView(
-                  children: categoryList
-                      .map((cat) => ListTile(
-                    title: Text(cat),
-                    onTap: () {
-                      setState(() => selectedCategory = cat);
-                      Navigator.pop(context);
-                    },
-                  ))
-                      .toList(),
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final cat = categories[index];
+
+                    final String catName = cat.name ?? "";
+                    final String catId = cat.id.toString(); // 👈 ID
+
+                    return ListTile(
+                      title: Text(
+                        catName,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.black,
+                        ),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          selectedCategory = catName;     // ✅ NAME
+                          selectedCategoryId = catId;     // ✅ ID
+                        });
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
                 ),
-              )
+
+              ),
             ],
           ),
         );
@@ -472,9 +593,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+
+
   // SUBMIT
-  void submitForm() {
+  Future<void> submitForm() async {
     final serviceRegisterVm = Provider.of<ServicemanRegisterViewModel>(context, listen: false);
+    final deviceVm = Provider.of<DeviceViewModel>(context, listen: false);
+    await deviceVm.fetchDeviceId();
+    final deviceId = deviceVm.deviceId ??"unknown";
 
     // if (mobileController.text.length != 10) {
     //   Utils.showErrorMessage(context, "Enter valid mobile number");
@@ -486,7 +612,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (selectedCategory == null) {
+    if (selectedCategoryId == null) {
       Utils.showErrorMessage(context, "Select a category");
       return;
     }
@@ -516,16 +642,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       email: emailController.text,
       mobile: widget.mobileNumber,
       address: addressController.text,
-      serviceCategory: "1",
-      deviceId: "device_123",
-      fcmToken: "fcm_123",
+      serviceCategory: selectedCategoryId!,
+      deviceId: deviceId,
+      fcmTokenI: fcmToken??"",
       skillStatus: skillStatusValue,
-      currentLatitude: "26.90",
-      currentLongitude: "80.94",
+      currentLatitude: currentLat,
+      currentLongitude: currentLng,
       aadhaarFront: aadhaarFront!,
       aadhaarBack: aadhaarBack!,
       profilePhoto: profileImage!,
-      experienceCertificate: experienceCertificate, // ⭐ FIXED (no !)
+      experienceCertificate: experienceCertificate,
       context: context,
       gender: gender!,
     );

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
@@ -6,6 +7,7 @@ import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart' show Sizes;
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view/Service%20Man/drawer/service_bank_history.dart';
 import 'package:rainbow_partner/view_model/service_man/add_bank_detail_view_model.dart';
 
 class ServiceAddBank extends StatefulWidget {
@@ -41,14 +43,21 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
             children: [
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                icon:  Icon(Icons.arrow_back, color: Colors.white),
               ),
-              const TextConst(
+               TextConst(
                 title: "Add Bank",
                 color: Colors.white,
                 size: 20,
                 fontWeight: FontWeight.w600,
               ),
+              Spacer(),
+              GestureDetector(
+                  onTap: (){
+                    Navigator.push(context, CupertinoPageRoute(builder: (context)=> ServiceBankHistory()));
+                  },
+                  child: Icon(Icons.history,color: AppColor.white,size: 27,)),
+              SizedBox(width: Sizes.screenWidth*0.04,)
             ],
           ),
         ),

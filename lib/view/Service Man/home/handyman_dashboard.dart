@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/service_custom_drawer.dart';
+import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/complete_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/service_total_booking.dart';
@@ -19,22 +20,25 @@ class HandymanDashboard extends StatefulWidget {
 
 class _HandymanDashboardState extends State<HandymanDashboard> {
 
-  /// ---------------------------------------------
-  /// ANIMATION VALUES FOR 8 MONTHS (Jan–Aug)
-  /// ---------------------------------------------
-  List<double> animatedValues = List.filled(8, 0.0);
-  List<double> finalValues = [10000, 5000, 8000]; // animate only first 3
 
+  List<double> animatedValues = List.filled(8, 0.0);
+  List<double> finalValues = [10000, 5000, 8000];
 
 
   @override
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_)  {
       // SAFE Provider call
       context.read<ServicemanProfileViewModel>()
           .servicemanProfileApi(context);
+      final vm = context.read<ServicemanProfileViewModel>();
+      if (vm.servicemanProfileModel != null &&
+          vm.servicemanProfileModel!.data != null &&
+          vm.servicemanProfileModel!.data!.loginStatus == 0) {
+        _showBlockedDialog();
+      }
 
       // SAFE Animation delay
       Future.delayed(const Duration(milliseconds: 300), () {
@@ -46,6 +50,89 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       });
     });
   }
+
+  void _showBlockedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: AppColor.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+                /// ICON
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.block,
+                    color: Colors.red,
+                    size: 36,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                /// TITLE
+                const TextConst(
+                  title: "Account Blocked",
+                  size: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+
+                const SizedBox(height: 8),
+
+                /// MESSAGE
+                const TextConst(
+                  title:
+                  "Your account has been blocked by the admin.\nPlease contact admin for further assistance.",
+                  size: 14,
+                  color: Colors.grey,
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 22),
+
+                /// BUTTON
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor.royalBlue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const TextConst(
+                      title: "OK",
+                      color: Colors.white,
+                      size: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -76,6 +163,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
   @override
   Widget build(BuildContext context) {
     final serviceProfileVm = Provider.of<ServicemanProfileViewModel>(context);
+
     return SafeArea(
       top: false,
       child: Scaffold(
@@ -119,16 +207,29 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
               children: [
 
                 const SizedBox(height: 20),
-                TextConst(
-                  title: "Hello, ${serviceProfileVm.servicemanProfileModel!.data!.firstName} ${serviceProfileVm.servicemanProfileModel!.data!.lastName}",
+
+                serviceProfileVm.loading ||
+                    serviceProfileVm.servicemanProfileModel == null ||
+                    serviceProfileVm.servicemanProfileModel!.data == null
+                    ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    ShimmerLoader(width: 180, height: 18),
+                    SizedBox(height: 6),
+                    ShimmerLoader(width: 120, height: 14),
+                  ],
+                )
+                    : TextConst(
+                  title:
+                  "Hello, ${serviceProfileVm.servicemanProfileModel!.data!.firstName} ${serviceProfileVm.servicemanProfileModel!.data!.lastName}",
                   size: 18,
                   fontWeight: FontWeight.w600,
                 ),
+
                 TextConst(title: "Welcome back!", size: 13, color: Colors.grey),
 
                 const SizedBox(height: 25),
 
-                // ---------------- TOTAL CASH ----------------
                 Container(
                   padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
@@ -146,12 +247,22 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                       const SizedBox(width: 12),
                       const Expanded(
                           child: TextConst(title: "Total Cash in Hand", size: 16)),
-                      TextConst(
-                        title: "₹0.00",
+                      serviceProfileVm.loading ||
+                          serviceProfileVm.servicemanProfileModel == null ||
+                          serviceProfileVm.servicemanProfileModel!.data == null
+                          ? const ShimmerLoader(
+                        width: 80,
+                        height: 18,
+                        borderRadius: 6,
+                      )
+                          : TextConst(
+                        title:
+                        "₹${serviceProfileVm.servicemanProfileModel!.data!.wallet ?? "0.00"}",
                         size: 18,
                         fontWeight: FontWeight.bold,
                         color: AppColor.royalBlue,
                       ),
+
                     ],
                   ),
                 ),
@@ -333,6 +444,8 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     );
   }
 
+
+
   // ------------------------------------------------------------------
   //                           REVIEW CARD
   // ------------------------------------------------------------------
@@ -402,6 +515,57 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       ),
     );
   }
+
+  Widget dashboardShimmer() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 17),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          const SizedBox(height: 20),
+          ShimmerLoader(width: 180, height: 18),
+          const SizedBox(height: 6),
+          ShimmerLoader(width: 120, height: 14),
+
+          const SizedBox(height: 25),
+          ShimmerLoader(height: 80, borderRadius: 20),
+
+          const SizedBox(height: 25),
+          Row(
+            children: [
+              Expanded(child: ShimmerLoader(height: 120)),
+              const SizedBox(width: 15),
+              Expanded(child: ShimmerLoader(height: 120)),
+            ],
+          ),
+
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              Expanded(child: ShimmerLoader(height: 120)),
+              const SizedBox(width: 15),
+              Expanded(child: ShimmerLoader(height: 120)),
+            ],
+          ),
+
+          const SizedBox(height: 25),
+          ShimmerLoader(width: 180, height: 18),
+          const SizedBox(height: 15),
+          ShimmerLoader(height: 190, borderRadius: 12),
+
+          const SizedBox(height: 25),
+          ShimmerLoader(width: 120, height: 18),
+          const SizedBox(height: 15),
+
+          ShimmerLoader(height: 90),
+          const SizedBox(height: 12),
+          ShimmerLoader(height: 90),
+        ],
+      ),
+    );
+  }
+
 
   Widget statBox({
     required String value,

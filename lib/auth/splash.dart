@@ -4,6 +4,7 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_loader.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/service/splash_service.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 
 import '../res/app_fonts.dart';
@@ -16,6 +17,7 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
+  SplashServices services = SplashServices();
   late AnimationController _controller;
   late Animation<double> _logoAnimation;
   late Animation<double> _textAnimation;
@@ -57,7 +59,7 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
     });
 
     Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, RoutesName.login);
+      services.checkAuthentication(context);
     });
   }
 
