@@ -6,11 +6,17 @@ import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
+import 'package:rainbow_partner/res/gradient_circle_pro.dart';
+import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/utils/utils.dart' show Utils;
 import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
+import 'package:rainbow_partner/view_model/service_man/city_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/job_request_view_model.dart';
 
 class RegisterServiceScreen extends StatefulWidget {
   final int profileId;
@@ -23,11 +29,24 @@ class RegisterServiceScreen extends StatefulWidget {
 class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
   File? profileImage;
   final ImagePicker _picker = ImagePicker();
+  String selectedCity = "Select City";
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cityVm = Provider.of<CitiesViewModel>(context, listen: false);
+      cityVm.cityApi();
+    });
+  }
+
+
 
   // controllers
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
-  final TextEditingController userNameController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController designationController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
@@ -259,6 +278,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
   }) {
     return Container(
       height: 55,
+      alignment: Alignment.center,
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
@@ -402,208 +422,417 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
     );
   }
 
+  void showCityBottomSheet() {
+    TextEditingController searchController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // HEADER
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(width: 40),
+                  const Text(
+                    "Select City",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      height: 35,
+                      width: 35,
+                      decoration: BoxDecoration(
+                        color: AppColor.whiteDarkII,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, size: 20),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // SEARCH BAR
+              Container(
+                height: 50,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xffF1F2F6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search, color: Colors.grey),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        decoration: const InputDecoration(
+                          hintText: "Search city...",
+                          border: InputBorder.none,
+                        ),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              // CITY LIST
+              Expanded(
+                child: Consumer<CitiesViewModel>(
+                  builder: (context, vm, _) {
+                    final allCities = vm.cityModel?.data ?? [];
+
+                    final filtered = allCities.where((city) {
+                      final query = searchController.text.trim().toLowerCase();
+                      return city.name!.toLowerCase().contains(query);
+                    }).toList();
+
+                    return ListView.separated(
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder: (_, index) {
+                        final city = filtered[index];
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedCity = city.name!;
+                              cityController.text = selectedCity;
+                            });
+                            Navigator.pop(context);
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                city.name!,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              const Text(
+                                "Uttar Pradesh, India",
+                                style:
+                                TextStyle(color: Colors.grey, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
+    final jobRequestVm = Provider.of<JobRequestViewModel>(context);
+
     return SafeArea(
       top: false,
       bottom: true,
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: topPadding),
-              // back
-              Align(
-                alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: const Icon(CupertinoIcons.back, size: 28),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              Stack(
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    radius: 56,
-                    backgroundColor: Colors.grey.shade300,
-                    backgroundImage: profileImage != null
-                        ? FileImage(profileImage!)
-                        : null,
-                    child: profileImage == null
-                        ? const Icon(
-                            Icons.person,
-                            size: 64,
-                            color: Colors.white,
-                          )
-                        : null,
-                  ),
-                  Positioned(
-                    bottom: 2,
-                    right: 2,
+                  SizedBox(height: topPadding),
+                  // back
+                  Align(
+                    alignment: Alignment.centerLeft,
                     child: GestureDetector(
-                      onTap: () => pickProfileImage(),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: AppColor.royalBlue,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          size: 18,
-                          color: Colors.white,
-                        ),
-                      ),
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(CupertinoIcons.back, size: 28),
                     ),
                   ),
-                ],
-              ),
+                  const SizedBox(height: 12),
 
-              const SizedBox(height: 20),
-              const TextConst(
-                title: "Hello User !",
-                size: 25,
-                fontWeight: FontWeight.w700,
-              ),
-              const SizedBox(height: 6),
-              TextConst(
-                title: "Create Your Account for Better\nExperience",
-                textAlign: TextAlign.center,
-                size: 15,
-                color: Colors.grey.shade600,
-              ),
-              const SizedBox(height: 24),
+                  Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 56,
+                        backgroundColor: Colors.grey.shade300,
+                        backgroundImage: profileImage != null
+                            ? FileImage(profileImage!)
+                            : null,
+                        child: profileImage == null
+                            ? const Icon(
+                                Icons.person,
+                                size: 64,
+                                color: Colors.white,
+                              )
+                            : null,
+                      ),
+                      Positioned(
+                        bottom: 2,
+                        right: 2,
+                        child: GestureDetector(
+                          onTap: () => pickProfileImage(),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(
+                              color: AppColor.royalBlue,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
 
-              // fields
-              _textField(hint: "First Name", controller: firstNameController),
-              _textField(hint: "Last Name", controller: lastNameController),
-              _textField(hint: "User Name", controller: userNameController),
-              _textField(
-                hint: "Email Address",
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              _textField(
-                hint: "Designation (e.g. Plumber)",
-                controller: designationController,
-              ),
-
-              // mobile number (digits only)
-              _textField(
-                hint: "Mobile Number",
-                controller: mobileController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                maxLength: 10,
-              ),
-
-              const SizedBox(height: 8),
-
-              // police verification upload
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                  const SizedBox(height: 20),
                   const TextConst(
-                    title: "Police Verification Certificate",
+                    title: "Hello User !",
+                    size: 25,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  const SizedBox(height: 6),
+                  TextConst(
+                    title: "Create Your Account for Better\nExperience",
+                    textAlign: TextAlign.center,
                     size: 15,
-                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade600,
                   ),
+                  const SizedBox(height: 24),
+
+                  // fields
+                  _textField(hint: "First Name", controller: firstNameController),
+                  _textField(hint: "Last Name", controller: lastNameController),
                   GestureDetector(
-                    onTap: _pickImageOrPdfForPolice,
+                    onTap: () {
+                      showCityBottomSheet();
+                    },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
+                      height: 55,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
-                        color: AppColor.royalBlue,
-                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        "Upload",
-                        style: TextStyle(color: Colors.white),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            selectedCity,
+                            style: TextStyle(
+                              color: selectedCity == "Select City" ? Colors.grey : Colors.black,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const Icon(Icons.arrow_drop_down, size: 26, color: Colors.grey)
+                        ],
                       ),
                     ),
                   ),
+                  _textField(
+                    hint: "Email Address",
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  _textField(
+                    hint: "Designation (e.g. Plumber)",
+                    controller: designationController,
+                  ),
+
+                  // mobile number (digits only)
+                  _textField(
+                    hint: "Mobile Number",
+                    controller: mobileController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    maxLength: 10,
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // police verification upload
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const TextConst(
+                        title: "Police Verification Certificate",
+                        size: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      GestureDetector(
+                        onTap: _pickImageOrPdfForPolice,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColor.royalBlue,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Text(
+                            "Upload",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  if (policeVerificationFile != null)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            policeVerificationFile!.path.split('/').last,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () =>
+                              setState(() => policeVerificationFile = null),
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        ),
+                      ],
+                    ),
+
+                  // const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Text(
+                        "Don't know any skill",
+                        style: TextStyle(fontSize: 13),
+                      ),
+                      const SizedBox(width: 6),
+                      Checkbox(
+                        value: doesntKnowSkill,
+                        onChanged: (v) => setState(() {
+                          doesntKnowSkill = v ?? false;
+                          if (doesntKnowSkill) designationFiles.clear();
+                        }),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // designation upload area (disabled when doesntKnowSkill true)
+                  Opacity(
+                    opacity: doesntKnowSkill ? 0.5 : 1,
+                    child: IgnorePointer(
+                      ignoring: doesntKnowSkill,
+                      child: _designationList(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // submit
+                  CustomButton(
+                      title: "Submit",
+                      bgColor: AppColor.royalBlue,
+                      textColor: Colors.white,
+                      onTap: () {
+                        if (firstNameController.text.trim().isEmpty) {
+                          Utils.showErrorMessage(context, "Please Enter First Name");
+                          return;
+                        }
+                        if (mobileController.text.trim().length != 10) {
+                          Utils.showErrorMessage(context, "Please Enter 10 digit number");
+                          return;
+                        }
+                        String skillType = doesntKnowSkill ? "1" : "0";
+                        File? singleDesignationFile;
+                        if (skillType == "0") {
+                          if (designationFiles.isNotEmpty) {
+                            singleDesignationFile = designationFiles.first;
+                          } else {
+                            Utils.showErrorMessage(context, "Please upload at least 1 designation certificate");
+                            return;
+                          }
+                        }
+                        jobRequestVm.jobRequestApi(
+                          firstName: firstNameController.text,
+                          lastName: lastNameController.text,
+                          email: emailController.text,
+                          mobile: mobileController.text,
+                          designation: designationController.text,
+                          skillType: skillType,
+                          city: selectedCity,
+                          policeVerificationFile: policeVerificationFile!,
+                          profilePhoto: profileImage!,
+                          designationFiles: designationFiles,  // <-- Correct
+                          context: context,
+                        );
+
+                      }
+
+                  ),
+
+                  const SizedBox(height: 20),
                 ],
               ),
-              const SizedBox(height: 8),
-              if (policeVerificationFile != null)
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        policeVerificationFile!.path.split('/').last,
-                        overflow: TextOverflow.ellipsis,
+            ),
+            if (jobRequestVm.loading)
+              Container(
+                color: Colors.black54,
+                child: Center(
+                  child: Container(
+                    height: Sizes.screenHeight * 0.13,
+                    width: Sizes.screenWidth * 0.28,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: GradientCirPro(
+                        strokeWidth: 6,
+                        size: 70,
+                        gradient: AppColor.circularIndicator,
                       ),
                     ),
-                    IconButton(
-                      onPressed: () =>
-                          setState(() => policeVerificationFile = null),
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    ),
-                  ],
-                ),
-
-              // const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Text(
-                    "Don't know any skill",
-                    style: TextStyle(fontSize: 13),
                   ),
-                  const SizedBox(width: 6),
-                  Checkbox(
-                    value: doesntKnowSkill,
-                    onChanged: (v) => setState(() {
-                      doesntKnowSkill = v ?? false;
-                      if (doesntKnowSkill) designationFiles.clear();
-                    }),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-
-              // designation upload area (disabled when doesntKnowSkill true)
-              Opacity(
-                opacity: doesntKnowSkill ? 0.5 : 1,
-                child: IgnorePointer(
-                  ignoring: doesntKnowSkill,
-                  child: _designationList(),
                 ),
               ),
-
-              const SizedBox(height: 24),
-
-              // submit
-              CustomButton(
-                title: "Submit",
-                bgColor: AppColor.royalBlue,
-                textColor: Colors.white,
-                onTap: () {
-                  // Validation (basic)
-                  // if (firstNameController.text.trim().isEmpty) {
-                  //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter first name")));
-                  //   return;
-                  // }
-                  // if (mobileController.text.trim().length != 10) {
-                  //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Enter 10 digit mobile number")));
-                  //   return;
-                  // }
-
-                  // proceed — demo navigate to dashboard
-                  // Navigator.push(context, CupertinoPageRoute(builder: (_) => const HandymanDashboard()));
-                },
-              ),
-
-              const SizedBox(height: 20),
-            ],
-          ),
+          ],
         ),
       ),
     );

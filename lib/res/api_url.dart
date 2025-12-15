@@ -10,6 +10,13 @@ class ApiUrl {
   static const String serviceBankEditUrl ="${baseUrl}bank_update_request";
   static const String serviceBankUpdateUrl ="${baseUrl}get_bank_update_request";
   static const String categoriesUrl ="${baseUrl}categories";
+  static const String competeBookingUrl ="${baseUrl}my-orders";
+  static const String jobRequestUrl ="${baseUrl}job_request";
+  static const String citiesUrl ="${baseUrl}cities";
+  static const String acceptOrderUrl ="${baseUrl}serviceman/accept-order";
+  static const String changeOrderStatusUrl ="${baseUrl}change_order_status";
+
+
 
 
   static const String sendOtpUrl ="https://otp.fctechteam.org/send_otp.php?mode=test&digit=4&mobile=";

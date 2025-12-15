@@ -5,14 +5,20 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/model/complete_booking_model.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
 import 'package:rainbow_partner/view_model/device_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/accept_order_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/add_bank_detail_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/categories_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/change_order_status_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/city_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/complete_booking_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/job_request_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_bank_edit_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_bank_update_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_get_bank_detail_view_model.dart';
@@ -95,6 +101,11 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> ServiceBankUpdateViewModel()),
           ChangeNotifierProvider(create: (context)=> DeviceViewModel()),
           ChangeNotifierProvider(create: (context)=> CategoriesViewModel()),
+          ChangeNotifierProvider(create: (context)=> CompleteBookingViewModel()),
+          ChangeNotifierProvider(create: (context)=> JobRequestViewModel()),
+          ChangeNotifierProvider(create: (context)=> CitiesViewModel()),
+          ChangeNotifierProvider(create: (context)=> AcceptOrderViewModel()),
+          ChangeNotifierProvider(create: (context)=> ChangeOrderStatusViewModel()),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

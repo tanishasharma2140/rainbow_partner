@@ -81,7 +81,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               _profileTile(
                 image: "assets/service_provider.png",
-                title: "Service Provider",
+                title: "Service Man",
                 subtitle:
                 "Provide on-demand home services at customer's location.",
                 onTap: () {

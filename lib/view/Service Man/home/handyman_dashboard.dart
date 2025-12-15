@@ -6,6 +6,7 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/service_custom_drawer.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view/Service%20Man/home/accepted_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/complete_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/service_total_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/service_total_revenue_earning.dart';
@@ -274,8 +275,8 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                     Expanded(
                       child: statBox(
                         value: "3",
-                        title: "Total Bookings",
-                        icon: Icons.confirmation_num_outlined,
+                        title: "Find Services",
+                        icon: Icons.access_time,
                         onTap: () {
                           Navigator.push(context,
                               CupertinoPageRoute(builder: (_) => ServiceTotalBooking()));
@@ -286,11 +287,11 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                     Expanded(
                       child: statBox(
                         value: "6",
-                        title: "Completed Bookings",
-                        icon: Icons.list_alt_outlined,
+                        title: "Accepted Bookings",
+                        icon: Icons.design_services,
                         onTap: () {
                           Navigator.push(context,
-                              CupertinoPageRoute(builder: (_) => CompleteBooking()));
+                              CupertinoPageRoute(builder: (_) => AcceptedBooking()));
                         },
                       ),
                     ),
@@ -303,10 +304,13 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                   children: [
                     Expanded(
                       child: statBox(
-                        value: "₹0.00",
-                        title: "Remaining Payout",
-                        icon: Icons.access_time,
-                        onTap: () {},
+                        value: "6",
+                        title: "Completed Booking",
+                        icon:  Icons.list_alt_outlined,
+                        onTap: () {
+                          Navigator.push(context,
+                              CupertinoPageRoute(builder: (_) => CompleteBooking()));
+                        },
                       ),
                     ),
                     const SizedBox(width: 15),

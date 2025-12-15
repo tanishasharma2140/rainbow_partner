@@ -1,10 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
+import 'package:rainbow_partner/res/custom_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
-import 'package:rainbow_partner/view/Service%20Man/home/service_booking_detail.dart';
+import 'package:rainbow_partner/service/socket_service.dart';
+import 'package:rainbow_partner/view/Service Man/home/service_booking_detail.dart';
+import 'package:rainbow_partner/view_model/service_man/accept_order_view_model.dart';
 
 class ServiceTotalBooking extends StatefulWidget {
   const ServiceTotalBooking({super.key});
@@ -14,59 +18,64 @@ class ServiceTotalBooking extends StatefulWidget {
 }
 
 class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
-  // ---------------- BOOKING LISTS ----------------
-  List<Map<String, dynamic>> pending = [
-    {
-      "id": "#12",
+  List<Map<String, dynamic>> pending = [];
+
+  @override
+  @override
+  void initState() {
+    super.initState();
+
+    SocketService().connect(
+      servicemanId: 1,
+
+      onPendingOrders: (orders) {
+        if (!mounted) return;
+
+        setState(() {
+          pending = orders.map((e) => mapOrder(e)).toList();
+        });
+      },
+
+      onNewOrder: (order) {
+        if (!mounted) return;
+
+        setState(() {
+          pending.insert(0, mapOrder(order)); // new order top pe
+        });
+      },
+
+      onOrderRemoved: (orderId) {
+        if (!mounted) return;
+
+        setState(() {
+          pending.removeWhere((e) => e["order_id"] == orderId);
+        });
+      },
+    );
+  }
+
+
+  @override
+  void dispose() {
+    SocketService().dispose();
+    super.dispose();
+  }
+
+  Map<String, dynamic> mapOrder(Map<String, dynamic> o) {
+    return {
+      "order_id": o["order_id"],
+      "id": "#${o["order_id"]}",
       "status": "Pending",
-      "title": "AC Repair",
-      "price": "₹250.00",
+      "title": o["service_name"] ?? "",
+      "price": "₹${o["final_amount"]}",
       "image": "assets/ac_maintenance.png",
-      "address": "Sector 21, Noida, Uttar Pradesh",
-      "datetime": "05 March, 2024 at 11:00 AM",
-      "customer": "Rahul Verma",
-      "payment": "Pending",
-    },
-  ];
-
-  List<Map<String, dynamic>> completed = [
-    {
-      "id": "#27",
-      "status": "Completed",
-      "title": "Filter Replacement",
-      "price": "₹80.00",
-      "image": "assets/custom_cake_creation.png",
-      "address": "001 Thornridge Cir. Shiloh, Hawaii 81063",
-      "datetime": "02 February, 2022 at 8:30 AM",
-      "customer": "Ped Norris",
-      "payment": "Paid by Cash",
-    },
-    {
-      "id": "#27",
-      "status": "Completed",
-      "title": "Filter Replacement",
-      "price": "₹80.00",
-      "image": "assets/facial.png",
-      "address": "001 Thornridge Cir. Shiloh, Hawaii 81063",
-      "datetime": "02 February, 2022 at 8:30 AM",
-      "customer": "Ped Norris",
-      "payment": "Paid by Cash",
-    },
-  ];
-
-  List<Map<String, dynamic>> rejected = [
-    {
-      "id": "#07",
-      "status": "Rejected",
-      "title": "Water Leakage Repair",
-      "price": "₹120.00",
-      "image": "assets/plumbing.png",
-      "address": "Near DLF Phase 3, Gurugram",
-      "datetime": "14 Jan, 2024 at 4:00 PM",
-      "customer": "Ankit Sharma",
-      "payment": "Not Paid",
-    },
-  ];
+      "address": o["service_address"] ?? "No address",
+      "datetime": o["formatted_date"] ?? "",
+      "customer": o["customer_name"] ?? "",
+      "distance":
+          "${double.tryParse(o["distance"].toString())?.toStringAsFixed(1)} km",
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +84,6 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
       bottom: true,
       child: Scaffold(
         backgroundColor: AppColor.whiteDark,
-
         appBar: AppBar(
           backgroundColor: AppColor.royalBlue,
           elevation: 0,
@@ -87,8 +95,8 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-              TextConst(
-                title: "Total Booking's",
+              const TextConst(
+                title: "Pending Bookings",
                 color: Colors.white,
                 size: 20,
                 fontWeight: FontWeight.w600,
@@ -97,74 +105,36 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
           ),
         ),
 
-        // ---------------- BODY ----------------
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              sectionTitle("Pending Bookings"),
-              bookingList(pending),
+        body: pending.isEmpty
+            ? const Center(
+                child: Text(
+                  "No pending bookings available",
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.all(15),
+                reverse: false,
+                itemCount: pending.length,
 
-              const SizedBox(height: 20),
-
-              sectionTitle("Completed Bookings"),
-              bookingList(completed),
-
-              const SizedBox(height: 20),
-
-              sectionTitle("Rejected Bookings"),
-              bookingList(rejected),
-
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
+                itemBuilder: (context, index) {
+                  print("📦 UI INDEX $index → ${pending[index]["order_id"]}");
+                  return bookingCard(pending[index]);
+                },
+              ),
       ),
-    );
-  }
-
-  // ---------------- SECTION TITLE ----------------
-  Widget sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 5, bottom: 10),
-      child: TextConst(
-        title: title,
-        size: 19,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-  }
-
-  // ---------------- BOOKING LIST ----------------
-  Widget bookingList(List<Map<String, dynamic>> list) {
-    if (list.isEmpty) {
-      return const Text(
-        "No bookings available!",
-        style: TextStyle(color: Colors.grey, fontSize: 15),
-      );
-    }
-
-    return Column(
-      children: List.generate(list.length, (index) {
-        return bookingCard(list[index]);
-      }),
     );
   }
 
   // ---------------- BOOKING CARD ----------------
   Widget bookingCard(Map<String, dynamic> b) {
-    Color statusColor = Colors.orange;
-    if (b["status"] == "Completed") statusColor = Colors.green;
-    if (b["status"] == "Rejected") statusColor = Colors.red;
-
+    final acceptOrderVm = Provider.of<AcceptOrderViewModel>(context);
+    final int orderId = b["order_id"];
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          CupertinoPageRoute(
-            builder: (_) => ServiceBookingDetail(data: b),
-          ),
+          CupertinoPageRoute(builder: (_) => ServiceBookingDetail(data: b)),
         );
       },
       child: Container(
@@ -178,17 +148,15 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
               color: Colors.grey.shade300,
               blurRadius: 7,
               offset: const Offset(0, 3),
-            )
+            ),
           ],
         ),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            /// -------- TOP ROW --------
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // IMAGE
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.asset(
@@ -198,15 +166,12 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                     fit: BoxFit.cover,
                   ),
                 ),
-
                 const SizedBox(width: 12),
 
-                // DETAILS
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -215,20 +180,20 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                             size: 15,
                             fontWeight: FontWeight.w600,
                           ),
-
-                          // STATUS BADGE
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: statusColor.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: statusColor),
+                              horizontal: 12,
+                              vertical: 5,
                             ),
-                            child: Text(
-                              b["status"],
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: Colors.orange),
+                            ),
+                            child: const Text(
+                              "Pending",
                               style: TextStyle(
-                                color: statusColor,
+                                color: Colors.orange,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 12,
                               ),
@@ -237,25 +202,22 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                         ],
                       ),
 
-                      // TITLE WITH MARQUEE
                       const SizedBox(height: 5),
+
                       SizedBox(
                         height: 20,
                         child: Marquee(
                           text: b["title"],
+                          blankSpace: 40,
+                          velocity: 25,
                           style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
                             fontFamily: AppFonts.kanitReg,
-                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
                           ),
-                          blankSpace: 50,
-                          velocity: 30,
-                          pauseAfterRound: Duration(seconds: 1),
                         ),
                       ),
 
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
 
                       TextConst(
                         title: b["price"],
@@ -272,15 +234,60 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
             const SizedBox(height: 12),
 
             infoRow("Address:", b["address"], marquee: true),
-            const SizedBox(height: 8),
-
             infoRow("Date:", b["datetime"]),
-            const SizedBox(height: 8),
-
             infoRow("Customer:", b["customer"]),
-            const SizedBox(height: 8),
+            infoRow("Distance:", b["distance"]),
 
-            infoRow("Payment:", b["payment"]),
+            const SizedBox(height: 14),
+
+            /// -------- BOTTOM ACTION --------
+            Row(
+              children: [
+                Container(
+                  height: 45,
+                  width: 45,
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColor.royalBlue.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColor.royalBlue),
+                  ),
+                  child: Image.asset("assets/clock.gif", fit: BoxFit.contain),
+                ),
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppColor.royalBlue),
+                      backgroundColor: AppColor.royalBlue.withOpacity(0.08),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () {
+                      final int orderId = b["order_id"];
+                      acceptOrderVm.acceptOrderApi(orderId, context);
+                    },
+
+                    child: acceptOrderVm.isLoading(orderId)
+                        ?  SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CustomLoader(color: AppColor.royalBlue,),
+                          )
+                        :  TextConst(
+                               title:
+                            "Accept",
+                      fontWeight: FontWeight.w600,
+                      size: 15,
+                      color: AppColor.royalBlue,
+                          ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -289,40 +296,33 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
 
   // ---------------- INFO ROW ----------------
   Widget infoRow(String title, String value, {bool marquee = false}) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 95,
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              color: Colors.black54,
-              fontFamily: AppFonts.kanitReg,
-            ),
-          ),
-        ),
-
-        Expanded(
-          child: marquee
-              ? SizedBox(
-            height: 20,
-            child: Marquee(
-              text: value,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(
+              title,
               style: const TextStyle(
-                  fontFamily: AppFonts.kanitReg, color: Colors.black),
-              blankSpace: 40,
-              velocity: 25,
-              pauseAfterRound: Duration(seconds: 1),
+                fontFamily: AppFonts.kanitReg,
+                color: Colors.black54,
+              ),
             ),
-          )
-              : Text(
-            value,
-            style: const TextStyle(
-                fontFamily: AppFonts.kanitReg, color: Colors.black),
           ),
-        ),
-      ],
+          Expanded(
+            child: marquee
+                ? SizedBox(
+                    height: 20,
+                    child: Marquee(text: value, blankSpace: 40, velocity: 25),
+                  )
+                : Text(
+                    value,
+                    style: const TextStyle(fontFamily: AppFonts.kanitReg),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

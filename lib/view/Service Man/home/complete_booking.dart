@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view_model/service_man/complete_booking_view_model.dart';
 
 class CompleteBooking extends StatefulWidget {
   const CompleteBooking({super.key});
@@ -12,33 +14,62 @@ class CompleteBooking extends StatefulWidget {
 }
 
 class _CompleteBookingState extends State<CompleteBooking> {
-  List<Map<String, dynamic>> bookings = [
-    {
-      "id": "#27",
-      "status": "Completed",
-      "title": "Filter Replacement",
-      "price": "₹80.00",
-      "image": "assets/custom_cake_creation.png",
-      "address": "001 Thornridge Cir. Shiloh, Hawaii 81063",
-      "datetime": "02 February, 2022 at 8:30 AM",
-      "customer": "Ped Norris",
-      "payment": "Paid by Cash",
-    },
-    {
-      "id": "#27",
-      "status": "Completed",
-      "title": "Filter Replacement",
-      "price": "₹80.00",
-      "image": "assets/facial.png",
-      "address": "001 Thornridge Cir. Shiloh, Hawaii 81063",
-      "datetime": "02 February, 2022 at 8:30 AM",
-      "customer": "Ped Norris",
-      "payment": "Paid by Cash",
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CompleteBookingViewModel>(context, listen: false)
+          .completeBookingApi([4, 5, 6], context);
+    });
+  }
+
+  // ---------------- DATE FORMAT ----------------
+  String formatDateTime(dynamic value) {
+    if (value == null) return "--";
+    try {
+      DateTime dateTime = DateTime.parse(value.toString());
+      int hour = dateTime.hour;
+      int minute = dateTime.minute;
+      String amPm = hour >= 12 ? "PM" : "AM";
+      hour = hour % 12 == 0 ? 12 : hour % 12;
+      String min = minute < 10 ? "0$minute" : minute.toString();
+
+      return "${dateTime.day.toString().padLeft(2, '0')}-"
+          "${dateTime.month.toString().padLeft(2, '0')}-"
+          "${dateTime.year}  $hour:$min $amPm";
+    } catch (e) {
+      return value.toString();
+    }
+  }
+
+  // ---------------- STATUS TEXT ----------------
+  String getServiceStatusText(dynamic status) {
+    switch (status?.toString()) {
+      case "4":
+        return "Completed";
+      case "5":
+        return "Cancelled by User";
+      case "6":
+        return "Rejected by Serviceman";
+      default:
+        return "Completed";
+    }
+  }
+
+  Color getServiceStatusColor(dynamic status) {
+    switch (status?.toString()) {
+      case "5":
+      case "6":
+        return Colors.red;
+      default:
+        return Colors.green;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final vm = Provider.of<CompleteBookingViewModel>(context);
+
     return SafeArea(
       top: false,
       bottom: true,
@@ -55,270 +86,232 @@ class _CompleteBookingState extends State<CompleteBooking> {
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-              TextConst(
-                  title:
-                  "Booking's",
-                  color: Colors.white, size: 20, fontWeight: FontWeight.w600
+              const TextConst(
+                title: "Complete Booking's",
+                color: Colors.white,
+                size: 20,
+                fontWeight: FontWeight.w600,
               ),
             ],
           ),
         ),
 
-        // ------------------- BODY -------------------
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 15),
+        // ---------------- BODY ----------------
+        body: ListView.builder(
+          padding: const EdgeInsets.only(top: 15),
+          itemCount: vm.completeBookingModel?.data?.length ?? 0,
+          itemBuilder: (context, index) {
+            final completeVm = vm.completeBookingModel!.data![index];
+            final status = completeVm.serviceStatus;
 
-              // ---------------- BOOKINGS LIST ----------------
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: bookings.length,
-                itemBuilder: (context, index) {
-                  final b = bookings[index];
-                  return bookingCard(b);
-                },
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade300,
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  )
+                ],
               ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
 
-              const SizedBox(height: 30),
-            ],
-          ),
+                  /// IMAGE + DETAILS
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          completeVm.serviceImage ?? "",
+                          height: 90,
+                          width: 90,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            height: 90,
+                            width: 90,
+                            color: Colors.grey.shade300,
+                            child: const Icon(Icons.image_not_supported),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 13),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: Colors.grey.shade400),
+                                  ),
+                                  child: TextConst(
+                                    title: "#${completeVm.id ?? ""}",
+                                    size: 13,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: getServiceStatusColor(status)
+                                        .withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: getServiceStatusColor(status)),
+                                  ),
+                                  child: TextConst(
+                                    title: getServiceStatusText(status),
+                                    size: 12,
+                                    color: getServiceStatusColor(status),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            SizedBox(
+                              height: 22,
+                              child: Marquee(
+                                text:
+                                completeVm.serviceName ?? "N/A",
+                                blankSpace: 40,
+                                velocity: 25,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: AppFonts.kanitReg,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 5),
+
+                            TextConst(
+                              title:
+                              "₹${completeVm.amount ?? 0}",
+                              size: 18,
+                              color: AppColor.royalBlue,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  /// ADDRESS
+                  infoRow(
+                    "Address:",
+                    marquee: true,
+                    value: completeVm.serviceAddress ??
+                        "Address not available",
+                  ),
+
+                  /// DATE & TIME
+                  infoRow(
+                    "Date & Time:",
+                    value: formatDateTime(
+                        completeVm.serviceDatetime),
+                  ),
+
+                  /// CUSTOMER
+                  infoRow(
+                    "Customer:",
+                    value:
+                    completeVm.servicemanName ?? "N/A",
+                  ),
+
+                  /// PAYMENT OR REASON
+                  if (status == 5 || status == 6)
+                    infoRow(
+                      "Reason:",
+                      value: completeVm.cancelReason ??
+                          "Reason not available",
+                    )
+                  else
+                    infoRow(
+                      "Payment Status:",
+                      value: getPaymentStatusText(completeVm.payMode),
+                    ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
+  String getPaymentStatusText(dynamic payMode) {
+    switch (int.tryParse(payMode?.toString() ?? "") ?? 0) {
+      case 1:
+        return "Online Payment";
+      case 2:
+        return "Offline Payment";
+      case 3:
+        return "By Wallet";
+      default:
+        return "N/A";
+    }
+  }
 
-  // ------------------- BOOKING CARD -------------------
-  Widget bookingCard(Map<String, dynamic> b) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade300,
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          )
-        ],
-      ),
-      child: Column(
+  // ---------------- COMMON ROW ----------------
+  Widget infoRow(String label,
+      {required String value, bool marquee = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          // -------- TOP ROW (IMAGE + STATUS) --------
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  b["image"],
-                  height: 90,
-                  width: 90,
-                  fit: BoxFit.cover,
-                ),
+          SizedBox(
+            width: 95,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontFamily: AppFonts.kanitReg,
+                color: Colors.black54,
               ),
-
-              const SizedBox(width: 15),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        // ID
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 5),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.grey.shade400),
-                          ),
-                          child: TextConst(
-                            title: b["id"],
-                            size: 13,
-                          ),
-                        ),
-
-                        const SizedBox(width: 10),
-
-                        // Status
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.green),
-                          ),
-                          child: TextConst(
-                            title: b["status"],
-                            size: 13,
-                            color: Colors.green,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    TextConst(
-                      title: b["title"],
-                      size: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    TextConst(
-                      title: b["price"],
-                      size: 18,
-                      color: AppColor.royalBlue,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-
-          const SizedBox(height: 15),
-
-          // -------- ADDRESS (MARQUEE) --------
-// -------- ADDRESS (MARQUEE) --------
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 95, // FIXED LABEL WIDTH
-                child: const Text(
-                  "Address:",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontFamily: AppFonts.kanitReg,
-                    color: Colors.black54,
-                  ),
-                ),
+          Expanded(
+            child: marquee
+                ? SizedBox(
+              height: 22,
+              child: Marquee(
+                text: value,
+                blankSpace: 40,
+                velocity: 25,
               ),
-
-              Expanded(
-                child: SizedBox(
-                  height: 22,
-                  child: Marquee(
-                    text: b["address"],
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontFamily: AppFonts.kanitReg,
-                    ),
-                    scrollAxis: Axis.horizontal,
-                    blankSpace: 40,
-                    velocity: 25,
-                    pauseAfterRound: Duration(seconds: 1),
-                  ),
-                ),
+            )
+                : Text(
+              value,
+              style: const TextStyle(
+                fontFamily: AppFonts.kanitReg,
+                color: Colors.black,
               ),
-            ],
+            ),
           ),
-
-          const SizedBox(height: 10),
-
-// -------- DATE & TIME --------
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                width: 95,
-                child: Text(
-                  "Date & Time:",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontFamily: AppFonts.kanitReg,
-                    color: Colors.black54,
-                  ),
-                ),
-              ),
-
-              Expanded(
-                child: Text(
-                  b["datetime"],
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontFamily: AppFonts.kanitReg,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-
-// -------- CUSTOMER --------
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                width: 95,
-                child: Text(
-                  "Customer:",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontFamily: AppFonts.kanitReg,
-                    color: Colors.black54,
-                  ),
-                ),
-              ),
-
-              Expanded(
-                child: Text(
-                  b["customer"],
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontFamily: AppFonts.kanitReg,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-
-// -------- PAYMENT STATUS --------
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                width: 95,
-                child: Text(
-                  "Payment Status:",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontFamily: AppFonts.kanitReg,
-                    color: Colors.black54,
-                  ),
-                ),
-              ),
-
-              Expanded(
-                child: Text(
-                  b["payment"],
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontFamily: AppFonts.kanitReg,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
         ],
       ),
     );
   }
-
 }

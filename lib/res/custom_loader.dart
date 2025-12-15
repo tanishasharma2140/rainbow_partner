@@ -1,9 +1,17 @@
 import 'package:flutter/cupertino.dart';
-
 import 'app_color.dart';
 
 class CustomLoader extends StatefulWidget {
-  const CustomLoader({super.key});
+  final Color color;
+  final double size;
+  final double strokeWidth;
+
+  const CustomLoader({
+    super.key,
+    this.color = AppColor.white, // 🔥 default color
+    this.size = 26,
+    this.strokeWidth = 4,
+  });
 
   @override
   State<CustomLoader> createState() => _CustomLoaderState();
@@ -33,36 +41,50 @@ class _CustomLoaderState extends State<CustomLoader>
     return RotationTransition(
       turns: _controller,
       child: CustomPaint(
-        painter: LoaderPainter(),
-        size: const Size(26, 26),
+        painter: LoaderPainter(
+          color: widget.color,
+          strokeWidth: widget.strokeWidth,
+        ),
+        size: Size(widget.size, widget.size),
       ),
     );
   }
 }
 
 class LoaderPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+
+  LoaderPainter({
+    required this.color,
+    required this.strokeWidth,
+  });
+
   @override
   void paint(Canvas canvas, Size size) {
-    final strokeWidth = 4.0;
-
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
-      ..shader = const SweepGradient(
+      ..shader = SweepGradient(
         startAngle: 0,
         endAngle: 3.14,
         colors: [
-          AppColor.white,
-          Color(0x80FFFFFF),
-          Color(0x40FFFFFF)
+          color,
+          color.withOpacity(0.5),
+          color.withOpacity(0.2),
         ],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+      ).createShader(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+      );
 
     final radius = (size.width - strokeWidth) / 2;
 
     canvas.drawArc(
-      Rect.fromCircle(center: Offset(size.width / 2, size.height / 2), radius: radius),
+      Rect.fromCircle(
+        center: Offset(size.width / 2, size.height / 2),
+        radius: radius,
+      ),
       0,
       3.14,
       false,
@@ -71,5 +93,8 @@ class LoaderPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant LoaderPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.strokeWidth != strokeWidth;
+  }
 }
