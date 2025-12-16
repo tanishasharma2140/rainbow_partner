@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_loader.dart';
+import 'package:rainbow_partner/res/gradient_circle_pro.dart';
+import 'package:rainbow_partner/res/no_data_found.dart';
+import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view_model/service_man/change_order_status_view_model.dart';
@@ -25,10 +28,16 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<CompleteBookingViewModel>(context, listen: false)
-          .completeBookingApi([1, 2, 3, 4], context);
+          .completeBookingApi([1, 2, 3], context);
     });
   }
 
+  Future<void> _refreshBookings() async {
+    await Provider.of<CompleteBookingViewModel>(
+      context,
+      listen: false,
+    ).completeBookingApi([1, 2, 3], context);
+  }
   // ---------------- REJECT DIALOG ----------------
   void showRejectDialog(int orderId, ChangeOrderStatusViewModel vm) {
     final TextEditingController reasonCtrl = TextEditingController();
@@ -135,8 +144,34 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     final changeVm = Provider.of<ChangeOrderStatusViewModel>(context);
 
     if (bookingVm.completeBookingModel?.data == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return  Scaffold(
+        body:  Container(
+         color: Colors.grey[50],
+          child: Center(
+            child: Container(
+              height: Sizes.screenHeight * 0.13,
+              width: Sizes.screenWidth * 0.28,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Center(
+                child: GradientCirPro(
+                  strokeWidth: 6,
+                  size: 70,
+                  gradient: AppColor.circularIndicator,
+                ),
+              ),
+            ),
+          ),
+        ),
       );
     }
 
@@ -157,206 +192,231 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
           fontWeight: FontWeight.w600,
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(15),
-        itemCount: bookingVm.completeBookingModel!.data!.length,
-        itemBuilder: (_, index) {
-          final booking = bookingVm.completeBookingModel!.data![index];
-          final int status =
-              int.tryParse(booking.serviceStatus.toString()) ?? 0;
-          final int orderId = booking.id;
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 15),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.shade300,
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-
-                /// ---------- TOP ROW ----------
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        booking.serviceImage ?? "",
-                        height: 80,
-                        width: 80,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                            children: [
-                              TextConst(
-                                title: "#${booking.id}",
-                                size: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: Colors.orange.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(18),
-                                  border:
-                                  Border.all(color: Colors.orange),
-                                ),
-                                child: const Text(
-                                  "Pending",
-                                  style: TextStyle(
-                                      color: Colors.orange,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          SizedBox(
-                            height: 20,
-                            child: Marquee(
-                              text: booking.serviceName ?? "N/A",
-                              blankSpace: 40,
-                              velocity: 25,
-                              style: const TextStyle(
-                                fontFamily: AppFonts.kanitReg,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          TextConst(
-                            title: "₹ ${booking.amount ?? 0}",
-                            size: 18,
-                            color: AppColor.royalBlue,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-                infoRow("Address:", booking.serviceAddress ?? "", marquee: true),
-                infoRow("Date:", booking.serviceDatetime ?? ""),
-                infoRow("Customer:", booking.userName ?? ""),
-                infoRow("Payment:", getPaymentModeText(booking.payMode)),
-                const SizedBox(height: 14),
-
-                /// ---------- STATUS BASED UI ----------
-                if (status == 1) ...[
-                  const Text("Enter OTP",
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  otpField(),
-                  const SizedBox(height: 12),
-
+      body: RefreshIndicator(
+        color: AppColor.royalBlue,
+        onRefresh: _refreshBookings,
+        child: bookingVm.completeBookingModel!.data!.isEmpty
+            ? ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+            _noDataFound(),
+          ],
+        )
+            :
+        ListView.builder(
+          padding: const EdgeInsets.all(15),
+          itemCount: bookingVm.completeBookingModel!.data!.length,
+          itemBuilder: (_, index) {
+            final booking = bookingVm.completeBookingModel!.data![index];
+            final int status =
+                int.tryParse(booking.serviceStatus.toString()) ?? 0;
+            final int orderId = booking.id;
+        
+            return Container(
+              margin: const EdgeInsets.only(bottom: 15),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade300,
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+        
+                  /// ---------- TOP ROW ----------
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () =>
-                              showRejectDialog(orderId, changeVm),
-                          child: Container(
-                            height: 46,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.red),
-                            ),
-                            child: const TextConst(
-                              title: "Reject",
-                              color: Colors.red,
-                            ),
-                          ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          booking.serviceImage ?? "",
+                          height: 80,
+                          width: 80,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: actionButton(
-                          title: "Verify & Start",
-                          loading: changeVm.isLoading(orderId),
-                          onTap: () {
-                            changeVm.changeOrderStatusApi(
-                              orderId,
-                              2,
-                              otpController.text,
-                              "",
-                              context,
-                            );
-                          },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                              children: [
+                                TextConst(
+                                  title: "#${booking.id}",
+                                  size: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(18),
+                                    border:
+                                    Border.all(color: Colors.orange),
+                                  ),
+                                  child: const Text(
+                                    "Pending",
+                                    style: TextStyle(
+                                        color: Colors.orange,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            SizedBox(
+                              height: 20,
+                              child: Marquee(
+                                text: booking.serviceName ?? "N/A",
+                                blankSpace: 40,
+                                velocity: 25,
+                                style: const TextStyle(
+                                  fontFamily: AppFonts.kanitReg,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            TextConst(
+                              title: "₹ ${booking.amount ?? 0}",
+                              size: 18,
+                              color: AppColor.royalBlue,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ],
-
-                if (status == 2) ...[
-                  serviceStartedMessage(),
-
-                  SlideToButton(
-                    title: "Update Complete Status",
-                    onAccepted: () {
-                      changeVm.changeOrderStatusApi(
-                        orderId,
-                        3,
-                        "",
-                        "",
-                        context,
-                      );
-                    },
-                  ),
-                ],
-
-
-                if (status == 3)
-                  actionButton(
-                    title: "Waiting for User Payment",
-                    loading: false,
-                    onTap: () {},
-                  ),
-
-                if (status == 4)
-                  Container(
-                    alignment: Alignment.center,
-                    padding:
-                    const EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(14),
+        
+                  const SizedBox(height: 12),
+                  infoRow("Address:", booking.serviceAddress ?? "", marquee: true),
+                  infoRow("Date:", booking.serviceDatetime ?? ""),
+                  infoRow("Customer:", booking.userName ?? ""),
+                  infoRow("Payment:", getPaymentModeText(booking.payMode)),
+                  const SizedBox(height: 14),
+        
+                  /// ---------- STATUS BASED UI ----------
+                  if (status == 1) ...[
+                    const Text("Enter OTP",
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    otpField(),
+                    const SizedBox(height: 12),
+        
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () =>
+                                showRejectDialog(orderId, changeVm),
+                            child: Container(
+                              height: 46,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.red),
+                              ),
+                              child: const TextConst(
+                                title: "Reject",
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: actionButton(
+                            title: "Verify & Start",
+                            loading: changeVm.isLoading(orderId),
+                            onTap: () {
+                              changeVm.changeOrderStatusApi(
+                                orderId,
+                                2,
+                                otpController.text,
+                                "",
+                                context,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    child: const TextConst(
-                      title: "Service Completed • Payment Done",
-                      color: Colors.green,
+                  ],
+        
+                  if (status == 2) ...[
+                    serviceStartedMessage(),
+        
+                    SlideToButton(
+                      title: "Update Complete Status",
+                      onAccepted: () {
+                        changeVm.changeOrderStatusApi(
+                          orderId,
+                          3,
+                          "",
+                          "",
+                          context,
+                        );
+                      },
                     ),
-                  ),
-              ],
-            ),
-          );
-        },
+                  ],
+        
+        
+                  if (status == 3)
+                    actionButton(
+                      title: "Waiting for User Payment",
+                      loading: false,
+                      onTap: () {},
+                    ),
+        
+                  if (status == 4)
+                    Container(
+                      alignment: Alignment.center,
+                      padding:
+                      const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const TextConst(
+                        title: "Service Completed • Payment Done",
+                        color: Colors.green,
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
+
+  Widget _noDataFound() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+        NoDataFound()
+        ],
+      ),
+    );
+  }
+
 
   Widget otpField() => Container(
     decoration: BoxDecoration(

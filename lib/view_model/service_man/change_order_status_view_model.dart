@@ -49,7 +49,7 @@ class ChangeOrderStatusViewModel with ChangeNotifier {
       if (statusCode == 200 || statusCode == 201) {
         Utils.showSuccessMessage(context, body["message"]);
         Provider.of<CompleteBookingViewModel>(context, listen: false)
-            .completeBookingApi([1, 2, 3, 4], context);
+            .completeBookingApi([1, 2, 3], context);
       } else {
         Utils.showErrorMessage(context, body["message"]);
       }

@@ -3,6 +3,8 @@ import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
+import 'package:rainbow_partner/res/gradient_circle_pro.dart';
+import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view_model/service_man/complete_booking_view_model.dart';
 
@@ -97,169 +99,213 @@ class _CompleteBookingState extends State<CompleteBooking> {
         ),
 
         // ---------------- BODY ----------------
-        body: ListView.builder(
-          padding: const EdgeInsets.only(top: 15),
-          itemCount: vm.completeBookingModel?.data?.length ?? 0,
-          itemBuilder: (context, index) {
-            final completeVm = vm.completeBookingModel!.data![index];
-            final status = completeVm.serviceStatus;
+        body: Builder(
+          builder: (context) {
+            // 1️⃣ Loader
+            if (vm.loading) {
+              return  Container(
+                // color: Colors.grey[50],
+                child: Center(
+                  child: Container(
+                    height: Sizes.screenHeight * 0.13,
+                    width: Sizes.screenWidth * 0.28,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: GradientCirPro(
+                        strokeWidth: 6,
+                        size: 70,
+                        gradient: AppColor.circularIndicator,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }
 
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade300,
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  )
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            // 2️⃣ No Data Found
+            if (vm.completeBookingModel == null ||
+                vm.completeBookingModel!.data == null ||
+                vm.completeBookingModel!.data!.isEmpty) {
+              return _noDataFound();
+            }
 
-                  /// IMAGE + DETAILS
-                  Row(
+            // 3️⃣ Data Available
+            return ListView.builder(
+              padding: const EdgeInsets.only(top: 15),
+              itemCount: vm.completeBookingModel!.data!.length,
+              itemBuilder: (context, index) {
+                final completeVm = vm.completeBookingModel!.data![index];
+                final status = completeVm.serviceStatus;
+
+                return Container(
+                  margin:
+                  const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade300,
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      )
+                    ],
+                  ),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          completeVm.serviceImage ?? "",
-                          height: 90,
-                          width: 90,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            height: 90,
-                            width: 90,
-                            color: Colors.grey.shade300,
-                            child: const Icon(Icons.image_not_supported),
+                      /// IMAGE + DETAILS
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              completeVm.serviceImage ?? "",
+                              height: 90,
+                              width: 90,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                height: 90,
+                                width: 90,
+                                color: Colors.grey.shade300,
+                                child:
+                                const Icon(Icons.image_not_supported),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 13),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                          const SizedBox(width: 13),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                        color: Colors.grey.shade400),
-                                  ),
-                                  child: TextConst(
-                                    title: "#${completeVm.id ?? ""}",
-                                    size: 13,
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding:
+                                      const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                        BorderRadius.circular(20),
+                                        border: Border.all(
+                                            color:
+                                            Colors.grey.shade400),
+                                      ),
+                                      child: TextConst(
+                                        title:
+                                        "#${completeVm.id ?? ""}",
+                                        size: 13,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding:
+                                      const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: getServiceStatusColor(
+                                            status)
+                                            .withOpacity(0.2),
+                                        borderRadius:
+                                        BorderRadius.circular(20),
+                                        border: Border.all(
+                                            color:
+                                            getServiceStatusColor(
+                                                status)),
+                                      ),
+                                      child: TextConst(
+                                        title:
+                                        getServiceStatusText(status),
+                                        size: 12,
+                                        color:
+                                        getServiceStatusColor(status),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  height: 22,
+                                  child: Marquee(
+                                    text: completeVm.serviceName ?? "N/A",
+                                    blankSpace: 40,
+                                    velocity: 25,
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: AppFonts.kanitReg,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(width: 4),
-
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: getServiceStatusColor(status)
-                                        .withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                        color: getServiceStatusColor(status)),
-                                  ),
-                                  child: TextConst(
-                                    title: getServiceStatusText(status),
-                                    size: 12,
-                                    color: getServiceStatusColor(status),
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                const SizedBox(height: 5),
+                                TextConst(
+                                  title:
+                                  "₹${completeVm.finalAmount ?? 0}",
+                                  size: 18,
+                                  color: AppColor.royalBlue,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ],
                             ),
-
-                            const SizedBox(height: 10),
-
-                            SizedBox(
-                              height: 22,
-                              child: Marquee(
-                                text:
-                                completeVm.serviceName ?? "N/A",
-                                blankSpace: 40,
-                                velocity: 25,
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: AppFonts.kanitReg,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 5),
-
-                            TextConst(
-                              title:
-                              "₹${completeVm.amount ?? 0}",
-                              size: 18,
-                              color: AppColor.royalBlue,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
+
+                      const SizedBox(height: 15),
+
+                      infoRow(
+                        "Address:",
+                        marquee: true,
+                        value: completeVm.serviceAddress ??
+                            "Address not available",
+                      ),
+                      infoRow(
+                        "Date & Time:",
+                        value: formatDateTime(
+                            completeVm.serviceDatetime),
+                      ),
+                      infoRow(
+                        "Customer:",
+                        value:
+                        completeVm.servicemanName ?? "N/A",
+                      ),
+
+                      if (status == 5 || status == 6)
+                        infoRow(
+                          "Reason:",
+                          value: completeVm.cancelReason ??
+                              "Reason not available",
+                        )
+                      else
+                        infoRow(
+                          "Payment Status:",
+                          value:
+                          getPaymentStatusText(completeVm.payMode),
+                        ),
                     ],
                   ),
-
-                  const SizedBox(height: 15),
-
-                  /// ADDRESS
-                  infoRow(
-                    "Address:",
-                    marquee: true,
-                    value: completeVm.serviceAddress ??
-                        "Address not available",
-                  ),
-
-                  /// DATE & TIME
-                  infoRow(
-                    "Date & Time:",
-                    value: formatDateTime(
-                        completeVm.serviceDatetime),
-                  ),
-
-                  /// CUSTOMER
-                  infoRow(
-                    "Customer:",
-                    value:
-                    completeVm.servicemanName ?? "N/A",
-                  ),
-
-                  /// PAYMENT OR REASON
-                  if (status == 5 || status == 6)
-                    infoRow(
-                      "Reason:",
-                      value: completeVm.cancelReason ??
-                          "Reason not available",
-                    )
-                  else
-                    infoRow(
-                      "Payment Status:",
-                      value: getPaymentStatusText(completeVm.payMode),
-                    ),
-                ],
-              ),
+                );
+              },
             );
           },
         ),
       ),
     );
   }
+
   String getPaymentStatusText(dynamic payMode) {
     switch (int.tryParse(payMode?.toString() ?? "") ?? 0) {
       case 1:
@@ -271,6 +317,25 @@ class _CompleteBookingState extends State<CompleteBooking> {
       default:
         return "N/A";
     }
+  }
+
+  // ---------------- NO DATA ----------------
+  Widget _noDataFound() {
+    return const Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.inbox_rounded, size: 60, color: Colors.grey),
+          SizedBox(height: 12),
+          TextConst(
+            title: "No Data Found",
+            size: 16,
+            color: Colors.grey,
+            fontWeight: FontWeight.w600,
+          ),
+        ],
+      ),
+    );
   }
 
   // ---------------- COMMON ROW ----------------

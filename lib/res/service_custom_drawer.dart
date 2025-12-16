@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/auth/splash.dart';
 import 'package:rainbow_partner/res/app_color.dart';
@@ -41,6 +42,32 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
         });
       });
     });
+  }
+
+  Future<Position> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw Exception("Location services are disabled");
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception("Location permission denied");
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception("Location permission permanently denied");
+    }
+
+    return await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
   }
 
   void _showLogoutDialog(BuildContext context) {
@@ -235,26 +262,42 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
                               int statusVal = value ? 1 : 0;
 
-                              await serviceOnlineVm.serviceOnlineStatusApi(
-                                statusVal,
-                                "86768768.09",
-                                "55465789.09",
-                                context,
-                              );
+                              try {
+                                final position = await _getCurrentLocation();
 
-                              // REFRESH PROFILE AFTER STATUS UPDATE
-                              await profileVm.servicemanProfileApi(context);
+                                final lat = position.latitude.toString();
+                                final lng = position.longitude.toString();
 
-                              setState(() {
-                                isOnline = profileVm.servicemanProfileModel!.data!.onlineStatus == 1;
-                              });
+                                await serviceOnlineVm.serviceOnlineStatusApi(
+                                  statusVal,
+                                  lat,
+                                  lng,
+                                  context,
+                                );
 
-                              setSheet(() {
-                                isOnline = profileVm.servicemanProfileModel!.data!.onlineStatus == 1;
-                              });
+                                await profileVm.servicemanProfileApi(context);
+
+                                setState(() {
+                                  isOnline =
+                                      profileVm.servicemanProfileModel!.data!.onlineStatus == 1;
+                                });
+
+                                setSheet(() {
+                                  isOnline =
+                                      profileVm.servicemanProfileModel!.data!.onlineStatus == 1;
+                                });
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(e.toString())),
+                                );
+
+                                setSheet(() => isOnline = !value);
+                                setState(() => isOnline = !value);
+                              }
                             },
                           ),
                         ),
+
                       ],
                     ),
                   ),
@@ -292,7 +335,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                     CircleAvatar(
                       radius: 30,
                       backgroundImage: NetworkImage(
-                        profileVm.servicemanProfileModel!.data!.profilePhoto,
+                        profileVm.servicemanProfileModel?.data?.profilePhoto??"",
                       ),
                     ),
 
