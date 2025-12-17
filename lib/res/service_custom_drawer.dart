@@ -419,7 +419,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.account_balance_wallet_outlined,
-              title: "Due Wallet",
+              title: "Transaction History",
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceDueWallet()));

@@ -8,6 +8,7 @@ import 'package:rainbow_partner/res/custom_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/service/socket_service.dart';
 import 'package:rainbow_partner/view/Service Man/home/service_booking_detail.dart';
+import 'package:rainbow_partner/view/service/ringtone_service.dart';
 import 'package:rainbow_partner/view_model/service_man/accept_order_view_model.dart';
 
 class ServiceTotalBooking extends StatefulWidget {
@@ -42,6 +43,7 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
         setState(() {
           pending.insert(0, mapOrder(order)); // new order top pe
         });
+        RingtoneService().playRingtone();
       },
 
       onOrderRemoved: (orderId) {
@@ -266,8 +268,9 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       final int orderId = b["order_id"];
+                      await RingtoneService().stopRingtone();
                       acceptOrderVm.acceptOrderApi(orderId, context);
                     },
 

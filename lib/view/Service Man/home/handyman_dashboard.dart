@@ -274,15 +274,20 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                   children: [
                     Expanded(
                       child: statBox(
-                        value: "3",
                         title: "Find Services",
-                        icon: Icons.access_time,
+                        imagePath: "assets/sandy_loading.gif",
                         onTap: () {
-                          Navigator.push(context,
-                              CupertinoPageRoute(builder: (_) => ServiceTotalBooking()));
+                          Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                              builder: (_) => ServiceTotalBooking(),
+                            ),
+                          );
                         },
                       ),
                     ),
+
+
                     const SizedBox(width: 15),
                     Expanded(
                       child: statBox(
@@ -572,11 +577,15 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
 
   Widget statBox({
-    required String value,
+    String? value,
     required String title,
-    required IconData icon,
+    IconData? icon,
+    String? imagePath,
     required VoidCallback onTap,
   }) {
+    final bool isImageOnlyCard =
+        imagePath != null && (value == null || value.isEmpty);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -593,20 +602,40 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
             BoxShadow(
               color: Colors.grey.shade200,
               blurRadius: 6,
-              offset: Offset(0, 3),
-            )
+              offset: const Offset(0, 3),
+            ),
           ],
         ),
 
-        child: Column(
+        /// 🔥 IMAGE ONLY CARD
+        child: isImageOnlyCard
+            ? Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              imagePath,
+              height: 55,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 10),
+            TextConst(
+              title: title,
+              size: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColor.royalBlue,
+            ),
+          ],
+        )
+
+        /// 🔵 NORMAL STAT CARD
+            : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextConst(
-                  title: value,
+                  title: value ?? "",
                   size: 22,
                   fontWeight: FontWeight.w700,
                 ),
@@ -617,21 +646,32 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                     color: AppColor.royalBlue.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, size: 20, color: AppColor.royalBlue),
+                  child: imagePath != null
+                      ? Image.asset(
+                    imagePath,
+                    height: 20,
+                    width: 20,
+                    fit: BoxFit.contain,
+                  )
+                      : Icon(
+                    icon ?? Icons.image,
+                    size: 20,
+                    color: AppColor.royalBlue,
+                  ),
                 ),
               ],
             ),
-
-            Spacer(),
-
+            const Spacer(),
             TextConst(
               title: title,
               size: 15,
               color: Colors.grey.shade600,
-            )
+            ),
           ],
         ),
       ),
     );
   }
+
+
 }

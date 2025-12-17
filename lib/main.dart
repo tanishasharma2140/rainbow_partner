@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:rainbow_partner/model/complete_booking_model.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
@@ -25,6 +24,7 @@ import 'package:rainbow_partner/view_model/service_man/service_get_bank_detail_v
 import 'package:rainbow_partner/view_model/service_man/service_online_status_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_register_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/transaction_history_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 import 'firebase_options.dart';
 
@@ -106,6 +106,7 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> CitiesViewModel()),
           ChangeNotifierProvider(create: (context)=> AcceptOrderViewModel()),
           ChangeNotifierProvider(create: (context)=> ChangeOrderStatusViewModel()),
+          ChangeNotifierProvider(create: (context)=> TransactionHistoryViewModel()),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

@@ -15,6 +15,7 @@ class ApiUrl {
   static const String citiesUrl ="${baseUrl}cities";
   static const String acceptOrderUrl ="${baseUrl}serviceman/accept-order";
   static const String changeOrderStatusUrl ="${baseUrl}change_order_status";
+  static const String transactionHistoryUrl ="${baseUrl}serviceman_transaction";
 
 
 

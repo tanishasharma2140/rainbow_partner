@@ -8,7 +8,7 @@ class CustomLoader extends StatefulWidget {
 
   const CustomLoader({
     super.key,
-    this.color = AppColor.white, // 🔥 default color
+    this.color = AppColor.white,
     this.size = 26,
     this.strokeWidth = 4,
   });

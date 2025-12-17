@@ -9,6 +9,7 @@ import 'package:rainbow_partner/res/no_data_found.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view/service/ringtone_service.dart';
 import 'package:rainbow_partner/view_model/service_man/change_order_status_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/complete_booking_view_model.dart';
 import 'package:rainbow_partner/res/slide_to_button.dart';
@@ -138,6 +139,125 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     );
   }
 
+  void showCollectCashDialog({
+    required int orderId,
+    required int amount,
+    required ChangeOrderStatusViewModel vm,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 💰 Icon
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.payments,
+                  color: Colors.green,
+                  size: 32,
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // Title
+              const Text(
+                "Collect Cash",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Amount
+              Text(
+                "Please collect ₹$amount from customer",
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black54,
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
+              Row(
+                children: [
+                  // ❌ Cancel
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        height: 44,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text("Cancel"),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // ✅ Cash Collected
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        RingtoneService().playNotification();
+                        Navigator.pop(context);
+
+                        /// 🔥 Mark Payment Done
+                        vm.changeOrderStatusApi(
+                          orderId,
+                          3, // Payment Done
+                          "",
+                          "",
+                          context,
+                        );
+                      },
+                      child: Container(
+                        height: 44,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          "Cash Collected",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final bookingVm = Provider.of<CompleteBookingViewModel>(context);
@@ -212,6 +332,8 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
             final int status =
                 int.tryParse(booking.serviceStatus.toString()) ?? 0;
             final int orderId = booking.id;
+            final int payMode =
+                int.tryParse(booking.payMode.toString()) ?? 0;
         
             return Container(
               margin: const EdgeInsets.only(bottom: 15),
@@ -357,25 +479,41 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                       ],
                     ),
                   ],
-        
+
                   if (status == 2) ...[
                     serviceStartedMessage(),
-        
-                    SlideToButton(
-                      title: "Update Complete Status",
-                      onAccepted: () {
-                        changeVm.changeOrderStatusApi(
-                          orderId,
-                          3,
-                          "",
-                          "",
-                          context,
-                        );
-                      },
-                    ),
+
+                    if (payMode == 2)
+                      actionButton(
+                        title: "Work Completed Collect Cash",
+                        loading: false,
+                        onTap: () {
+                          showCollectCashDialog(
+                            orderId: orderId,
+                            amount: booking.amount ?? 0,
+                            vm: changeVm,
+                          );
+                        },
+                      )
+
+                    /// 🔵 ONLINE / WALLET → COMPLETE SERVICE
+                    else
+                      SlideToButton(
+                        title: "Update Complete Status",
+                        onAccepted: () {
+                          changeVm.changeOrderStatusApi(
+                            orderId,
+                            3,
+                            "",
+                            "",
+                            context,
+                          );
+                        },
+                      ),
                   ],
-        
-        
+
+
+
                   if (status == 3)
                     actionButton(
                       title: "Waiting for User Payment",
