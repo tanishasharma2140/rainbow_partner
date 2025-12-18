@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 
 class EditServicemanProfile extends StatefulWidget {
@@ -18,10 +19,14 @@ class _EditServicemanProfileState extends State<EditServicemanProfile> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final vm = Provider.of<ServicemanProfileViewModel>(context, listen: false);
+      final position = await LocationUtils.getLocation();
 
-      vm.servicemanProfileApi(context).then((_) {
+      final lat = position.latitude.toString();
+      final lng = position.longitude.toString();
+
+      vm.servicemanProfileApi(lat, lng,context).then((_) {
         final d = vm.servicemanProfileModel?.data;
 
         setState(() {

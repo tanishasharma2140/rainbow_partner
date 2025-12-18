@@ -13,18 +13,25 @@ import 'package:rainbow_partner/view_model/auth_view_model.dart';
 import 'package:rainbow_partner/view_model/device_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/accept_order_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/add_bank_detail_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/call_back_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/categories_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/change_order_status_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/city_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/complete_booking_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/job_request_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/payment_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/review_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_bank_edit_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_bank_update_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_get_bank_detail_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/service_info_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_online_status_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/service_withdraw_history_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/serviceman_earning_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_register_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/transaction_history_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/withdraw_request_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 import 'firebase_options.dart';
 
@@ -107,6 +114,13 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> AcceptOrderViewModel()),
           ChangeNotifierProvider(create: (context)=> ChangeOrderStatusViewModel()),
           ChangeNotifierProvider(create: (context)=> TransactionHistoryViewModel()),
+          ChangeNotifierProvider(create: (context)=> WithdrawRequestViewModel()),
+          ChangeNotifierProvider(create: (context)=> ServiceWithdrawHistoryViewModel()),
+          ChangeNotifierProvider(create: (context)=> PaymentViewModel()),
+          ChangeNotifierProvider(create: (context)=> CallBackViewModel()),
+          ChangeNotifierProvider(create: (context)=> ReviewViewModel()),
+          ChangeNotifierProvider(create: (context)=> ServicemanEarningViewModel()),
+          ChangeNotifierProvider(create: (context)=> ServiceInfoViewModel()),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

@@ -22,14 +22,14 @@ class ServicemanProfileViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> servicemanProfileApi( context) async {
+  Future<void> servicemanProfileApi(dynamic currentLatitude,dynamic currentLongitude, context) async {
     setLoading(true);
     UserViewModel userViewModel = UserViewModel();
     String? userId = await userViewModel.getUser();
     Map data = {
       "serviceman_id": userId,
-      "current_latitude": "26.9125",
-      "current_longitude": "75.7875"
+      "current_latitude": currentLatitude,
+      "current_longitude": currentLongitude
     };
     try {
       final response = await _servicemanProfileRepo.servicemanProfileApi(data);

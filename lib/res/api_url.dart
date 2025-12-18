@@ -16,6 +16,15 @@ class ApiUrl {
   static const String acceptOrderUrl ="${baseUrl}serviceman/accept-order";
   static const String changeOrderStatusUrl ="${baseUrl}change_order_status";
   static const String transactionHistoryUrl ="${baseUrl}serviceman_transaction";
+  static const String servicemanWithdrawUrl ="${baseUrl}serviceman-withdraw-request";
+  static const String servicemanWithdrawHistoryUrl ="${baseUrl}serviceman-withdraw-history";
+  static const String paymentUrl ="${baseUrl}payment";
+  static const String callbackServiceUrl ="${baseUrl}callback_service";
+  static const String reviewUrl ="${baseUrl}serviceman-ratings";
+  static const String servicemanEarningUrl ="${baseUrl}serviceman-earnings";
+  static const String serviceInfoUrl ="${baseUrl}serviceman-service-info";
+
+
 
 
 

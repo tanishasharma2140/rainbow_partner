@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/model/complete_booking_model.dart';
 import 'package:rainbow_partner/repo/serviceman/complete_booking_repo.dart';
 import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view_model/service_man/service_info_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
 class CompleteBookingViewModel with ChangeNotifier {
@@ -40,7 +42,7 @@ class CompleteBookingViewModel with ChangeNotifier {
       if (statusCode == 200 || statusCode == 201) {
         final model = CompleteBookingModel.fromJson(body);
         setCompleteBookingModelData(model);
-        Utils.showSuccessMessage(context, body["message"]);
+        Provider.of<ServiceInfoViewModel>(context,listen: false).serviceInfoApi(context);
       } else {
         if (kDebugMode) print("❌ Error Status: $statusCode → $body");
         Utils.showErrorMessage(context, body["message"]);

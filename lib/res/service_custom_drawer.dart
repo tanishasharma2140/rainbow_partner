@@ -6,6 +6,7 @@ import 'package:rainbow_partner/auth/splash.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/bank_update_request.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/edit_serviceman_profile.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/help_desk.dart';
@@ -33,10 +34,15 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final vm = Provider.of<ServicemanProfileViewModel>(context, listen: false);
+      final position = await LocationUtils.getLocation(
+      );
 
-      vm.servicemanProfileApi(context).then((_) {
+      final lat = position.latitude.toString();
+      final lng = position.longitude.toString();
+
+      vm.servicemanProfileApi(lat,lng,context).then((_) {
         setState(() {
           isOnline = vm.servicemanProfileModel!.data!.onlineStatus == 1;
         });
@@ -267,6 +273,8 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
                                 final lat = position.latitude.toString();
                                 final lng = position.longitude.toString();
+                                print(lng);
+                                print(lat);
 
                                 await serviceOnlineVm.serviceOnlineStatusApi(
                                   statusVal,
@@ -275,7 +283,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                                   context,
                                 );
 
-                                await profileVm.servicemanProfileApi(context);
+                                await profileVm.servicemanProfileApi(lat,lng,context);
 
                                 setState(() {
                                   isOnline =
@@ -410,7 +418,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
             // ---------------- OTHER DRAWER ITEMS ----------------
             _drawerItem(
               icon: Icons.wallet,
-              title: "Wallet Balance",
+              title: "Withdraw",
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceWalletBalance()));

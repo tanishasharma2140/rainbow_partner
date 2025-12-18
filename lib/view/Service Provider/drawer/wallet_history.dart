@@ -51,7 +51,7 @@ class _WalletHistoryState extends State<WalletHistory> {
               ),
               TextConst(
                   title:
-                  "Wallet History",
+                  "Withdraw",
                   color: Colors.white, size: 20, fontWeight: FontWeight.w600
               ),
             ],

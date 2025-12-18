@@ -38,6 +38,9 @@ dependencies:
   geocoding: ^2.1.0
   socket_io_client: ^2.0.3+1
   audioplayers: ^5.2.1
+  flutter_cashfree_pg_sdk:
+  url_launcher: ^6.2.5
+
 
 dev_dependencies:
   flutter_test:

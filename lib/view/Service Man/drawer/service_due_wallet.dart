@@ -4,6 +4,8 @@ import 'package:rainbow_partner/res/animated_gradient_border.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view_model/service_man/payment_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/transaction_history_view_model.dart';
 
 class ServiceDueWallet extends StatefulWidget {
@@ -35,8 +37,93 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
     });
   }
 
+  void _showClearDuePopup(BuildContext context) {
+    final payment = Provider.of<PaymentViewModel>(context,listen: false);
+    final TextEditingController amountController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) {
+        return AlertDialog(
+          backgroundColor: AppColor.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const TextConst(
+            title: "Clear Due Amount",
+            size: 16,
+            fontWeight: FontWeight.w600,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: amountController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: "Enter amount",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.red),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const TextConst(
+                title: "Cancel",
+                color: Colors.grey,
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                final amount = amountController.text.trim();
+
+                if (amount.isEmpty) {
+                  // simple validation
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Please enter amount")),
+                  );
+
+                } else{
+                  payment.paymentApi(amountController.text, 5, "", context);
+                }
+
+                Navigator.pop(context);
+
+                // 🔥 API / Logic call here
+                print("Clear Due Amount: $amount");
+              },
+              child: const TextConst(
+                title: "Submit",
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
+    final profile = Provider.of<ServicemanProfileViewModel>(context);
     return SafeArea(
       top: false,
       child: Scaffold(
@@ -110,7 +197,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
+                                  children:  [
                                     TextConst(
                                       title: "Wallet Balance",
                                       size: 15,
@@ -118,8 +205,8 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                                     ),
                                     SizedBox(height: 4),
                                     TextConst(
-                                      title: "₹ 1,250",
-                                      size: 24, // 🔹 slightly smaller
+                                      title: "₹ ${profile.servicemanProfileModel?.data?.wallet??"0"}",
+                                      size: 24,
                                       color: AppColor.royalBlue,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -154,8 +241,8 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                                         color: Colors.red.withOpacity(0.08),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: const TextConst(
-                                        title: "₹ 469",
+                                      child:  TextConst(
+                                        title: "₹${profile.servicemanProfileModel?.data?.dueWallet??"0"}",
                                         size: 22,
                                         color: Colors.red,
                                         fontWeight: FontWeight.bold,
@@ -172,9 +259,10 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                           // -------- CLEAR DUE BUTTON --------
                           SizedBox(
                             width: double.infinity,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () {},
+                            child: GestureDetector(
+                              onTap: () {
+                                _showClearDuePopup(context);
+                              },
                               child: Container(
                                 height: 40, // 🔹 reduced height
                                 alignment: Alignment.center,

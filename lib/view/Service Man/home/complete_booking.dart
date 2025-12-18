@@ -89,7 +89,7 @@ class _CompleteBookingState extends State<CompleteBooking> {
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
               const TextConst(
-                title: "Complete Booking's",
+                title: "Booking History",
                 color: Colors.white,
                 size: 20,
                 fontWeight: FontWeight.w600,
@@ -149,7 +149,7 @@ class _CompleteBookingState extends State<CompleteBooking> {
 
                 return Container(
                   margin:
-                  const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -185,7 +185,7 @@ class _CompleteBookingState extends State<CompleteBooking> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 13),
+                          const SizedBox(width: 5),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

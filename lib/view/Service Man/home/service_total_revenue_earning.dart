@@ -1,41 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
+import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view_model/service_man/serviceman_earning_view_model.dart';
 
 class ServiceTotalRevenueEarning extends StatefulWidget {
   const ServiceTotalRevenueEarning({super.key});
 
   @override
-  State<ServiceTotalRevenueEarning> createState() => _ServiceTotalRevenueEarningState();
+  State<ServiceTotalRevenueEarning> createState() =>
+      _ServiceTotalRevenueEarningState();
 }
 
-class _ServiceTotalRevenueEarningState extends State<ServiceTotalRevenueEarning> {
+class _ServiceTotalRevenueEarningState
+    extends State<ServiceTotalRevenueEarning> {
+  @override
+  void initState() {
+    super.initState();
 
-  List<Map<String, dynamic>> earningList = [
-    {
-      "title": "Plumbing Service",
-      "amount": "+ ₹300",
-      "date": "12 Jan, 2025 • 04:20 PM",
-    },
-    {
-      "title": "Home Cleaning",
-      "amount": "+ ₹650",
-      "date": "11 Jan, 2025 • 01:45 PM",
-    },
-    {
-      "title": "Washing Machine Repair",
-      "amount": "+ ₹499",
-      "date": "10 Jan, 2025 • 10:15 AM",
-    },
-    {
-      "title": "Electrician Work",
-      "amount": "+ ₹199",
-      "date": "09 Jan, 2025 • 07:40 PM",
-    },
-  ];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context
+          .read<ServicemanEarningViewModel>()
+          .servicemanEarningApi(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final earningVm = Provider.of<ServicemanEarningViewModel>(context);
+
     return SafeArea(
       top: false,
       child: Scaffold(
@@ -68,49 +62,40 @@ class _ServiceTotalRevenueEarningState extends State<ServiceTotalRevenueEarning>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: AppColor.royalBlue, // CHANGED
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColor.royalBlue.withOpacity(0.4), // CHANGED
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    TextConst(
-                      title: "Total Earnings",
-                      size: 16,
-                      color: Colors.white70,
-                    ),
-                    SizedBox(height: 8),
-                    TextConst(
-                      title: "₹ 1,648",
-                      size: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
+              /// ---------------- TOTAL EARNINGS CARD ----------------
+              earningVm.loading
+                  ? const ShimmerLoader(height: 110, borderRadius: 18)
+                  : totalEarningCard(earningVm),
 
               const SizedBox(height: 22),
 
               /// ---------------- SUMMARY ROW ----------------
-              Row(
+              earningVm.loading
+                  ? Row(
+                children: const [
+                  Expanded(child: ShimmerLoader(height: 80)),
+                  SizedBox(width: 12),
+                  Expanded(child: ShimmerLoader(height: 80)),
+                  SizedBox(width: 12),
+                  Expanded(child: ShimmerLoader(height: 80)),
+                ],
+              )
+                  : Row(
                 children: [
-                  _summaryBox("Today", "₹ 300"),
+                  summaryBox(
+                    "Today",
+                    "₹${earningVm.servicemanEarningModel?.data?.todayEarning ?? "0"}",
+                  ),
                   const SizedBox(width: 12),
-                  _summaryBox("Week", "₹ 1,448"),
+                  summaryBox(
+                    "Week",
+                    "₹${earningVm.servicemanEarningModel?.data?.weekEarning ?? "0"}",
+                  ),
                   const SizedBox(width: 12),
-                  _summaryBox("Month", "₹ 4,699"),
+                  summaryBox(
+                    "Month",
+                    "₹${earningVm.servicemanEarningModel?.data?.monthEarning ?? "0"}",
+                  ),
                 ],
               ),
 
@@ -120,88 +105,11 @@ class _ServiceTotalRevenueEarningState extends State<ServiceTotalRevenueEarning>
                 title: "Recent Earnings",
                 size: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
               ),
-
               const SizedBox(height: 14),
 
-              /// ---------------- EARNING LIST ----------------
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: earningList.length,
-                itemBuilder: (context, index) {
-                  final item = earningList[index];
-
-                  return Container(
-                    padding: const EdgeInsets.all(16),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColor.royalBlue.withOpacity(0.15), // CHANGED
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColor.royalBlue.withOpacity(0.2), // CHANGED
-                              ),
-                              child: Icon(
-                                Icons.home_repair_service_rounded,
-                                color: AppColor.royalBlue, // CHANGED
-                                size: 22,
-                              ),
-                            ),
-
-                            const SizedBox(width: 14),
-
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TextConst(
-                                  title: item["title"],
-                                  size: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                const SizedBox(height: 3),
-                                TextConst(
-                                  title: item["date"],
-                                  size: 12,
-                                  color: Colors.black54,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-
-                        TextConst(
-                          title: item["amount"],
-                          size: 17,
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+              /// ---------------- RECENT EARNINGS LIST ----------------
+              recentEarningList(earningVm),
 
               const SizedBox(height: 25),
             ],
@@ -211,8 +119,45 @@ class _ServiceTotalRevenueEarningState extends State<ServiceTotalRevenueEarning>
     );
   }
 
+  /// ---------------- TOTAL EARNING CARD ----------------
+  Widget totalEarningCard(ServicemanEarningViewModel vm) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: AppColor.royalBlue,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: AppColor.royalBlue.withOpacity(0.4),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const TextConst(
+            title: "Total Earnings",
+            size: 16,
+            color: Colors.white70,
+          ),
+          const SizedBox(height: 8),
+          TextConst(
+            title:
+            "₹${vm.servicemanEarningModel?.data?.totalEarning ?? "0"}",
+            size: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ],
+      ),
+    );
+  }
+
   /// ---------------- SUMMARY BOX ----------------
-  Widget _summaryBox(String title, String value) {
+  Widget summaryBox(String title, String value) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -220,13 +165,13 @@ class _ServiceTotalRevenueEarningState extends State<ServiceTotalRevenueEarning>
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: AppColor.royalBlue.withOpacity(0.3), // CHANGED
+            color: AppColor.royalBlue.withOpacity(0.3),
           ),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: Colors.black12,
               blurRadius: 5,
-              offset: const Offset(0, 3),
+              offset: Offset(0, 3),
             )
           ],
         ),
@@ -235,18 +180,158 @@ class _ServiceTotalRevenueEarningState extends State<ServiceTotalRevenueEarning>
             TextConst(
               title: title,
               size: 14,
-              color: Colors.black87,
               fontWeight: FontWeight.w600,
             ),
             const SizedBox(height: 6),
             TextConst(
               title: value,
               size: 16,
-              color: AppColor.royalBlue, // CHANGED
+              color: AppColor.royalBlue,
               fontWeight: FontWeight.bold,
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// ---------------- RECENT EARNING LIST ----------------
+  Widget recentEarningList(ServicemanEarningViewModel earning) {
+    if (earning.loading) {
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 3,
+        itemBuilder: (_, __) => const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: RecentEarningShimmer(),
+        ),
+      );
+    }
+
+    final list = earning.servicemanEarningModel?.data?.recentEarnings;
+
+    if (list == null || list.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 30),
+        child: Center(
+          child: Text(
+            "No recent earnings found",
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: list.length,
+      itemBuilder: (context, index) {
+        final item = list[index];
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: AppColor.royalBlue.withOpacity(0.15),
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColor.royalBlue.withOpacity(0.2),
+                    ),
+                    child: const Icon(
+                      Icons.home_repair_service_rounded,
+                      color: AppColor.royalBlue,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextConst(
+                        title: item.serviceName ?? "--",
+                        size: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      const SizedBox(height: 3),
+                      TextConst(
+                        title: item.serviceDatetime ?? "--",
+                        size: 12,
+                        color: Colors.black54,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              TextConst(
+                title: "₹${item.finalAmount ?? "0"}",
+                size: 17,
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// ---------------- SHIMMER CARD ----------------
+class RecentEarningShimmer extends StatelessWidget {
+  const RecentEarningShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: const [
+          ShimmerLoader(width: 44, height: 44, borderRadius: 22),
+          SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ShimmerLoader(width: 140, height: 14),
+                SizedBox(height: 6),
+                ShimmerLoader(width: 100, height: 12),
+              ],
+            ),
+          ),
+          ShimmerLoader(width: 50, height: 16, borderRadius: 6),
+        ],
       ),
     );
   }

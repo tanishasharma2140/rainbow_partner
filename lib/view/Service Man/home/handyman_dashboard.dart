@@ -6,10 +6,14 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/service_custom_drawer.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/accepted_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/complete_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/service_total_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/service_total_revenue_earning.dart';
+import 'package:rainbow_partner/view_model/service_man/complete_booking_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/review_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/service_info_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 
 class HandymanDashboard extends StatefulWidget {
@@ -30,25 +34,47 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_)  {
-      // SAFE Provider call
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+
+      final position = await LocationUtils.getLocation();
+
+      final lat = position.latitude.toString();
+      final lng = position.longitude.toString();
+
       context.read<ServicemanProfileViewModel>()
-          .servicemanProfileApi(context);
+          .servicemanProfileApi(lat,lng,context);
+      Provider.of<ReviewViewModel>(context,listen: false).reviewApi(context);
+      Provider.of<ServiceInfoViewModel>(context,listen: false).serviceInfoApi(context);
+
       final vm = context.read<ServicemanProfileViewModel>();
-      if (vm.servicemanProfileModel != null &&
-          vm.servicemanProfileModel!.data != null &&
-          vm.servicemanProfileModel!.data!.loginStatus == 0) {
+      if (vm.servicemanProfileModel?.data?.loginStatus == 0) {
         _showBlockedDialog();
+        return;
       }
 
-      // SAFE Animation delay
-      Future.delayed(const Duration(milliseconds: 300), () {
-        setState(() {
-          animatedValues[0] = finalValues[0];
-          animatedValues[1] = finalValues[1];
-          animatedValues[2] = finalValues[2];
-        });
+      final completeVm = context.read<CompleteBookingViewModel>();
+      await completeVm.completeBookingApi([1, 2, 3], context);
+
+      if (!mounted) return;
+
+      // ✅ FIRST run animation
+      setState(() {
+        animatedValues[0] = finalValues[0];
+        animatedValues[1] = finalValues[1];
+        animatedValues[2] = finalValues[2];
       });
+
+      // ✅ THEN navigate after animation delay
+      if (completeVm.completeBookingModel?.data?.isNotEmpty == true) {
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        if (!mounted) return;
+
+        Navigator.push(
+          context,
+          CupertinoPageRoute(builder: (_) => AcceptedBooking()),
+        );
+      }
     });
   }
 
@@ -134,37 +160,49 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     );
   }
 
+  String formatDateTime(String? dateTimeString) {
+    if (dateTimeString == null || dateTimeString.isEmpty) return "--";
+
+    try {
+      DateTime dateTime = DateTime.parse(dateTimeString).toLocal();
+
+      // 🔹 Format: 12 Sep 2025, 10:45 AM
+      return "${dateTime.day.toString().padLeft(2, '0')} "
+          "${_monthName(dateTime.month)} "
+          "${dateTime.year}, "
+          "${_formatTime(dateTime)}";
+    } catch (e) {
+      return "--";
+    }
+  }
+
+  String _monthName(int month) {
+    const months = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+    return months[month - 1];
+  }
+
+  String _formatTime(DateTime dt) {
+    int hour = dt.hour;
+    String period = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12;
+    if (hour == 0) hour = 12;
+
+    return "$hour:${dt.minute.toString().padLeft(2, '0')} $period";
+  }
+
+
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  List<Map<String, dynamic>> reviews = [
-    {
-      "name": "Leslie Alexander",
-      "date": "25-09-02",
-      "service": "Filter Replacement",
-      "rating": "3.0",
-      "image": "assets/prooo.jpg",
-    },
-    {
-      "name": "Leslie Alexander",
-      "date": "25-09-02",
-      "service": "Filter Replacement",
-      "rating": "3.0",
-      "image": "assets/prooo.jpg",
-    },
-    {
-      "name": "Leslie Alexander",
-      "date": "25-09-02",
-      "service": "Filter Replacement",
-      "rating": "3.0",
-      "image": "assets/prooo.jpg",
-    }
-  ];
 
   @override
   Widget build(BuildContext context) {
     final serviceProfileVm = Provider.of<ServicemanProfileViewModel>(context);
-
+    final reviewVm = Provider.of<ReviewViewModel>(context);
+    final serviceVm = Provider.of<ServiceInfoViewModel>(context);
     return SafeArea(
       top: false,
       child: Scaffold(
@@ -291,7 +329,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                     const SizedBox(width: 15),
                     Expanded(
                       child: statBox(
-                        value: "6",
+                        value: serviceVm.serviceInfoModel?.data?.acceptedBooking.toString()??"0",
                         title: "Accepted Bookings",
                         icon: Icons.design_services,
                         onTap: () {
@@ -309,8 +347,8 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                   children: [
                     Expanded(
                       child: statBox(
-                        value: "6",
-                        title: "Completed Booking",
+                        value: serviceVm.serviceInfoModel?.data?.completedBooking.toString()??"",
+                        title: "Booking History",
                         icon:  Icons.list_alt_outlined,
                         onTap: () {
                           Navigator.push(context,
@@ -321,7 +359,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                     const SizedBox(width: 15),
                     Expanded(
                       child: statBox(
-                        value: "₹0.00",
+                        value: "₹${serviceVm.serviceInfoModel?.data?.totalEarning??""}",
                         title: "Total Revenue",
                         icon: Icons.monetization_on_outlined,
                         onTap: () {
@@ -428,23 +466,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                 TextConst(title: "Reviews", size: 20, fontWeight: FontWeight.w600),
                 const SizedBox(height: 15),
 
-                ListView.builder(
-                  itemCount: reviews.length,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 15),
-                      child: reviewCard(
-                        name: reviews[index]["name"],
-                        date: reviews[index]["date"],
-                        service: reviews[index]["service"],
-                        rating: reviews[index]["rating"],
-                        image: reviews[index]["image"],
-                      ),
-                    );
-                  },
-                ),
+                reviewList(reviewVm)
               ],
             ),
           ),
@@ -452,27 +474,72 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       ),
     );
   }
+  Widget reviewList(ReviewViewModel reviewVm) {
+    // 🔹 SHIMMER STATE
+    if (reviewVm.loading) {
+      return ListView.builder(
+        itemCount: 3,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (context, index) {
+          return const Padding(
+            padding: EdgeInsets.only(bottom: 15),
+            child: ReviewShimmerCard(),
+          );
+        },
+      );
+    }
 
+    final reviews = reviewVm.reviewModel?.data;
 
+    // 🔹 EMPTY STATE
+    if (reviews == null || reviews.isEmpty) {
+      return const Center(
+        child: Text(
+          "No reviews found",
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
 
-  // ------------------------------------------------------------------
-  //                           REVIEW CARD
-  // ------------------------------------------------------------------
+    // 🔹 DATA STATE
+    return ListView.builder(
+      itemCount: reviews.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        final review = reviews[index];
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 15),
+          child: reviewCard(
+            name: review.userName ?? "Anonymous",
+            date: formatDateTime(review.createdAt),
+            service: review.serviceName ?? "--",
+            rating: review.rating?.toString() ?? "0",
+            image: review.image,
+          ),
+        );
+      },
+    );
+  }
+  
   Widget reviewCard({
     required String name,
     required String date,
     required String service,
     required String rating,
-    required String image,
+    String? image,
   }) {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColor.royalBlue,width: 0.4),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade300,
+            color: AppColor.royalBlue.withAlpha(40),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -481,7 +548,14 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(radius: 28, backgroundImage: AssetImage(image)),
+          CircleAvatar(
+            radius: 28,
+            backgroundImage:
+            image != null && image.isNotEmpty ? NetworkImage(image) : null,
+            child: image == null || image.isEmpty
+                ? const Icon(Icons.person, size: 28)
+                : null,
+          ),
           const SizedBox(width: 12),
 
           Expanded(
@@ -491,32 +565,42 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                 Row(
                   children: [
                     Expanded(
-                        child: TextConst(
-                            title: name,
-                            fontWeight: FontWeight.w600,
-                            size: 16)),
+                      child: TextConst(
+                        title: name,
+                        fontWeight: FontWeight.w600,
+                        size: 16,
+                      ),
+                    ),
 
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 5),
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                       decoration: BoxDecoration(
                         color: Colors.yellow.shade100,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.star, color: Colors.amber, size: 18),
-                          SizedBox(width: 4),
-                          TextConst(title: rating, fontWeight: FontWeight.w600),
+                          const Icon(Icons.star,
+                              color: Colors.amber, size: 18),
+                          const SizedBox(width: 4),
+                          TextConst(
+                            title: rating,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
 
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 TextConst(title: date, size: 13, color: Colors.grey),
-                TextConst(title: "Service: $service", size: 13, color: Colors.grey),
+                TextConst(
+                  title: "Service: $service",
+                  size: 13,
+                  color: Colors.grey,
+                ),
               ],
             ),
           ),
@@ -524,6 +608,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       ),
     );
   }
+
 
   Widget dashboardShimmer() {
     return SingleChildScrollView(
@@ -674,4 +759,53 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
   }
 
 
+}
+
+class ReviewShimmerCard extends StatelessWidget {
+  const ReviewShimmerCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const ShimmerLoader(
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+          ),
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                ShimmerLoader(width: double.infinity, height: 14),
+                SizedBox(height: 8),
+                ShimmerLoader(width: 120, height: 12),
+                SizedBox(height: 6),
+                ShimmerLoader(width: 160, height: 12),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 8),
+          const ShimmerLoader(width: 40, height: 20, borderRadius: 6),
+        ],
+      ),
+    );
+  }
 }
