@@ -55,6 +55,11 @@ class _ServiceBankHistoryState extends State<ServiceBankHistory> {
       appBar: AppBar(
         backgroundColor: AppColor.royalBlue,
         elevation: 0,
+        leading: GestureDetector(
+            onTap: (){
+              Navigator.pop(context);
+            },
+            child: Icon(Icons.arrow_back,color: AppColor.white,)),
         title: const TextConst(
           title: "Bank Details",
           color: Colors.white,

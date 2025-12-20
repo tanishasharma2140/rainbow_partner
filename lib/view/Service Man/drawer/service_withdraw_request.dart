@@ -5,6 +5,7 @@ import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view_model/service_man/service_get_bank_detail_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/withdraw_request_view_model.dart';
 
@@ -19,9 +20,24 @@ class _ServiceWithdrawRequestState extends State<ServiceWithdrawRequest> {
   final TextEditingController amountController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ServiceGetBankDetailViewModel>(
+        context,
+        listen: false,
+      ).serviceBankDetailApi(context);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final profile = Provider.of<ServicemanProfileViewModel>(context);
-    final withdrawRequest = Provider.of<WithdrawRequestViewModel>(context);
+    final withdrawVm = Provider.of<WithdrawRequestViewModel>(context);
+    final bankVm = Provider.of<ServiceGetBankDetailViewModel>(context);
+
+    final bankData = bankVm.serviceBankDetailModel?.bankDetails;
+
     return SafeArea(
       top: false,
       bottom: true,
@@ -34,18 +50,19 @@ class _ServiceWithdrawRequestState extends State<ServiceWithdrawRequest> {
             appBar: AppBar(
               backgroundColor: AppColor.royalBlue,
               elevation: 0,
-              titleSpacing: 0,
               automaticallyImplyLeading: false,
+              titleSpacing: 0,
               title: Row(
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
-                  TextConst(
-                      title:
-                      "Withdraw Request",
-                      color: Colors.white, size: 20, fontWeight: FontWeight.w600
+                  const TextConst(
+                    title: "Withdraw Request",
+                    color: Colors.white,
+                    size: 20,
+                    fontWeight: FontWeight.w600,
                   ),
                 ],
               ),
@@ -57,63 +74,143 @@ class _ServiceWithdrawRequestState extends State<ServiceWithdrawRequest> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ---------------- BALANCE ROW ----------------
+                  // ---------------- BALANCE ----------------
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children:  [
-                      TextConst(
-                        title:
-                        "Available Balance",
+                    children: [
+                      const TextConst(
+                        title: "Available Balance",
                         size: 16,
                         color: Colors.grey,
                       ),
                       TextConst(
                         title:
-                        "₹${profile.servicemanProfileModel?.data?.wallet??"0"}",
+                        "₹${profile.servicemanProfileModel?.data?.wallet ?? "0"}",
                         size: 18,
                         color: AppColor.royalBlue,
                         fontWeight: FontWeight.bold,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 30),
-                  TextConst(
-                    title:
-                    "Enter Amount",
-                    size: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 25),
 
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: AppColor.whiteDark,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child:  TextField(
-                      controller: amountController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: 'Enter Amount',
-                        border: InputBorder.none,
+                  // ---------------- BANK DETAIL ----------------
+                  if (bankData != null) ...[
+                    Container(
+                      width: Sizes.screenWidth,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColor.whiteDark,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppColor.royalBlue.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const TextConst(
+                            title: "Bank Details",
+                            fontWeight: FontWeight.w600,
+                            size: 16,
+                          ),
+                          const SizedBox(height: 10),
+                          TextConst(
+                            title:
+                            "Account Holder: ${bankData.accountHolderName ?? "--"}",
+                          ),
+                          TextConst(
+                            title:
+                            "Account Number: ${bankData.accountNumber ?? "--"}",
+                          ),
+                          TextConst(
+                            title: "IFSC Code: ${bankData.ifscCode ?? "--"}",
+                          ),
+                          TextConst(
+                            title:
+                            "Bank Name: ${bankData.bankName ?? "--"}",
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  SizedBox(height: 25,),
+                    const SizedBox(height: 20),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.red.withOpacity(0.4),
+                        ),
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.red,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: TextConst(
+                              title:
+                              "Please add bank details before withdrawing",
+                              color: Colors.red,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
 
-                  CustomButton(
+                  if (bankData != null) ...[
+                    const TextConst(
+                      title: "Enter Amount",
+                      size: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    const SizedBox(height: 10),
+
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: AppColor.whiteDark,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: TextField(
+                        controller: amountController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          hintText: 'Enter Amount',
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 25),
+
+                    // ---------------- WITHDRAW BUTTON ----------------
+                    CustomButton(
                       textColor: AppColor.white,
                       bgColor: AppColor.royalBlue,
-                      title: "Withdraw", onTap: (){
-                        withdrawRequest.withdrawRequestApi(amountController.text, context);
-                  }),
+                      title: "Withdraw",
+                      onTap: () {
+                        withdrawVm.withdrawRequestApi(
+                          amountController.text,
+                          context,
+                        );
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),
           ),
-          if (withdrawRequest.loading)
+
+          // ---------------- LOADER ----------------
+          if (withdrawVm.loading)
             Container(
               color: Colors.black54,
               child: Center(
@@ -123,7 +220,7 @@ class _ServiceWithdrawRequestState extends State<ServiceWithdrawRequest> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(28),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         color: Colors.black26,
                         blurRadius: 10,
@@ -141,7 +238,6 @@ class _ServiceWithdrawRequestState extends State<ServiceWithdrawRequest> {
                 ),
               ),
             ),
-
         ],
       ),
     );

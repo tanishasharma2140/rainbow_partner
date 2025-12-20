@@ -10,6 +10,16 @@ import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_register_five_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_register_four_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_register_one_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_register_six_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_register_three_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_register_two_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/vehicle_colors_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/vehicle_model_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/vehicle_view_model.dart';
 import 'package:rainbow_partner/view_model/device_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/accept_order_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/add_bank_detail_view_model.dart';
@@ -31,6 +41,7 @@ import 'package:rainbow_partner/view_model/service_man/serviceman_earning_view_m
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_register_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/transaction_history_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/vehicle_brand_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/withdraw_request_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 import 'firebase_options.dart';
@@ -121,6 +132,19 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> ReviewViewModel()),
           ChangeNotifierProvider(create: (context)=> ServicemanEarningViewModel()),
           ChangeNotifierProvider(create: (context)=> ServiceInfoViewModel()),
+
+          /// cab Driver
+          ChangeNotifierProvider(create: (context)=> VehicleViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverRegisterOneViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverRegisterTwoViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverRegisterThreeViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverRegisterFourViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverRegisterFiveViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverRegisterSixViewModel()),
+          ChangeNotifierProvider(create: (context)=> VehicleBrandViewModel()),
+          ChangeNotifierProvider(create: (context)=> VehicleModelViewModel()),
+          ChangeNotifierProvider(create: (context)=> VehicleColorsViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverProfileViewModel()),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

@@ -24,7 +24,14 @@ class ApiUrl {
   static const String servicemanEarningUrl ="${baseUrl}serviceman-earnings";
   static const String serviceInfoUrl ="${baseUrl}serviceman-service-info";
 
+  /// CabDriver
 
+  static const String vehiclesUrl ="${baseUrl}vehicles";
+  static const String driverRegisterUrl ="${baseUrl}driver_register";
+  static const String getBrandUrl ="${baseUrl}get-brand";
+  static const String getVehicleModelUrl ="${baseUrl}get-model";
+  static const String vehicleColorsUrl ="${baseUrl}colors";
+  static const String driverProfileUrl ="${baseUrl}driver_profile";
 
 
 

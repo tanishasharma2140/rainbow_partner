@@ -1,23 +1,31 @@
 class AuthModel {
-  bool? success;
   String? message;
+  String? role;
   int? servicemanId;
+  int? platformType;
   dynamic errors;
 
-  AuthModel({this.success, this.message, this.servicemanId, this.errors});
+  AuthModel(
+      {this.message,
+        this.role,
+        this.servicemanId,
+        this.platformType,
+        this.errors});
 
   AuthModel.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
     message = json['message'];
+    role = json['role'];
     servicemanId = json['serviceman_id'];
+    platformType = json['platform_type'];
     errors = json['errors'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['success'] = success;
     data['message'] = message;
+    data['role'] = role;
     data['serviceman_id'] = servicemanId;
+    data['platform_type'] = platformType;
     data['errors'] = errors;
     return data;
   }

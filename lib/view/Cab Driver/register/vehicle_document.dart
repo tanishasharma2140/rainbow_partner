@@ -1,15 +1,17 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
-
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
+import 'package:rainbow_partner/res/gradient_circle_pro.dart';
+import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
-import 'package:rainbow_partner/view/Cab%20Driver/register/popper_screen.dart';
+import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_register_six_view_model.dart';
 
 class VehicleDocument extends StatefulWidget {
   const VehicleDocument({super.key});
@@ -85,7 +87,10 @@ class _VehicleDocumentState extends State<VehicleDocument> {
             children: [
               /// PDF PICK
               ListTile(
-                leading: const Icon(Icons.picture_as_pdf, color: AppColor.royalBlue),
+                leading: const Icon(
+                  Icons.picture_as_pdf,
+                  color: AppColor.royalBlue,
+                ),
                 title: const Text("Upload PDF Document"),
                 onTap: () {
                   Navigator.pop(context);
@@ -95,7 +100,10 @@ class _VehicleDocumentState extends State<VehicleDocument> {
 
               /// GALLERY IMAGE
               ListTile(
-                leading: const Icon(Icons.photo_library, color: AppColor.royalBlue),
+                leading: const Icon(
+                  Icons.photo_library,
+                  color: AppColor.royalBlue,
+                ),
                 title: const Text("Choose From Gallery"),
                 onTap: () {
                   Navigator.pop(context);
@@ -105,7 +113,10 @@ class _VehicleDocumentState extends State<VehicleDocument> {
 
               /// CAMERA IMAGE
               ListTile(
-                leading: const Icon(Icons.camera_alt, color: AppColor.royalBlue),
+                leading: const Icon(
+                  Icons.camera_alt,
+                  color: AppColor.royalBlue,
+                ),
                 title: const Text("Take a Photo"),
                 onTap: () {
                   Navigator.pop(context);
@@ -147,9 +158,9 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                     borderRadius: BorderRadius.circular(20),
                     image: file != null && !isPDF
                         ? DecorationImage(
-                      image: FileImage(file),
-                      fit: BoxFit.cover,
-                    )
+                            image: FileImage(file),
+                            fit: BoxFit.cover,
+                          )
                         : null,
                   ),
 
@@ -157,9 +168,12 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                       ? const Center(child: Icon(Icons.add, size: 35))
                       : isPDF
                       ? const Center(
-                    child: Icon(Icons.picture_as_pdf,
-                        size: 50, color: Colors.red),
-                  )
+                          child: Icon(
+                            Icons.picture_as_pdf,
+                            size: 50,
+                            color: Colors.red,
+                          ),
+                        )
                       : null,
                 ),
 
@@ -204,8 +218,11 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                           color: Colors.red,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.close,
-                            color: Colors.white, size: 18),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ),
@@ -226,107 +243,171 @@ class _VehicleDocumentState extends State<VehicleDocument> {
     );
   }
 
+  File? get vehiclePermitA => documentFiles["Vehicle permit -\npart A"];
+
+  File? get vehiclePermitB => documentFiles["Vehicle permit -\npart B"];
+
+  File? get vehicleRegistrationFront =>
+      documentFiles["Vehicle registration..."];
+
+  File? get vehicleRegistrationBack =>
+      documentFiles["Back side of\nregistration..."];
+
   // ---------------------------
   // BUILD
   // ---------------------------
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: ConstantAppbar(
-          onBack: () => Navigator.pop(context),
-          onClose: () => Navigator.pop(context),
-        ),
+    final driverRegisterSixVm = Provider.of<DriverRegisterSixViewModel>(
+      context,
+    );
+    return Stack(
+      children: [
+        SafeArea(
+          top: false,
+          bottom: true,
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            appBar: ConstantAppbar(
+              onBack: () => Navigator.pop(context),
+              onClose: () => Navigator.pop(context),
+            ),
 
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 15),
-
-              const TextConst(
-                title: "Vehicle documents",
-                size: 25,
-                fontWeight: FontWeight.w700,
-              ),
-
-              const SizedBox(height: 25),
-
-              Wrap(
-                spacing: 20,
-                runSpacing: 25,
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  uploadBox("Vehicle permit -\npart A"),
-                  uploadBox("Vehicle permit -\npart B"),
-                  uploadBox("Vehicle registration..."),
-                  uploadBox("Back side of\nregistration...", optional: true),
-                ],
-              ),
+                  const SizedBox(height: 15),
 
-              const Spacer(),
-
-              /// BOTTOM BAR
-              Row(
-                children: [
                   const TextConst(
-                    title: "6 of 6",
-                    size: 18,
-                    fontWeight: FontWeight.w600,
+                    title: "Vehicle documents",
+                    size: 25,
+                    fontWeight: FontWeight.w700,
                   ),
 
-                  const SizedBox(width: 12),
+                  const SizedBox(height: 25),
 
-                  Expanded(
-                    child: Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(12),
+                  Wrap(
+                    spacing: 20,
+                    runSpacing: 25,
+                    children: [
+                      uploadBox("Vehicle permit -\npart A"),
+                      uploadBox("Vehicle permit -\npart B"),
+                      uploadBox("Vehicle registration..."),
+                      uploadBox(
+                        "Back side of\nregistration...",
+                        optional: true,
                       ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppColor.royalBlue,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
+                    ],
+                  ),
+
+                  const Spacer(),
+
+                  /// BOTTOM BAR
+                  Row(
+                    children: [
+                      const TextConst(
+                        title: "6 of 6",
+                        size: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        child: Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: AppColor.royalBlue,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+
+                      const SizedBox(width: 16),
+
+                      SizedBox(
+                        height: 50,
+                        width: 110,
+                        child: CustomButton(
+                          title: "Next",
+                          bgColor: AppColor.royalBlue,
+                          textColor: Colors.white,
+                          onTap: () {
+                            if (vehiclePermitA == null ||
+                                vehiclePermitB == null ||
+                                vehicleRegistrationFront == null) {
+                              Utils.showErrorMessage(
+                                context,
+                                "Please upload all required vehicle documents",
+                              );
+                              return;
+                            }
+
+                            driverRegisterSixVm.driverRegisterSixApi(
+                              vehiclePermitA: vehiclePermitA!,
+                              vehiclePermitB: vehiclePermitB!,
+                              vehicleRegistrationFront:
+                                  vehicleRegistrationFront!,
+                              vehicleRegistrationBack:
+                                  vehicleRegistrationBack!, // optional
+                              vehicleInfoStatus: "1",
+                              context: context,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
 
-                  const SizedBox(width: 16),
-
-                  SizedBox(
-                    height: 50,
-                    width: 110,
-                    child: CustomButton(
-                      title: "Next",
-                      bgColor: AppColor.royalBlue,
-                      textColor: Colors.white,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(builder: (_) => const PopperScreen()),
-                        );
-                      },
-                    ),
-                  ),
+                  const SizedBox(height: 15),
                 ],
               ),
-
-              const SizedBox(height: 15),
-            ],
+            ),
           ),
         ),
-      ),
+        if (driverRegisterSixVm.loading)
+          Container(
+            color: Colors.black54,
+            child: Center(
+              child: Container(
+                height: Sizes.screenHeight * 0.13,
+                width: Sizes.screenWidth * 0.28,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: GradientCirPro(
+                    strokeWidth: 6,
+                    size: 70,
+                    gradient: AppColor.circularIndicator,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

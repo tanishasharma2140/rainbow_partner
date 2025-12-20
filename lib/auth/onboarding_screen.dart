@@ -73,7 +73,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 "Drive customers safely with real-time navigation and trip updates.",
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> ChooseVehicle(
-                    profileId: 1,
+                    mobileNumber: mobileNumber,
+                    profileId: 2,
                   )));
                 },
               ),
@@ -88,7 +89,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Navigator.push(
                     context,
                     CupertinoPageRoute(
-                      builder: (context)=> RegisterScreen(mobileNumber: mobileNumber, profileId: 2,),
+                      builder: (context)=> RegisterScreen(mobileNumber: mobileNumber, profileId: 1,),
                     ),
                   );             },
               ),

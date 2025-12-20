@@ -2,13 +2,18 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
+import 'package:rainbow_partner/res/gradient_circle_pro.dart';
+import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
+import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/register/aadhaar_info.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_register_two_view_model.dart';
 
 class DrivingLicense extends StatefulWidget {
   const DrivingLicense({super.key});
@@ -18,7 +23,6 @@ class DrivingLicense extends StatefulWidget {
 }
 
 class _DrivingLicenseState extends State<DrivingLicense> {
-
   File? licenseFront;
   File? licenseBack;
 
@@ -102,9 +106,9 @@ class _DrivingLicenseState extends State<DrivingLicense> {
                     borderRadius: BorderRadius.circular(20),
                     image: image != null
                         ? DecorationImage(
-                      image: FileImage(image),
-                      fit: BoxFit.cover,
-                    )
+                            image: FileImage(image),
+                            fit: BoxFit.cover,
+                          )
                         : null,
                   ),
                   child: image == null
@@ -134,7 +138,11 @@ class _DrivingLicenseState extends State<DrivingLicense> {
                         color: Colors.red,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.close, size: 18, color: Colors.white),
+                      child: const Icon(
+                        Icons.close,
+                        size: 18,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -155,8 +163,10 @@ class _DrivingLicenseState extends State<DrivingLicense> {
     );
   }
 
-
-  Widget _textField({required String hint, required TextEditingController controller}) {
+  Widget _textField({
+    required String hint,
+    required TextEditingController controller,
+  }) {
     return Container(
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -172,7 +182,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
         decoration: InputDecoration(
           hintText: hint,
           border: InputBorder.none,
-          hintStyle: TextStyle(fontFamily: AppFonts.kanitReg)
+          hintStyle: TextStyle(fontFamily: AppFonts.kanitReg),
         ),
         onTap: hint == "Validity date"
             ? () async {
@@ -182,10 +192,16 @@ class _DrivingLicenseState extends State<DrivingLicense> {
             lastDate: DateTime.now().add(const Duration(days: 3650)),
             initialDate: DateTime.now(),
           );
+
           if (picked != null) {
-            controller.text = "${picked.day}/${picked.month}/${picked.year}";
+            final String year = picked.year.toString();
+            final String month = picked.month.toString().padLeft(2, '0');
+            final String day = picked.day.toString().padLeft(2, '0');
+
+            controller.text = "$year-$month-$day";
           }
         }
+
             : null,
       ),
     );
@@ -193,117 +209,179 @@ class _DrivingLicenseState extends State<DrivingLicense> {
 
   @override
   Widget build(BuildContext context) {
+    final driverRegisterTwoVm = Provider.of<DriverRegisterTwoViewModel>(
+      context,
+    );
     return SafeArea(
       top: false,
       bottom: true,
-      child: Scaffold(
-        backgroundColor: AppColor.white,
-        appBar: ConstantAppbar(
-          onBack: () => Navigator.pop(context),
-          onClose: () => Navigator.pop(context),
-        ),
+      child: Stack(
+        children: [
+          Scaffold(
+            backgroundColor: AppColor.white,
+            appBar: ConstantAppbar(
+              onBack: () => Navigator.pop(context),
+              onClose: () => Navigator.pop(context),
+            ),
 
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              SizedBox(height: topPadding),
-
-              TextConst(
-                title: "Driver license",
-                size: 25,
-                fontWeight: FontWeight.w700,
-              ),
-
-              const SizedBox(height: 25),
-
-              /// 2 IMAGE PICKERS ONLY
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _imageBox(
-                    image: licenseFront,
-                    label: "Driver license\n(front)",
-                    onTap: () => showPicker((file) => licenseFront = file),
-                  ),
+                  SizedBox(height: topPadding),
 
-                  const SizedBox(width: 35),
-
-                  _imageBox(
-                    image: licenseBack,
-                    label: "Driver license\n(back side)",
-                    onTap: () => showPicker((file) => licenseBack = file),
-                  ),
-                ],
-              ),
-
-              /// Text Fields
-              _textField(
-                hint: "Driver license number",
-                controller: licenseNumberController,
-              ),
-
-              _textField(
-                hint: "Validity date",
-                controller: validityDateController,
-              ),
-
-              const Spacer(),
-
-              /// FOOTER — same as INDrive
-              Row(
-                children: [
                   TextConst(
-                    title: "2 of 6",
-                    size: 18,
-                    fontWeight: FontWeight.w600,
+                    title: "Driver license",
+                    size: 25,
+                    fontWeight: FontWeight.w700,
                   ),
-                  const SizedBox(width: 12),
 
-                  Expanded(
-                    child: Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 25),
+
+                  /// 2 IMAGE PICKERS ONLY
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      _imageBox(
+                        image: licenseFront,
+                        label: "Driver license\n(front)",
+                        onTap: () => showPicker((file) => licenseFront = file),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 38,
-                            decoration: BoxDecoration(
-                              color: AppColor.royalBlue,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+
+                      const SizedBox(width: 35),
+
+                      _imageBox(
+                        image: licenseBack,
+                        label: "Driver license\n(back side)",
+                        onTap: () => showPicker((file) => licenseBack = file),
+                      ),
+                    ],
+                  ),
+
+                  /// Text Fields
+                  _textField(
+                    hint: "Driver license number",
+                    controller: licenseNumberController,
+                  ),
+
+                  _textField(
+                    hint: "Validity date",
+                    controller: validityDateController,
+                  ),
+
+                  const Spacer(),
+
+                  /// FOOTER — same as INDrive
+                  Row(
+                    children: [
+                      TextConst(
+                        title: "2 of 6",
+                        size: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        child: Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 38,
+                                decoration: BoxDecoration(
+                                  color: AppColor.royalBlue,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+
+                      const SizedBox(width: 16),
+
+                      SizedBox(
+                        height: 50,
+                        width: 110,
+                        child: CustomButton(
+                          bgColor: AppColor.royalBlue,
+                          textColor: AppColor.white,
+                          title: "Next",
+                          onTap: () {
+                            if (licenseFront == null) {
+                              Utils.showErrorMessage(context, "Please upload license front image");
+                              return;
+                            }
+
+                            if (licenseBack == null) {
+                              Utils.showErrorMessage(context, "Please upload license back image");
+                              return;
+                            }
+
+                            if (licenseNumberController.text.trim().isEmpty) {
+                              Utils.showErrorMessage(context, "Please enter license number");
+                              return;
+                            }
+
+                            if (validityDateController.text.trim().isEmpty) {
+                              Utils.showErrorMessage(context, "Please select validity date");
+                              return;
+                            }
+
+                            driverRegisterTwoVm.driverRegisterTwoApi(
+                              drivingLicenceFront: licenseFront!,
+                              drivingLicenceBack: licenseBack!,
+                              driverLicenceStatus: "1",
+                              driverLicenceNumber: licenseNumberController.text,
+                              licenceValidityDate: validityDateController.text,
+                              context: context,
+                            );
+                            // Navigator.push(context, CupertinoPageRoute(builder: (context)=>AadhaarInfo()));
+                          },
+                        ),
+                      ),
+                    ],
                   ),
 
-                  const SizedBox(width: 16),
-
-                  SizedBox(
-                    height: 50,
-                    width: 110,
-                    child: CustomButton(
-                      bgColor: AppColor.royalBlue,
-                      textColor: AppColor.white,
-                      title: "Next",
-                      onTap: () {
-                        Navigator.push(context, CupertinoPageRoute(builder: (context)=>AadhaarInfo()));
-                      },
-                    ),
-                  ),
+                  const SizedBox(height: 15),
                 ],
               ),
-
-              const SizedBox(height: 15),
-            ],
+            ),
           ),
-        ),
+          if (driverRegisterTwoVm.loading)
+            Container(
+              color: Colors.black54,
+              child: Center(
+                child: Container(
+                  height: Sizes.screenHeight * 0.13,
+                  width: Sizes.screenWidth * 0.28,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: GradientCirPro(
+                      strokeWidth: 6,
+                      size: 70,
+                      gradient: AppColor.circularIndicator,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

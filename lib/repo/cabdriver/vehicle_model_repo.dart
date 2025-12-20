@@ -2,20 +2,19 @@ import 'package:flutter/foundation.dart';
 import 'package:rainbow_partner/helper/network/network_api_services.dart';
 import 'package:rainbow_partner/res/api_url.dart';
 
-class VehicleRepo {
 
+class VehicleModelRepo {
   final NetworkApiServices _apiServices = NetworkApiServices();
 
-  Future<Map<String, dynamic>> vehicleApi(dynamic data) async {
-    try {
-      final response = await _apiServices.getGetApiResponse(
-        ApiUrl.vehiclesUrl,
-      );
-      return response;
 
+  Future<dynamic> vehicleModelApi(dynamic data) async {
+    try {
+      dynamic response =
+      await _apiServices.getPostApiResponse(ApiUrl.getVehicleModelUrl, data);
+      return response;
     } catch (e) {
       if (kDebugMode) {
-        print("Repo Error in vehicleApi → $e");
+        print('Error occurred during vehicleModelApi: $e');
       }
       rethrow;
     }

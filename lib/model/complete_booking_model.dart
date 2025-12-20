@@ -61,6 +61,7 @@ class Data {
   dynamic description;
   dynamic serviceImage;
   dynamic servicemanProfilePhoto;
+  dynamic distance;
 
   Data(
       {this.id,
@@ -92,7 +93,9 @@ class Data {
         this.orderOtp,
         this.description,
         this.serviceImage,
-        this.servicemanProfilePhoto});
+        this.servicemanProfilePhoto,
+        this.distance,
+      });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -125,6 +128,7 @@ class Data {
     description = json['description'];
     serviceImage = json['service_image'];
     servicemanProfilePhoto = json['serviceman_profile_photo'];
+    distance = json['distance'];
   }
 
   Map<String, dynamic> toJson() {
@@ -159,6 +163,7 @@ class Data {
     data['description'] = description;
     data['service_image'] = serviceImage;
     data['serviceman_profile_photo'] = servicemanProfilePhoto;
+    data['distance'] = distance;
     return data;
   }
 }

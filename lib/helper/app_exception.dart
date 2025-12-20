@@ -16,7 +16,7 @@ class FetchDataException extends AppException {
 }
 
 class BadRequestException extends AppException {
-  BadRequestException([String? massage]) : super(massage, 'Invalid Request');
+  BadRequestException([String? massage]) : super(massage, '');
 }
 
 class UnauthorisedException extends AppException {

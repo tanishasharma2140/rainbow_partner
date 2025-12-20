@@ -5,6 +5,7 @@ import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/model/auth_model.dart';
 import 'package:rainbow_partner/repo/auth_repo.dart';
 import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/home/document_verified.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
 import 'package:rainbow_partner/view_model/device_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
@@ -70,6 +71,7 @@ class AuthViewModel with ChangeNotifier {
         final authModel = AuthModel.fromJson(body);
         UserViewModel userViewModel = UserViewModel();
         int role = await userViewModel.getRole() ?? 0;
+         // int platformType = await userViewModel.getPlatformType();
 
         final userPref = Provider.of<UserViewModel>(context, listen: false);
         userPref.saveUser(authModel.servicemanId.toString(),role);
@@ -86,9 +88,7 @@ class AuthViewModel with ChangeNotifier {
         );
       }
 
-      // ---------------- FAILURE STATUS CODE ----------------
       else {
-        // User not found OR other server error → GO TO REGISTER
         Navigator.pushNamed(
           context,
           RoutesName.onboardingScreen,
@@ -158,31 +158,62 @@ class AuthViewModel with ChangeNotifier {
   //                           VERIFY OTP API
   // =======================================================================
 
-  Future<void> verifyOtpApi(dynamic phone, dynamic otp, dynamic userId, BuildContext context) async {
+  Future<void> verifyOtpApi(
+      dynamic phone,
+      dynamic otp,
+      dynamic userId,
+      BuildContext context,
+      ) async {
     setVerifyingOtp(true);
 
     try {
       final response = await _authRepo.verifyOtpApi(phone, otp);
       setVerifyingOtp(false);
 
-      // FIX: Read the actual body
       final Map<String, dynamic> body = response["body"] ?? {};
 
       final String errorCode = body['error']?.toString() ?? "";
       final String msg = body['msg'] ?? "Error verifying OTP";
 
       if (errorCode == "200") {
-        // Save User ID
+
+        // ✅ AuthModel se data lo
+        final authModel = AuthModel.fromJson(body);
+        final int platformType = authModel.platformType ?? 0;
+
+        print("platformType = $platformType");
+
         final userVM = Provider.of<UserViewModel>(context, listen: false);
-        userVM.saveUser(userId.toString(),2);
 
-        Utils.showSuccessMessage(context, msg);
+        // ================= PLATFORM BASED NAVIGATION =================
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => HandymanDashboard()),
-              (route) => false,
-        );
+        if (platformType == 1) {
+          // 🧑‍🔧 HANDYMAN
+          userVM.saveUser(userId.toString(), 2);
+
+          Utils.showSuccessMessage(context, msg);
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const HandymanDashboard()),
+                (route) => false,
+          );
+        }
+        else if (platformType == 2) {
+          // 🚕 CAB DRIVER
+          userVM.saveUser(userId.toString(), 1);
+
+          Utils.showSuccessMessage(context, msg);
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const DocumentVerified()),
+                (route) => false,
+          );
+        }
+        else {
+          Utils.showErrorMessage(context, "Invalid platform type");
+        }
       }
       else {
         Utils.showErrorMessage(context, msg);
@@ -193,6 +224,8 @@ class AuthViewModel with ChangeNotifier {
       Utils.showErrorMessage(context, "OTP verification failed. Try again.");
     }
   }
+
+
 
 
 }

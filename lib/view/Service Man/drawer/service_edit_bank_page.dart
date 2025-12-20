@@ -48,7 +48,11 @@ class _ServiceEditBankPageState extends State<ServiceEditBankPage> {
       backgroundColor: AppColor.whiteDark,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        leading: Icon(Icons.arrow_back,color: AppColor.white,),
+        leading: GestureDetector(
+            onTap: (){
+              Navigator.pop(context);
+            },
+            child: Icon(Icons.arrow_back,color: AppColor.white,)),
         backgroundColor: AppColor.royalBlue,
         elevation: 0,
         title: const TextConst(

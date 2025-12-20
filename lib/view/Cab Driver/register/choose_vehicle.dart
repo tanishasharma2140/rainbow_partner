@@ -1,15 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/register/personal_information.dart';
+import 'package:rainbow_partner/view_model/cabdriver/vehicle_view_model.dart';
 
 class ChooseVehicle extends StatefulWidget {
   final int profileId;
-  const ChooseVehicle({super.key, required this.profileId});
+  final String mobileNumber;
+  const ChooseVehicle({super.key, required this.profileId, required this.mobileNumber});
 
   @override
   State<ChooseVehicle> createState() => _ChooseVehicleState();
@@ -17,7 +20,16 @@ class ChooseVehicle extends StatefulWidget {
 
 class _ChooseVehicleState extends State<ChooseVehicle> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<VehicleViewModel>(context, listen: false).vehicleApi(context);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final vehicleVm = Provider.of<VehicleViewModel>(context);
     return SafeArea(
       top: false,
       bottom: true,
@@ -34,56 +46,62 @@ class _ChooseVehicleState extends State<ChooseVehicle> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               const SizedBox(height: 8),
-               GestureDetector(
-                   onTap: (){
-                     Navigator.pop(context);
-                   },
-                   child: Icon(Icons.arrow_back,color: AppColor.black,)),
-               SizedBox(height: Sizes.screenHeight*0.02),
-               TextConst(
-                 title:
-                "Choose your vehicle",
-                 color: Colors.black,
-                 size: 25,
-                 fontWeight: FontWeight.w700,
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Icon(Icons.arrow_back, color: AppColor.black),
+              ),
+              SizedBox(height: Sizes.screenHeight * 0.02),
+              TextConst(
+                title: "Choose your vehicle",
+                color: Colors.black,
+                size: 25,
+                fontWeight: FontWeight.w700,
               ),
 
               const SizedBox(height: 30),
 
               /// Vehicle Item 1
-              _vehicleTile(
-                image: "assets/car.png",
-                title: "Car",
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=>PersonalInformation()));
-                },
-              ),
+              if (vehicleVm.loading)
+                const Center(child: CircularProgressIndicator())
+              else if (vehicleVm.vehicleModel?.data == null ||
+                  vehicleVm.vehicleModel!.data!.isEmpty)
+                const Center(child: Text("No vehicles found"))
+              else
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: vehicleVm.vehicleModel!.data!.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 22),
+                  itemBuilder: (context, index) {
+                    final vehicle = vehicleVm.vehicleModel!.data![index];
 
-              const SizedBox(height: 22),
+                    return _vehicleTile(
+                      image: vehicle.image ?? "",
+                      title: vehicle.name ?? "",
+                      onTap: () {
+                        context.read<VehicleViewModel>().setSelectedVehicle(
+                          vehicleId: vehicle.id!,
+                          vehicleName: vehicle.name ?? "",
+                        );
 
-              /// Vehicle Item 2
-              _vehicleTile(
-                image: "assets/motor_cycle.png",
-                title: "Motorcycle",
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=>PersonalInformation()));
-
-                },
-              ),
-
-              const SizedBox(height: 22),
-
-              /// Vehicle Item 3
-              _vehicleTile(
-                image: "assets/auto_rikshaw.png",
-                title: "Rickshaw",
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=>PersonalInformation()));
-
-                },
-              ),
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (_) => PersonalInformation(
+                              vehicleId: vehicle.id.toString(),
+                              vehicleName: vehicle.name,
+                              mobileNumber : widget.mobileNumber.toString(),
+                              profileId : widget.profileId
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
             ],
           ),
         ),
@@ -101,7 +119,6 @@ class _ChooseVehicleState extends State<ChooseVehicle> {
       onTap: onTap,
       child: Row(
         children: [
-
           /// Icon container
           Container(
             height: 60,
@@ -111,11 +128,13 @@ class _ChooseVehicleState extends State<ChooseVehicle> {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Center(
-              child: Image.asset(
+              child: Image.network(
                 image,
                 height: 40,
                 width: 40,
                 fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) =>
+                const Icon(Icons.directions_car),
               ),
             ),
           ),
@@ -123,8 +142,8 @@ class _ChooseVehicleState extends State<ChooseVehicle> {
           const SizedBox(width: 16),
 
           Expanded(
-            child: TextConst(title:
-              title,
+            child: TextConst(
+              title: title,
               size: 18,
               fontWeight: FontWeight.w500,
               color: Colors.black,
@@ -141,4 +160,5 @@ class _ChooseVehicleState extends State<ChooseVehicle> {
       ),
     );
   }
+
 }

@@ -11,12 +11,7 @@ class WithdrawRequest extends StatefulWidget {
 }
 
 class _WithdrawRequestState extends State<WithdrawRequest> {
-  String? selectedMethod;
-  List<String> methodList = [
-    "Bank Transfer",
-    "UPI",
-    "PayPal",
-  ];
+
 
   @override
   Widget build(BuildContext context) {
@@ -93,40 +88,6 @@ class _WithdrawRequestState extends State<WithdrawRequest> {
                   decoration: InputDecoration(
                     hintText: 'eg "3000"',
                     border: InputBorder.none,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // ---------------- DROPDOWN ----------------
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F3F5),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    isExpanded: true,
-                    value: selectedMethod,
-                    hint:  TextConst(
-                      title:
-                      "Choose Withdrawal Method",
-                      size: 15,
-                    ),
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 28),
-                    items: methodList.map((e) {
-                      return DropdownMenuItem(
-                        value: e,
-                        child: Text(e),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedMethod = value;
-                      });
-                    },
                   ),
                 ),
               ),

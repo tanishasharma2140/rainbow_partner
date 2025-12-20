@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:rainbow_partner/repo/cabdriver/driver_register_two_repo.dart';
+import 'package:rainbow_partner/repo/cabdriver/driver_register_four_repo.dart';
 import 'package:rainbow_partner/utils/utils.dart';
-import 'package:rainbow_partner/view/Cab%20Driver/register/aadhaar_info.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/register/vehicle_information.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
-class DriverRegisterTwoViewModel with ChangeNotifier {
-  final DriverRegisterTwoRepo _driverRegisterTwoRepo = DriverRegisterTwoRepo();
+class DriverRegisterFourViewModel with ChangeNotifier {
+  final DriverRegisterFourRepo _driverRegisterFourRepo = DriverRegisterFourRepo();
 
   bool _loading = false;
   bool get loading => _loading;
@@ -17,12 +17,12 @@ class DriverRegisterTwoViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> driverRegisterTwoApi({
-    required File drivingLicenceFront,
-    required File drivingLicenceBack,
-    required String driverLicenceStatus,
-    required String driverLicenceNumber,
-    required String licenceValidityDate,
+  Future<void> driverRegisterFourApi({
+    required File fitnessCertificate,
+    required File pollutionCertificate,
+    required File insuranceCertificate,
+    required File policeCertificate,
+    required String requiresCertificateStatus,
     required BuildContext context,
   }) async {
     setLoading(true);
@@ -30,20 +30,20 @@ class DriverRegisterTwoViewModel with ChangeNotifier {
     String? userId = await userViewModel.getUser();
 
     Map<String, String> fields = {
-      "driver_licence_status": driverLicenceStatus,
+      "required_certificates_status": requiresCertificateStatus,
       "id": userId.toString(),
-      "driver_licence_number": driverLicenceNumber,
-      "licence_validity_date": licenceValidityDate,
     };
 
     Map<String, dynamic> files = {
-      "driver_licence_front": drivingLicenceFront,
-      "driver_licence_back": drivingLicenceBack,
+      "fitness_certificate": fitnessCertificate,
+      "pollution_certificate": pollutionCertificate,
+      "insurance_certificate": insuranceCertificate,
+      "police_certificate": policeCertificate,
     };
 
     try {
       final response =
-      await _driverRegisterTwoRepo.driverRegisterTwoApi(fields, files);
+      await _driverRegisterFourRepo.driverRegisterFourApi(fields, files);
 
       final int statusCode = response["statusCode"] ?? 0;
       final Map<String, dynamic> body = response["body"] ?? {};
@@ -53,7 +53,7 @@ class DriverRegisterTwoViewModel with ChangeNotifier {
           context,
           body["message"] ?? "Submitted successfully",
         );
-        Navigator.push(context, CupertinoPageRoute(builder: (context)=> AadhaarInfo()));
+        Navigator.push(context, CupertinoPageRoute(builder: (context)=> VehicleInformation()));
       } else {
         Utils.showErrorMessage(
           context,

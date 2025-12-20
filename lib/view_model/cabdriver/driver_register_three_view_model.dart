@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:rainbow_partner/repo/cabdriver/driver_register_two_repo.dart';
+import 'package:rainbow_partner/repo/cabdriver/driver_register_three_repo.dart';
 import 'package:rainbow_partner/utils/utils.dart';
-import 'package:rainbow_partner/view/Cab%20Driver/register/aadhaar_info.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/register/required_certificate.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
-class DriverRegisterTwoViewModel with ChangeNotifier {
-  final DriverRegisterTwoRepo _driverRegisterTwoRepo = DriverRegisterTwoRepo();
+class DriverRegisterThreeViewModel with ChangeNotifier {
+  final DriverRegisterThreeRepo _driverRegisterThreeRepo = DriverRegisterThreeRepo();
 
   bool _loading = false;
   bool get loading => _loading;
@@ -17,12 +17,14 @@ class DriverRegisterTwoViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> driverRegisterTwoApi({
-    required File drivingLicenceFront,
-    required File drivingLicenceBack,
-    required String driverLicenceStatus,
-    required String driverLicenceNumber,
-    required String licenceValidityDate,
+  Future<void> driverRegisterThreeApi({
+    required File aadhaarFront,
+    required File aadhaarBack,
+    required File panCardFront,
+    required File panCardBack,
+    required String aadhaarPanStatus,
+    required String aadhaarNumber,
+    required String panCardNumber,
     required BuildContext context,
   }) async {
     setLoading(true);
@@ -30,20 +32,22 @@ class DriverRegisterTwoViewModel with ChangeNotifier {
     String? userId = await userViewModel.getUser();
 
     Map<String, String> fields = {
-      "driver_licence_status": driverLicenceStatus,
+      "aadhaar_pan_status": aadhaarPanStatus,
       "id": userId.toString(),
-      "driver_licence_number": driverLicenceNumber,
-      "licence_validity_date": licenceValidityDate,
+      "aadhaar_number": aadhaarNumber,
+      "pan_card_number": panCardNumber,
     };
 
     Map<String, dynamic> files = {
-      "driver_licence_front": drivingLicenceFront,
-      "driver_licence_back": drivingLicenceBack,
+      "aadhaar_front": aadhaarFront,
+      "aadhaar_back": aadhaarBack,
+      "pan_card_front": panCardFront,
+      "pan_card_back": panCardBack,
     };
 
     try {
       final response =
-      await _driverRegisterTwoRepo.driverRegisterTwoApi(fields, files);
+      await _driverRegisterThreeRepo.driverRegisterThreeApi(fields, files);
 
       final int statusCode = response["statusCode"] ?? 0;
       final Map<String, dynamic> body = response["body"] ?? {};
@@ -53,7 +57,7 @@ class DriverRegisterTwoViewModel with ChangeNotifier {
           context,
           body["message"] ?? "Submitted successfully",
         );
-        Navigator.push(context, CupertinoPageRoute(builder: (context)=> AadhaarInfo()));
+        Navigator.push(context, CupertinoPageRoute(builder: (context)=> RequiredCertificates()));
       } else {
         Utils.showErrorMessage(
           context,

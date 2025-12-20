@@ -1,13 +1,10 @@
-class VehicleModel {
-  bool? success;
+class VehicleBrandModel {
   String? message;
   List<Data>? data;
-  dynamic errors;
 
-  VehicleModel({this.success, this.message, this.data, this.errors});
+  VehicleBrandModel({this.message, this.data});
 
-  VehicleModel.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
+  VehicleBrandModel.fromJson(Map<String, dynamic> json) {
     message = json['message'];
     if (json['data'] != null) {
       data = <Data>[];
@@ -15,42 +12,33 @@ class VehicleModel {
         data!.add(Data.fromJson(v));
       });
     }
-    errors = json['errors'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['success'] = success;
     data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
-    data['errors'] = errors;
     return data;
   }
 }
 
 class Data {
-  dynamic id;
-  dynamic name;
-  dynamic image;
-  dynamic registerStatus;
+  int? id;
+  String? name;
 
-  Data({this.id, this.name, this.image, this.registerStatus});
+  Data({this.id, this.name});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    image = json['image'];
-    registerStatus = json['register_status'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
     data['name'] = name;
-    data['image'] = image;
-    data['register_status'] = registerStatus;
     return data;
   }
 }
