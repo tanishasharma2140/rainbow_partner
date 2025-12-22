@@ -17,6 +17,7 @@ class ServiceBankEditViewModel with ChangeNotifier {
   }
 
   Future<void> serviceBankEditApi(
+    dynamic type,
     dynamic bankName,
     dynamic accountNumber,
     dynamic reAccountNumber,
@@ -29,7 +30,7 @@ class ServiceBankEditViewModel with ChangeNotifier {
     String? userId = await userViewModel.getUser();
     Map data = {
       "user_id": userId,
-      "type": 1,
+      "type": type,
       "bank_name": bankName,
       "account_number": accountNumber,
       "re_account_number": reAccountNumber,

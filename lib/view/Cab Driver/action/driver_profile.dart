@@ -1,7 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/res/app_color.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 
 class DriverProfile extends StatefulWidget {
   const DriverProfile({super.key});
@@ -13,18 +14,6 @@ class DriverProfile extends StatefulWidget {
 class _DriverProfileState extends State<DriverProfile> {
   @override
   Widget build(BuildContext context) {
-    File? profileImg;
-    File? dlFront;
-    File? dlBack;
-    File? aadhaar;
-    File? panCard;
-
-    String name = "John";
-    String surname = "Doe";
-    String mobile = "9876543210";
-    String dob = "12/08/1999";
-    String dlNumber = "DL-45-2020-8899";
-
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
@@ -39,101 +28,186 @@ class _DriverProfileState extends State<DriverProfile> {
         elevation: 0,
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: Consumer<DriverProfileViewModel>(
+        builder: (context, vm, _) {
+          final data = vm.driverProfileModel?.data;
 
-            // ------------------ PROFILE PICTURE ------------------
-            Center(
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 60,
-                    backgroundColor: Colors.grey.shade300,
-                    backgroundImage:
-                    profileImg != null ? FileImage(profileImg!) : null,
-                    child: profileImg == null
-                        ? const Icon(Icons.person, size: 70, color: Colors.white)
-                        : null,
+          if (data == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // ---------------- PROFILE PHOTO ----------------
+                Center(
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 60,
+                        backgroundColor: Colors.grey.shade300,
+                        backgroundImage: data.profilePhoto != null &&
+                            data.profilePhoto.toString().isNotEmpty
+                            ? NetworkImage(data.profilePhoto)
+                            : null,
+                        child: data.profilePhoto == null ||
+                            data.profilePhoto.toString().isEmpty
+                            ? const Icon(Icons.person,
+                            size: 70, color: Colors.white)
+                            : null,
+                      ),
+                      const SizedBox(height: 8),
+                      const TextConst(
+                        title: "Driver Photo",
+                        size: 13,
+                        color: Colors.grey,
+                      )
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  TextConst(
-                    title: "Driver Photo",
-                    size: 13,
-                    color: Colors.grey,
-                  )
-                ],
-              ),
-            ),
+                ),
 
-            const SizedBox(height: 30),
+                const SizedBox(height: 30),
 
-            // ------------------ PERSONAL DETAILS ------------------
-            sectionTitle("Personal Details"),
-            infoTile("Name", "$name $surname"),
-            infoTile("Mobile Number", mobile),
-            infoTile("Date of Birth", dob),
+                // ---------------- PERSONAL DETAILS ----------------
+                sectionTitle("Personal Details"),
+                infoTile(
+                  "Name",
+                  [
+                    data.firstName,
+                    data.lastName,
+                  ].where((e) => e != null && e.toString().isNotEmpty).join(" "),
+                ),
+                infoTile("Mobile Number", data.mobile?.toString() ?? "--"),
+                infoTile("Date of Birth", data.dateOfBirth?.toString() ?? "--"),
 
-            const SizedBox(height: 30),
+                const SizedBox(height: 30),
 
-            // ------------------ DRIVING LICENSE ------------------
-            sectionTitle("Driving License"),
+                // ---------------- DRIVING LICENSE ----------------
+                sectionTitle("Driving License"),
+                Row(
+                  children: [
+                    Expanded(
+                        child: viewImageBox(
+                            "Front Side", data.driverLicenceFront)),
+                    const SizedBox(width: 14),
+                    Expanded(
+                        child: viewImageBox(
+                            "Back Side", data.driverLicenceBack)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                infoTile("License Number",
+                    data.driverLicenceNumber?.toString() ?? "--"),
 
-            Row(
-              children: [
-                Expanded(child: viewImageBox("Front Side", dlFront)),
-                const SizedBox(width: 14),
-                Expanded(child: viewImageBox("Back Side", dlBack)),
+                const SizedBox(height: 30),
+
+                // ---------------- AADHAAR ----------------
+                sectionTitle("Aadhaar Card"),
+                Row(
+                  children: [
+                    Expanded(
+                        child: viewImageBox(
+                            "Front Side", data.aadhaarFront)),
+                    const SizedBox(width: 14),
+                    Expanded(
+                        child:
+                        viewImageBox("Back Side", data.aadhaarBack)),
+                  ],
+                ),
+                infoTile(
+                    "Aadhaar Number", data.aadhaarNumber?.toString() ?? "--"),
+
+                const SizedBox(height: 30),
+
+                // ---------------- PAN ----------------
+                sectionTitle("PAN Card"),
+                Row(
+                  children: [
+                    Expanded(
+                        child:
+                        viewImageBox("Front Side", data.panCardFront)),
+                    const SizedBox(width: 14),
+                    Expanded(
+                        child:
+                        viewImageBox("Back Side", data.panCardBack)),
+                  ],
+                ),
+                infoTile("PAN Number",
+                    data.panCardNumber?.toString() ?? "--"),
+
+                const SizedBox(height: 30),
+
+                // ---------------- VEHICLE DETAILS ----------------
+                sectionTitle("Vehicle Details"),
+                infoTile("Vehicle Type", data.vehicleType?.toString() ?? "--"),
+                infoTile("Brand", data.brandName?.toString() ?? "--"),
+                infoTile("Model", data.modelName?.toString() ?? "--"),
+                infoTile("Color", data.vehicleColor?.toString() ?? "--"),
+                infoTile("Plate Number",
+                    data.vehiclePlateNumber?.toString() ?? "--"),
+                infoTile("Production Year",
+                    data.vehicleProductionYear?.toString() ?? "--"),
+
+                const SizedBox(height: 20),
+                viewImageBox("Vehicle Photo", data.vehiclePhoto),
+
+                const SizedBox(height: 30),
+
+                // ---------------- VEHICLE DOCUMENTS ----------------
+                sectionTitle("Vehicle Documents"),
+                Row(
+                  children: [
+                    Expanded(
+                        child: viewImageBox(
+                            "RC Front", data.vehicleRegistrationFront)),
+                    const SizedBox(width: 14),
+                    Expanded(
+                        child: viewImageBox(
+                            "RC Back", data.vehicleRegistrationBack)),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                        child: viewImageBox(
+                            "Permit Part A", data.vehiclePermitPartA)),
+                    const SizedBox(width: 14),
+                    Expanded(
+                        child: viewImageBox(
+                            "Permit Part B", data.vehiclePermitPartB)),
+                  ],
+                ),
+
+                const SizedBox(height: 30),
+
+                // ---------------- CERTIFICATES ----------------
+                sectionTitle("Certificates"),
+                viewImageBox(
+                    "Fitness Certificate", data.fitnessCertificate),
+                const SizedBox(height: 12),
+                viewImageBox(
+                    "Insurance Certificate", data.insuranceCertificate),
+                const SizedBox(height: 12),
+                viewImageBox(
+                    "Pollution Certificate", data.pollutionCertificate),
+                const SizedBox(height: 12),
+                viewImageBox(
+                    "Police Verification", data.policeCertificate),
+
+                const SizedBox(height: 40),
               ],
             ),
-
-            const SizedBox(height: 12),
-            infoTile("License Number", dlNumber),
-
-            const SizedBox(height: 30),
-
-            // ------------------ AADHAAR & PAN ------------------
-            sectionTitle("Aadhaar & PAN Card"),
-
-            Row(
-              children: [
-                Expanded(child: viewImageBox("Aadhaar", aadhaar)),
-                const SizedBox(width: 14),
-                Expanded(child: viewImageBox("PAN Card", panCard)),
-              ],
-            ),
-
-            const SizedBox(height: 30),
-
-            // ------------------ CERTIFICATES & VEHICLE INFO ------------------
-            sectionTitle("Certificates"),
-
-            optionButton(
-              title: "View Required Certificates",
-              icon: Icons.file_copy,
-              onTap: () {},
-            ),
-
-            const SizedBox(height: 12),
-
-            optionButton(
-              title: "View Vehicle Information",
-              icon: Icons.directions_car,
-              onTap: () {},
-            ),
-
-            const SizedBox(height: 30),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  // -----------------------------------------------------------
-  //                     CUSTOM WIDGETS
-  // -----------------------------------------------------------
+  // ---------------- COMMON UI (UNCHANGED) ----------------
 
   Widget sectionTitle(String title) {
     return Padding(
@@ -175,7 +249,7 @@ class _DriverProfileState extends State<DriverProfile> {
     );
   }
 
-  Widget viewImageBox(String label, File? file) {
+  Widget viewImageBox(String label, String? imageUrl) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -184,8 +258,9 @@ class _DriverProfileState extends State<DriverProfile> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            image: file != null
-                ? DecorationImage(image: FileImage(file), fit: BoxFit.cover)
+            image: imageUrl != null && imageUrl.isNotEmpty
+                ? DecorationImage(
+                image: NetworkImage(imageUrl), fit: BoxFit.cover)
                 : null,
             boxShadow: const [
               BoxShadow(
@@ -195,51 +270,16 @@ class _DriverProfileState extends State<DriverProfile> {
               )
             ],
           ),
-          child: file == null
+          child: imageUrl == null || imageUrl.isEmpty
               ? const Center(
-              child: Icon(Icons.image_not_supported,
-                  size: 35, color: Colors.grey))
+            child: Icon(Icons.image_not_supported,
+                size: 35, color: Colors.grey),
+          )
               : null,
         ),
         const SizedBox(height: 6),
-        TextConst(
-          title: label,
-          size: 13,
-        ),
+        TextConst(title: label, size: 13),
       ],
-    );
-  }
-
-  Widget optionButton({
-    required String title,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 60,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: AppColor.royalBlue),
-            const SizedBox(width: 14),
-            Expanded(
-              child: TextConst(
-                title: title,
-                size: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios,
-                size: 18, color: Colors.black45),
-          ],
-        ),
-      ),
     );
   }
 }

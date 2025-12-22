@@ -26,7 +26,7 @@ class _ServiceWithdrawRequestState extends State<ServiceWithdrawRequest> {
       Provider.of<ServiceGetBankDetailViewModel>(
         context,
         listen: false,
-      ).serviceBankDetailApi(context);
+      ).serviceBankDetailApi(1,context);
     });
   }
 

@@ -427,9 +427,12 @@ class _PersonalInformationState extends State<PersonalInformation> {
     );
 
     if (pickedDate != null) {
-      dobController.text =
-          "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+      final String formattedDate =
+          "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+
+      dobController.text = formattedDate;
       setState(() {});
     }
   }
+
 }

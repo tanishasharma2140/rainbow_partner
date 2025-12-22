@@ -8,16 +8,16 @@ import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view_model/service_man/service_bank_edit_view_model.dart';
 
-class ServiceEditBankPage extends StatefulWidget {
+class CabEditBankPage extends StatefulWidget {
   final BankDetails bankDetails;
 
-  const ServiceEditBankPage({super.key, required this.bankDetails});
+  const CabEditBankPage({super.key, required this.bankDetails, });
 
   @override
-  State<ServiceEditBankPage> createState() => _ServiceEditBankPageState();
+  State<CabEditBankPage> createState() => _CabEditBankPageState();
 }
 
-class _ServiceEditBankPageState extends State<ServiceEditBankPage> {
+class _CabEditBankPageState extends State<CabEditBankPage> {
   late TextEditingController bankNameCtrl;
   late TextEditingController accNoCtrl;
   late TextEditingController reAccNoCtrl;
@@ -40,6 +40,7 @@ class _ServiceEditBankPageState extends State<ServiceEditBankPage> {
 
     accountType = widget.bankDetails.type;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +86,7 @@ class _ServiceEditBankPageState extends State<ServiceEditBankPage> {
                   title: "Save Changes",
                   onTap: () {
                     bankEditVm.serviceBankEditApi(
-                      1,
+                      2,
                       bankNameCtrl.text.trim(),
                       accNoCtrl.text.trim(),
                       reAccNoCtrl.text.trim(),
@@ -132,10 +133,10 @@ class _ServiceEditBankPageState extends State<ServiceEditBankPage> {
   }
 
   Widget _input(
-    String title,
-    TextEditingController controller, {
-    bool isNumber = false,
-  }) {
+      String title,
+      TextEditingController controller, {
+        bool isNumber = false,
+      }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 14),

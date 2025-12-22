@@ -22,7 +22,7 @@ class _ServiceBankHistoryState extends State<ServiceBankHistory> {
       Provider.of<ServiceGetBankDetailViewModel>(
         context,
         listen: false,
-      ).serviceBankDetailApi(context);
+      ).serviceBankDetailApi(1,context);
     });
   }
 

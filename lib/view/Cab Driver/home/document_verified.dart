@@ -217,24 +217,27 @@ class DocumentVerified extends StatefulWidget {
 
 class _DocumentVerifiedState extends State<DocumentVerified> {
 
+  // ================= API HIT =================
+  Future<void> hitProfileApi() async {
+    final vm = Provider.of<DriverProfileViewModel>(context, listen: false);
+    final position = await LocationUtils.getLocation();
+
+    await vm.driverProfileApi(
+      position.latitude.toString(),
+      position.longitude.toString(),
+      context,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final vm = Provider.of<DriverProfileViewModel>(context, listen: false);
-      final position = await LocationUtils.getLocation();
-
-      await vm.driverProfileApi(
-        position.latitude.toString(),
-        position.longitude.toString(),
-        context,
-      );
+      await hitProfileApi();
     });
   }
 
   // ================= STATUS LOGIC =================
-
   String getOverallStatus(DriverProfileViewModel vm) {
     final d = vm.driverProfileModel?.data;
     if (d == null) return "pending";
@@ -253,8 +256,7 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
     return "pending";
   }
 
-  // ================= REJECTED TARGET PAGE =================
-
+  // ================= REJECTED PAGE =================
   Widget? getRejectedTargetPage(DriverProfileViewModel vm) {
     final d = vm.driverProfileModel?.data;
     if (d == null) return null;
@@ -267,32 +269,16 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
         profileId: 2,
       );
     }
-
-    if (d.driverLicenceStatus == 3) {
-      return const DrivingLicense();
-    }
-
-    if (d.aadhaarPanStatus == 3) {
-      return const AadhaarInfo();
-    }
-
-    if (d.requiredCertificatesStatus == 3) {
-      return const RequiredCertificates();
-    }
-
-    if (d.vehicleInfoStatus == 3) {
-      return const VehicleInformation();
-    }
-
-    if (d.vehicleDocumentsStatus == 3) {
-      return const VehicleDocument();
-    }
+    if (d.driverLicenceStatus == 3) return const DrivingLicense();
+    if (d.aadhaarPanStatus == 3) return const AadhaarInfo();
+    if (d.requiredCertificatesStatus == 3) return const RequiredCertificates();
+    if (d.vehicleInfoStatus == 3) return const VehicleInformation();
+    if (d.vehicleDocumentsStatus == 3) return const VehicleDocument();
 
     return null;
   }
 
   // ================= UI STATES =================
-
   Widget pendingWidget() {
     return statusLayout(
       icon: Icons.hourglass_top,
@@ -332,17 +318,12 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
       onButtonTap: () {
         final page = getRejectedTargetPage(vm);
         if (page == null) return;
-
-        Navigator.push(
-          context,
-          CupertinoPageRoute(builder: (_) => page),
-        );
+        Navigator.push(context, CupertinoPageRoute(builder: (_) => page));
       },
     );
   }
 
   // ================= COMMON LAYOUT =================
-
   Widget statusLayout({
     required IconData icon,
     required Color iconColor,
@@ -360,7 +341,6 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
           const SizedBox(height: 40),
 
           Icon(icon, size: 70, color: iconColor),
-
           const SizedBox(height: 20),
 
           TextConst(
@@ -385,10 +365,8 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
             CustomButton(
               bgColor: AppColor.royalBlue,
               title: isRejected ? "Fix Documents" : "Go to setup",
-              onTap: () {
-                if (onButtonTap != null) {
-                  onButtonTap!();
-                }
+              onTap: (){
+                Navigator.push(context, CupertinoPageRoute(builder: (context)=> DocumentVerificationSteps()));
               },
             ),
 
@@ -399,7 +377,6 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
   }
 
   // ================= BUILD =================
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -410,22 +387,31 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
           onBack: () => Navigator.pop(context),
           onClose: () => Navigator.pop(context),
         ),
-        body: Consumer<DriverProfileViewModel>(
-          builder: (context, vm, _) {
-            final status = getOverallStatus(vm);
+        body: RefreshIndicator(
+          color: AppColor.royalBlue,
+          onRefresh: hitProfileApi,
+          child: Consumer<DriverProfileViewModel>(
+            builder: (context, vm, _) {
+              final status = getOverallStatus(vm);
 
-            if (status == "verified") {
-              return verifiedWidget();
-            }
-
-            if (status == "rejected") {
-              return rejectedWidget(vm);
-            }
-
-            return pendingWidget();
-          },
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height -
+                      kToolbarHeight -
+                      MediaQuery.of(context).padding.top,
+                  child: () {
+                    if (status == "verified") return verifiedWidget();
+                    if (status == "rejected") return rejectedWidget(vm);
+                    return pendingWidget();
+                  }(),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
   }
 }
+

@@ -199,7 +199,7 @@ class AuthViewModel with ChangeNotifier {
                 (route) => false,
           );
         }
-        else if (platformType == 2) {
+        else if (platformType == 0) {
           // 🚕 CAB DRIVER
           userVM.saveUser(userId.toString(), 1);
 

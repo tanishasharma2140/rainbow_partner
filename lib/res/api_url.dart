@@ -32,6 +32,7 @@ class ApiUrl {
   static const String getVehicleModelUrl ="${baseUrl}get-model";
   static const String vehicleColorsUrl ="${baseUrl}colors";
   static const String driverProfileUrl ="${baseUrl}driver_profile";
+  static const String driverOnlineUrl ="${baseUrl}driver-online-status";
 
 
 

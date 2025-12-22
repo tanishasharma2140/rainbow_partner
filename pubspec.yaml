@@ -40,6 +40,9 @@ dependencies:
   audioplayers: ^5.2.1
   flutter_cashfree_pg_sdk:
   url_launcher: ^6.2.5
+  intl:
+  google_maps_flutter: ^2.9.0
+
 
 
 dev_dependencies:

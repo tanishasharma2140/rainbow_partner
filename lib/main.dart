@@ -28,6 +28,7 @@ import 'package:rainbow_partner/view_model/service_man/categories_view_model.dar
 import 'package:rainbow_partner/view_model/service_man/change_order_status_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/city_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/complete_booking_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/driver_online_status_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/job_request_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/payment_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/review_view_model.dart';
@@ -145,6 +146,7 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> VehicleModelViewModel()),
           ChangeNotifierProvider(create: (context)=> VehicleColorsViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverProfileViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverOnlineStatusViewModel()),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

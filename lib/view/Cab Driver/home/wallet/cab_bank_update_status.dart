@@ -4,14 +4,14 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view_model/service_man/service_bank_update_view_model.dart';
 
-class BankUpdateRequest extends StatefulWidget {
-  const BankUpdateRequest({super.key});
+class CabBanUpdateStatus extends StatefulWidget {
+  const CabBanUpdateStatus({super.key});
 
   @override
-  State<BankUpdateRequest> createState() => _BankUpdateRequestState();
+  State<CabBanUpdateStatus> createState() => _CabBanUpdateStatusState();
 }
 
-class _BankUpdateRequestState extends State<BankUpdateRequest> {
+class _CabBanUpdateStatusState extends State<CabBanUpdateStatus> {
 
   @override
   void initState() {
@@ -20,7 +20,7 @@ class _BankUpdateRequestState extends State<BankUpdateRequest> {
       Provider.of<ServiceBankUpdateViewModel>(
         context,
         listen: false,
-      ).serviceBankUpdateApi(1,context);
+      ).serviceBankUpdateApi(2,context);
     });
   }
 

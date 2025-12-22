@@ -22,11 +22,11 @@ class ServiceGetBankDetailViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> serviceBankDetailApi(context) async {
+  Future<void> serviceBankDetailApi(dynamic type,context) async {
     setLoading(true);
     UserViewModel userViewModel = UserViewModel();
     String? userId = await userViewModel.getUser();
-    Map data = {"user_id": userId, "type": 1};
+    Map data = {"user_id": userId, "type": type};
     try {
       final response = await _serviceBankDetailRepo.serviceBankDetailApi(data);
 

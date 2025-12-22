@@ -77,6 +77,57 @@ class _VehicleInformationState extends State<VehicleInformation> {
     }
   }
 
+  Future<void> _selectYear(BuildContext context) async {
+    int currentYear = DateTime.now().year;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            dialogBackgroundColor: Colors.white,
+            colorScheme: ColorScheme.light(
+              primary: AppColor.royalBlue, // year selected color
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColor.royalBlue,
+              ),
+            ),
+          ),
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              "Select Production Year",
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            content: SizedBox(
+              height: 260,
+              child: YearPicker(
+                firstDate: DateTime(1980),
+                lastDate: DateTime(currentYear),
+                selectedDate: DateTime(currentYear),
+                onChanged: (DateTime dateTime) {
+                  yearController.text = dateTime.year.toString();
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+
   // VEHICLE BRAND SELECTOR
   void pickBrand() {
     final vehicleBrandVm = Provider.of<VehicleBrandViewModel>(
@@ -465,6 +516,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
                   inputField(
                     hint: "Vehicle production year",
                     controller: yearController,
+                    readOnly: true,
+                    onTap: () => _selectYear(context),
                   ),
 
 
@@ -571,6 +624,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
   Widget inputField({
     required String hint,
     required TextEditingController controller,
+    bool readOnly = false,
+    VoidCallback? onTap,
   }) {
     return Container(
       height: 55,
@@ -583,6 +638,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
       alignment: Alignment.centerLeft,
       child: TextField(
         controller: controller,
+        readOnly: readOnly,
+        onTap: onTap,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(
@@ -591,9 +648,13 @@ class _VehicleInformationState extends State<VehicleInformation> {
             color: Colors.grey,
           ),
           border: InputBorder.none,
+          suffixIcon: readOnly
+              ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey)
+              : null,
         ),
       ),
     );
   }
+
 
 }
