@@ -9,7 +9,8 @@ import 'package:rainbow_partner/view/Service%20Man/register/register_service_scr
 import 'package:rainbow_partner/view/Service%20Provider/register/register_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+ final   String phone;
+  const OnboardingScreen({super.key,  required this.phone});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -18,9 +19,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final mobileNumber = args["mobileNumber"];
-    print("User Mobile Number: $mobileNumber");
+
     return SafeArea(
       top: false,
       bottom: true,
@@ -73,7 +72,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 "Drive customers safely with real-time navigation and trip updates.",
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> ChooseVehicle(
-                    mobileNumber: mobileNumber,
+                    mobileNumber: widget.phone,
                     profileId: 2,
                   )));
                 },
@@ -89,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Navigator.push(
                     context,
                     CupertinoPageRoute(
-                      builder: (context)=> RegisterScreen(mobileNumber: mobileNumber, profileId: 1,),
+                      builder: (context)=> RegisterScreen(mobileNumber: widget.phone, profileId: 1,),
                     ),
                   );             },
               ),

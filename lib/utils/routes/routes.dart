@@ -12,10 +12,10 @@ class Routers {
         return (context) => const Splash();
       case RoutesName.login:
         return (context) => const Login();
-      case RoutesName.onboardingScreen:
-        return (context) => const OnboardingScreen();
-      case RoutesName.otpScreen:
-        return (context) => const OtpScreen();
+      // case RoutesName.onboardingScreen:
+      //   return (context) => const OnboardingScreen();
+      // case RoutesName.otpScreen:
+      //   return (context) => const OtpScreen();
 
       default:
         return (context) => const Scaffold(

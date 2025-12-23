@@ -12,8 +12,8 @@ import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
 
 class OtpScreen extends StatefulWidget {
-
-  const OtpScreen({super.key});
+  final String phoneNumber;
+  const OtpScreen({super.key, required this.phoneNumber, });
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -31,14 +31,14 @@ class _OtpScreenState extends State<OtpScreen> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Map arguments =
-      ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-      Provider.of<AuthViewModel>(
-        context,
-        listen: false,
-      ).sendOtpApi(arguments["mobileNumber"], context);
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   Map arguments =
+    //   ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    //   Provider.of<AuthViewModel>(
+    //     context,
+    //     listen: false,
+    //   ).sendOtpApi(arguments["mobileNumber"], context);
+    // });
     _startTimer();
   }
 
@@ -74,8 +74,6 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   void _verifyOtp(String pin) {
-    // Safely read arguments (avoid crash)
-    final arguments = (ModalRoute.of(context)?.settings.arguments ?? {}) as Map;
 
     // Safely get AuthViewModel from Provider
     final authVm = context.read<AuthViewModel>();
@@ -83,12 +81,15 @@ class _OtpScreenState extends State<OtpScreen> {
     final enteredOtp = pin.trim();
 
     if (enteredOtp.length == 4 && int.tryParse(enteredOtp) != null) {
-      authVm.verifyOtpApi(
-        arguments["mobileNumber"],   // ✔ safe
+      authVm.verifySentApi(
+        widget.phoneNumber,  // ✔ safe
         enteredOtp,
-        arguments["userId"],
         context,
       );
+      print("widget.phoneNumber");
+      print(widget.phoneNumber);
+      print(enteredOtp);
+      print("enteredOtp");
     } else {
       Utils.showErrorMessage(context, "Please enter a valid 4-digit OTP.");
     }
@@ -111,8 +112,6 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Map arguments =
-    ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final defaultPinTheme = PinTheme(
       width: 50,
       height: 50,
@@ -178,7 +177,7 @@ class _OtpScreenState extends State<OtpScreen> {
               const SizedBox(height: 8),
 
               TextConst(
-                title: "We sent your code via SMS to\n${arguments["mobileNumber"]}",
+                title: "We sent your code via SMS to\n${widget.phoneNumber}",
                 size: 16,
                 color: AppColor.blackLightI,
                 fontFamily: AppFonts.poppinsReg,
@@ -197,6 +196,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 showCursor: false,
                 onCompleted: (pin) {
                   _verifyOtp(pin);
+
                 },
               ),
 

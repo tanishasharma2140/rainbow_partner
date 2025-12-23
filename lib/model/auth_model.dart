@@ -1,8 +1,8 @@
 class AuthModel {
   String? message;
-  String? role;
-  int? servicemanId;
-  int? platformType;
+  dynamic role;
+  dynamic servicemanId;
+  dynamic platformType;
   dynamic errors;
 
   AuthModel(

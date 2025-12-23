@@ -4,10 +4,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserViewModel with ChangeNotifier {
 
   // ---------------- SAVE TOKEN + ROLE ---------------- //
-  Future<bool> saveUser(String userId, int role) async {
+  Future<bool> saveUser(String userId) async {
     SharedPreferences sp = await SharedPreferences.getInstance();
 
     await sp.setString('token', userId);
+
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> saveRole( int role) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+
     await sp.setInt('role', role);  // 1 = rainbow driver, 2 = serviceman, 3 = need a job
 
     notifyListeners();

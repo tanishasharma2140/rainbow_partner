@@ -33,6 +33,8 @@ class ApiUrl {
   static const String vehicleColorsUrl ="${baseUrl}colors";
   static const String driverProfileUrl ="${baseUrl}driver_profile";
   static const String driverOnlineUrl ="${baseUrl}driver-online-status";
+  static const String driverCanDiscountUrl ="${baseUrl}driver-can-discount";
+
 
 
 

@@ -38,14 +38,14 @@ class SplashServices {
       /// 🟢 ROLE BASED NAVIGATION
       switch (role) {
 
-      // ================= CASE 0 & 1 : CAB DRIVER =================
+      // ================= CASE 0 & 2 : CAB DRIVER =================
         case 0:
-        case 1:
+        case 2:
           await _handleCabDriverFlow(context);
           break;
 
-      // ================= CASE 2 : SERVICE PROVIDER =================
-        case 2:
+      // ================= CASE 1 : SERVICE PROVIDER =================
+        case 1:
           Navigator.pushReplacement(
             context,
             CupertinoPageRoute(
@@ -59,7 +59,6 @@ class SplashServices {
           Navigator.pushReplacementNamed(context, RoutesName.login);
       }
 
-
     } catch (e) {
       if (kDebugMode) {
         print("Splash Error: $e");
@@ -68,11 +67,11 @@ class SplashServices {
     }
   }
 
+
   // ================= CAB DRIVER FLOW =================
 
   Future<void> _handleCabDriverFlow(BuildContext context) async {
-    final driverProfileVm =
-    Provider.of<DriverProfileViewModel>(context, listen: false);
+    final driverProfileVm = Provider.of<DriverProfileViewModel>(context, listen: false);
 
     final position = await LocationUtils.getLocation();
 

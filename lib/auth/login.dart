@@ -19,7 +19,6 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final TextEditingController phoneController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +74,7 @@ class _LoginState extends State<Login> {
                       cursorColor: AppColor.black,
                       cursorHeight: Sizes.screenHeight*0.02,
                       width: Sizes.screenWidth * 0.85,
-                      controller: phoneController,
+                      controller: auth.phoneController,
                       keyboardType: TextInputType.phone,
                       maxLength: 10,
                       inputFormatters: [
@@ -117,14 +116,13 @@ class _LoginState extends State<Login> {
                         textColor: AppColor.white,
                         bgColor: AppColor.royalBlue,
                         onTap: () {
-                          String phone = phoneController.text.trim();
+                          String phone = auth.phoneController.text.trim();
 
                           if (phone.isEmpty || phone.length != 10) {
                             Utils.showErrorMessage(context, "Please enter a valid 10-digit mobile number");
                             return;
                           }
-
-                          auth.loginApi(phone, context);
+                          auth.otpSentApi(phone, context);
                         },
                       ),
                     ),

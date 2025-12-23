@@ -1,10 +1,14 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow_partner/auth/otp_screen.dart';
+import 'package:rainbow_partner/model/auth_model.dart';
 import 'package:rainbow_partner/repo/serviceman/serviceman_register_repo.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
+import 'package:rainbow_partner/view_model/user_view_model.dart';
 
 class ServicemanRegisterViewModel with ChangeNotifier {
   final ServicemanRegisterRepo _servicemanRegisterRepo = ServicemanRegisterRepo();
@@ -90,8 +94,16 @@ class ServicemanRegisterViewModel with ChangeNotifier {
       final Map<String, dynamic> body = response["body"] ?? {};
 
       if (statusCode == 200 || statusCode == 201) {
+
+        final userPref =
+        Provider.of<UserViewModel>(context, listen: false);
+        final authModel = AuthModel.fromJson(body);
+        userPref.saveUser(authModel.servicemanId.toString());
+        userPref.saveRole(authModel.platformType);
+
         Utils.showSuccessMessage(context, body["message"] ?? "Submitted successfully");
-        Navigator.pushNamed(context, RoutesName.otpScreen,arguments: {"mobileNumber": mobile,"userId":body["serviceman_id"].toString(),});
+
+        Navigator.push(context, CupertinoPageRoute(builder: (context)=> HandymanDashboard()));
       } else {
         Utils.showErrorMessage(context, body["message"] ?? "Something went wrong!");
       }
