@@ -60,6 +60,8 @@ class DriverRegisterOneViewModel with ChangeNotifier {
     final Map<String, dynamic> files = {
       "profile_photo": profilePhoto,
     };
+    
+    // print()
 
 
     try {

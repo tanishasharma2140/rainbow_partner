@@ -195,7 +195,6 @@ import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
-import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
@@ -232,12 +231,12 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await hitProfileApi();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      hitProfileApi();
     });
   }
 
-  // ================= STATUS LOGIC =================
+  // ================= OVERALL STATUS =================
   String getOverallStatus(DriverProfileViewModel vm) {
     final d = vm.driverProfileModel?.data;
     if (d == null) return "pending";
@@ -256,10 +255,9 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
     return "pending";
   }
 
-  // ================= REJECTED PAGE =================
-  Widget? getRejectedTargetPage(DriverProfileViewModel vm) {
-    final d = vm.driverProfileModel?.data;
-    if (d == null) return null;
+  // ================= REJECTED PAGE SELECTOR (PRIORITY) =================
+  Widget getRejectedTargetPage(DriverProfileViewModel vm) {
+    final d = vm.driverProfileModel!.data!;
 
     if (d.personalInformationStatus == 3) {
       return const PersonalInformation(
@@ -269,13 +267,24 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
         profileId: 2,
       );
     }
-    if (d.driverLicenceStatus == 3) return const DrivingLicense();
-    if (d.aadhaarPanStatus == 3) return const AadhaarInfo();
-    if (d.requiredCertificatesStatus == 3) return const RequiredCertificates();
-    if (d.vehicleInfoStatus == 3) return const VehicleInformation();
-    if (d.vehicleDocumentsStatus == 3) return const VehicleDocument();
+    if (d.driverLicenceStatus == 3) {
+      return const DrivingLicense();
+    }
+    if (d.aadhaarPanStatus == 3) {
+      return const AadhaarInfo();
+    }
+    if (d.requiredCertificatesStatus == 3) {
+      return const RequiredCertificates();
+    }
+    if (d.vehicleInfoStatus == 3) {
+      return const VehicleInformation();
+    }
+    if (d.vehicleDocumentsStatus == 3) {
+      return const VehicleDocument();
+    }
 
-    return null;
+    // fallback (should never hit)
+    return const DocumentVerificationSteps();
   }
 
   // ================= UI STATES =================
@@ -285,7 +294,6 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
       iconColor: Colors.orange,
       title: "Verification Pending",
       subTitle: "Your documents are under review.\nWe’ll notify you soon.",
-      showButton: false,
     );
   }
 
@@ -297,7 +305,7 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
       subTitle: "You are ready to accept ride requests",
       showButton: true,
       onButtonTap: () {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           CupertinoPageRoute(
             builder: (_) => const DocumentVerificationSteps(),
@@ -317,13 +325,16 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
       isRejected: true,
       onButtonTap: () {
         final page = getRejectedTargetPage(vm);
-        if (page == null) return;
-        Navigator.push(context, CupertinoPageRoute(builder: (_) => page));
+
+        Navigator.pushReplacement(
+          context,
+          CupertinoPageRoute(builder: (_) => page),
+        );
       },
     );
   }
 
-  // ================= COMMON LAYOUT =================
+  // ================= COMMON STATUS LAYOUT =================
   Widget statusLayout({
     required IconData icon,
     required Color iconColor,
@@ -362,12 +373,26 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
           const Spacer(),
 
           if (showButton)
-            CustomButton(
-              bgColor: AppColor.royalBlue,
-              title: isRejected ? "Fix Documents" : "Go to setup",
-              onTap: (){
-                Navigator.push(context, CupertinoPageRoute(builder: (context)=> DocumentVerificationSteps()));
-              },
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton(
+                onPressed: onButtonTap,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: AppColor.royalBlue, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  isRejected ? "Fix Documents" : "Go to setup",
+                  style: TextStyle(
+                    color: AppColor.royalBlue,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
 
           SizedBox(height: Sizes.screenHeight * 0.04),
@@ -414,4 +439,5 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
     );
   }
 }
+
 

@@ -343,8 +343,8 @@ class _PersonalInformationState extends State<PersonalInformation> {
                                           vehicleName: widget.vehicleName,
                                           lastName: surnameController.text,
                                           dob: dobController.text,
-                                          deviceId: "",
-                                          fcm: "",
+                                          deviceId: "edfrgtyujy",
+                                          fcm: "dqefwtrhy",
                                           context: context
                                       );
                                     },
