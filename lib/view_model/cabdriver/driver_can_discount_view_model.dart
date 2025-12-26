@@ -9,11 +9,16 @@ class DriverCanDiscountViewModel with ChangeNotifier {
   bool _loading = false;
   bool get loading => _loading;
 
+  /// 🔥 IMPORTANT: discount value
+  String? _driverDiscount;
+  String? get driverDiscount => _driverDiscount;
+
   void setLoading(bool value) {
     _loading = value;
     notifyListeners();
   }
 
+  /// 🔹 DRIVER CAN DISCOUNT API
   Future<void> driverDiscountApi(
       dynamic vehicleId,
       dynamic amount,
@@ -22,35 +27,51 @@ class DriverCanDiscountViewModel with ChangeNotifier {
     setLoading(true);
 
     try {
-
-      final Map data = {
+      final Map<String, dynamic> data = {
         "vehicle_id": vehicleId,
-        "amount": amount
-      }
-      ;
+        "amount": amount,
+      };
 
       if (kDebugMode) {
-        print("🚀 SAVE ADDRESS API DATA → $data");
+        print("🚀 DRIVER CAN DISCOUNT API DATA → $data");
       }
 
-      final response = await _driverCanDiscountRepo.driverDiscountApi(data);
+      final response =
+      await _driverCanDiscountRepo.driverDiscountApi(data);
 
       final int statusCode = response['statusCode'] ?? 0;
-      final Map<String, dynamic> body = response['body'] ?? {};
+      final Map<String, dynamic> body =
+      Map<String, dynamic>.from(response['body'] ?? {});
 
       if (statusCode == 200 || statusCode == 201) {
-        Utils.showSuccessMessage(context, body["message"]);
+        /// ✅ STORE DISCOUNT VALUE
+        _driverDiscount = body['driver_can_discount'];
+
+        if (kDebugMode) {
+          print("✅ DRIVER CAN DISCOUNT → $_driverDiscount");
+        }
+
+        notifyListeners();
       } else {
-        Utils.showErrorMessage(context, body["message"]);
+        Utils.showErrorMessage(
+          context,
+          body['message'] ?? "Unable to fetch discount",
+        );
       }
     } catch (e) {
       if (kDebugMode) {
-        print("❌ SaveAddressViewModel Error → $e");
+        print("❌ DriverCanDiscountViewModel Error → $e");
       }
       Utils.showErrorMessage(context, e.toString());
     } finally {
       setLoading(false);
     }
+  }
+
+  /// OPTIONAL: reset when new ride comes
+  void clearDiscount() {
+    _driverDiscount = null;
+    notifyListeners();
   }
 }
 

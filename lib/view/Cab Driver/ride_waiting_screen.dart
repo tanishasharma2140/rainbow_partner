@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_offer_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 
 /// =====================================================
@@ -68,9 +71,9 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                 stream: FirebaseFirestore.instance
                     .collection('cab_orders')
                     .where(
-                  'matched_driver_ids', // ✅ EXACT FIELD
-                  arrayContains: driverId,
-                )
+                      'matched_driver_ids', // ✅ EXACT FIELD
+                      arrayContains: driverId,
+                    )
                     .snapshots(),
                 builder: (context, snapshot) {
                   debugPrint(
@@ -84,9 +87,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
                   // ERROR
                   if (snapshot.hasError) {
-                    return const Center(
-                      child: Text("Error loading rides"),
-                    );
+                    return const Center(child: Text("Error loading rides"));
                   }
 
                   final docs = snapshot.data?.docs ?? [];
@@ -108,9 +109,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
             /// PROFILE NOT READY
             if (driverId == null)
-              const Center(
-                child: Text("Loading driver profile..."),
-              ),
+              const Center(child: Text("Loading driver profile...")),
           ],
         ),
       ),
@@ -156,55 +155,350 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
     );
   }
 
-  /// =====================================================
-  /// ORDER LIST UI (RAW FIREBASE DATA)
-  /// =====================================================
+
   Widget _orderListSheet(List<QueryDocumentSnapshot> docs) {
+    final driverCanDiscountVm =
+    Provider.of<DriverCanDiscountViewModel>(context);
+    final driverOfferVm =
+    Provider.of<DriverOfferViewModel>(context);
+
     return Container(
-      height: 420,
-      padding: const EdgeInsets.all(16),
+      height: 460,
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 14,
+            offset: Offset(0, -4),
+          ),
+        ],
       ),
-      child: ListView.builder(
-        itemCount: docs.length,
-        itemBuilder: (context, index) {
-          final data = docs[index].data() as Map<String, dynamic>;
-
-          debugPrint("🧾 Render order => ${docs[index].id}");
-
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Order ID: ${data['order_id'] ?? docs[index].id}",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text("Amount: ₹${data['estimated_amount']}"),
-                  Text("Pickup: ${data['pickup_location']}"),
-                  Text("Drop: ${data['drop_location']}"),
-                  Text("Matched Drivers: ${data['matched_driver_ids']}"),
-                  const SizedBox(height: 10),
-                  CustomButton(
-                    title: "Accept Ride",
-                    bgColor: AppColor.royalBlue,
-                    onTap: () {
-                      debugPrint(
-                        "🚗 ACCEPT CLICKED | docId=${docs[index].id}",
-                      );
-                    },
-                  ),
-                ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// DRAG HANDLE
+          Center(
+            child: Container(
+              height: 5,
+              width: 46,
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-          );
-        },
+          ),
+
+          const Text(
+            "New Ride Requests",
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          ),
+
+          const SizedBox(height: 14),
+
+          Expanded(
+            child: ListView.separated(
+              itemCount: docs.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 14),
+              itemBuilder: (context, index) {
+                final data = docs[index].data() as Map<String, dynamic>;
+
+                /// ---------------- CORE DATA ----------------
+                final int baseAmount =
+                    data['estimated_amount'] ?? 0;
+
+                final ValueNotifier<int> amount =
+                ValueNotifier<int>(baseAmount);
+
+                final String userIdOrder =
+                    data['user_id']?.toString() ?? '';
+
+                final String orderId = docs[index].id;
+
+                /// CALL DISCOUNT API (ONLY ONCE)
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (driverCanDiscountVm.driverDiscount == null) {
+                    driverCanDiscountVm.driverDiscountApi(
+                      data['vehicle_id'],
+                      baseAmount,
+                      context,
+                    );
+                  }
+                });
+
+                /// DISCOUNT LOGIC (± FROM BASE)
+                final int maxDiscount =
+                (double.tryParse(
+                  driverCanDiscountVm.driverDiscount ?? '0',
+                ) ??
+                    0)
+                    .round();
+
+                final int minAllowedAmount =
+                    baseAmount - maxDiscount;
+                final int maxAllowedAmount =
+                    baseAmount + maxDiscount;
+
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColor.whiteDark,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// ORDER ID + DISTANCE
+                      Row(
+                        mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextConst(
+                            title:
+                            "Order #${data['order_id'] ?? orderId}",
+                            size: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                              Colors.green.withOpacity(0.12),
+                              borderRadius:
+                              BorderRadius.circular(20),
+                            ),
+                            child: TextConst(
+                              title: "${data['distance_km']} km",
+                              color: Colors.green,
+                              size: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      /// PICKUP
+                      Row(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.radio_button_checked,
+                            size: 14,
+                            color: Colors.green,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextConst(
+                              title:
+                              data['pickup_location'] ?? '',
+                              size: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      /// DROP
+                      Row(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            size: 16,
+                            color: Colors.red,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextConst(
+                              title:
+                              data['drop_location'] ?? '',
+                              size: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      TextConst(
+                        title: "Estimated Amount: ₹${data['estimated_amount']}",
+                        size: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      /// FARE AMOUNT (± BASE RANGE)
+                      ValueListenableBuilder<int>(
+                        valueListenable: amount,
+                        builder: (_, value, __) {
+                          final bool canMinus =
+                              value > minAllowedAmount;
+                          final bool canPlus =
+                              value < maxAllowedAmount;
+
+                          return Container(
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius:
+                              BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              children: [
+                                /// MINUS
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: canMinus
+                                        ? () =>
+                                    amount.value -= 1
+                                        : null,
+                                    child: Center(
+                                      child: Container(
+                                        height: 32,
+                                        width: 32,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: canMinus
+                                              ? AppColor
+                                              .royalBlue
+                                              .withOpacity(
+                                            0.12,
+                                          )
+                                              : Colors.grey.shade200,
+                                          border: Border.all(
+                                            color: canMinus
+                                                ? AppColor
+                                                .royalBlue
+                                                : Colors
+                                                .grey.shade400,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.remove,
+                                          size: 18,
+                                          color: canMinus
+                                              ? AppColor
+                                              .royalBlue
+                                              : Colors
+                                              .grey.shade400,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                /// AMOUNT TEXT
+                                Expanded(
+                                  flex: 2,
+                                  child: Center(
+                                    child: Text(
+                                      "₹$value",
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight:
+                                        FontWeight.bold,
+                                        color:
+                                        AppColor.royalBlue,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                /// PLUS
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: canPlus
+                                        ? () =>
+                                    amount.value += 1
+                                        : null,
+                                    child: Center(
+                                      child: Container(
+                                        height: 32,
+                                        width: 32,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: canPlus
+                                              ? AppColor
+                                              .royalBlue
+                                              .withOpacity(
+                                            0.12,
+                                          )
+                                              : Colors.grey.shade200,
+                                          border: Border.all(
+                                            color: canPlus
+                                                ? AppColor
+                                                .royalBlue
+                                                : Colors
+                                                .grey.shade400,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.add,
+                                          size: 18,
+                                          color: canPlus
+                                              ? AppColor
+                                              .royalBlue
+                                              : Colors
+                                              .grey.shade400,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      /// AGREE BUTTON
+                      CustomButton(
+                        title: "Agree",
+                        bgColor: AppColor.royalBlue,
+                        onTap: () {
+                          final int offerAmount = amount.value;
+
+                          if (offerAmount < minAllowedAmount ||
+                              offerAmount > maxAllowedAmount) {
+                            Utils.showErrorMessage(
+                              context,
+                              "Invalid offer amount",
+                            );
+                            return;
+                          }
+
+                          driverOfferVm.driverOfferApi(
+                            userIdOrder,
+                            orderId,
+                            offerAmount,
+                            baseAmount,
+                            context,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

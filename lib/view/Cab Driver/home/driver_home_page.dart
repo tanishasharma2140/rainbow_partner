@@ -221,6 +221,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
   //              ONLINE / OFFLINE SWITCH
   // -------------------------------------------------
   Widget _onlineSwitch() {
+    final driverProfileVm = Provider.of<DriverProfileViewModel>(context);
     final driverOnlineVm =
     Provider.of<DriverOnlineStatusViewModel>(context, listen: false);
 

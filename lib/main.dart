@@ -10,6 +10,8 @@ import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_offer_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_five_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_four_view_model.dart';
@@ -147,6 +149,8 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> VehicleColorsViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverProfileViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverOnlineStatusViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverCanDiscountViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverOfferViewModel()),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

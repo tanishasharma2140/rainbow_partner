@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/repo/cabdriver/driver_online_status_repo.dart';
-import 'package:rainbow_partner/repo/serviceman/service_online_status_repo.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
-import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
 class DriverOnlineStatusViewModel with ChangeNotifier {

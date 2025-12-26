@@ -34,6 +34,7 @@ class ApiUrl {
   static const String driverProfileUrl ="${baseUrl}driver_profile";
   static const String driverOnlineUrl ="${baseUrl}driver-online-status";
   static const String driverCanDiscountUrl ="${baseUrl}driver-can-discount";
+  static const String driverOfferUrl ="${baseUrl}driver-offer";
 
 
 
