@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
@@ -10,9 +11,9 @@ import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_mo
 import 'package:rainbow_partner/view_model/cabdriver/driver_offer_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 
-/// =====================================================
-/// STATEFUL WIDGET (IMPORTANT)
-/// =====================================================
+import 'home/driver_accepted_scree.dart';
+
+
 class RideWaitingScreen extends StatefulWidget {
   const RideWaitingScreen({super.key});
 
@@ -20,12 +21,58 @@ class RideWaitingScreen extends StatefulWidget {
   State<RideWaitingScreen> createState() => _RideWaitingScreenState();
 }
 
-/// =====================================================
-/// STATE CLASS
-/// =====================================================
 class _RideWaitingScreenState extends State<RideWaitingScreen> {
-  final double currentLat = 26.8467;
-  final double currentLng = 80.9462;
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  LatLng? _currentLatLng;
+  GoogleMapController? _mapController;
+
+  Future<void> _getCurrentLocation() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    setState(() {
+      _currentLatLng = LatLng(position.latitude, position.longitude);
+    });
+
+    // Map camera move
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLngZoom(_currentLatLng!, 16),
+    );
+  }
+
+  void _goToAcceptedRide({
+    required int orderId,
+  }) {
+    if (_currentLatLng == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DriverRideAcceptedScreen(
+            orderId: orderId,
+            driverLat: _currentLatLng!.latitude,
+            driverLng: _currentLatLng!.longitude,
+          ),
+        ),
+      );
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -57,13 +104,17 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
             /// ================= MAP =================
             GoogleMap(
               initialCameraPosition: CameraPosition(
-                target: LatLng(currentLat, currentLng),
+                target: _currentLatLng ?? const LatLng(26.8467, 80.9462),
                 zoom: 15,
               ),
+              onMapCreated: (controller) {
+                _mapController = controller;
+              },
               myLocationEnabled: true,
               zoomControlsEnabled: false,
               myLocationButtonEnabled: false,
             ),
+
 
             /// ================= REALTIME FIREBASE =================
             if (driverId != null)
@@ -99,11 +150,15 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                     return _waitingCenter();
                   }
 
+
+
                   // RIDES FOUND
                   return Align(
                     alignment: Alignment.bottomCenter,
                     child: _orderListSheet(docs),
                   );
+
+
                 },
               ),
 
@@ -229,6 +284,8 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                   }
                 });
 
+
+
                 /// DISCOUNT LOGIC (± FROM BASE)
                 final int maxDiscount =
                 (double.tryParse(
@@ -241,6 +298,12 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                     baseAmount - maxDiscount;
                 final int maxAllowedAmount =
                     baseAmount + maxDiscount;
+
+                if (data['order_status'] == 1 && _currentLatLng != null) {
+                  _goToAcceptedRide(
+                    orderId: data['order_id'],
+                  );
+                }
 
                 return Container(
                   padding: const EdgeInsets.all(16),
@@ -329,6 +392,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                           ),
                         ],
                       ),
+
                       const SizedBox(height: 16),
 
                       TextConst(
@@ -465,6 +529,8 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                         },
                       ),
 
+
+
                       const SizedBox(height: 16),
 
                       /// AGREE BUTTON
@@ -492,6 +558,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                           );
                         },
                       ),
+
                     ],
                   ),
                 );
