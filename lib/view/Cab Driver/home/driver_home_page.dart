@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
+import 'package:rainbow_partner/res/gradient_circle_pro.dart';
+import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
@@ -15,8 +17,8 @@ import 'package:rainbow_partner/view/Cab%20Driver/home/wallet/wallet_and_settlem
 import 'package:rainbow_partner/view/Cab%20Driver/ride_waiting_screen.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/driver_online_status_view_model.dart';
-
 import 'earning report/daily_weekly_earning_report.dart';
+
 
 class DriverHomePage extends StatefulWidget {
   const DriverHomePage({super.key});
@@ -51,6 +53,8 @@ class _DriverHomePageState extends State<DriverHomePage> {
   Widget build(BuildContext context) {
     final driverProfileVm = Provider.of<DriverProfileViewModel>(context);
     final data = driverProfileVm.driverProfileModel?.data;
+    final driverOnlineVm =
+    Provider.of<DriverOnlineStatusViewModel>(context);
 
     return SafeArea(
       top: false,
@@ -58,160 +62,192 @@ class _DriverHomePageState extends State<DriverHomePage> {
       child: Scaffold(
         backgroundColor: AppColor.whiteDark,
 
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-
-              Stack(
-                clipBehavior: Clip.none,
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Column(
                 children: [
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.only(
-                      left: 20,
-                      right: 20,
-                      top: topPadding + 15,
-                      bottom: 40,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColor.royalBlue,
-                          AppColor.royalBlue.withOpacity(0.8),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(28),
-                        bottomRight: Radius.circular(28),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: Colors.grey.shade300,
-                          backgroundImage: (data?.profilePhoto != null &&
-                              data!.profilePhoto.toString().isNotEmpty)
-                              ? NetworkImage(data.profilePhoto.toString())
-                              : null,
-                          child: (data?.profilePhoto == null ||
-                              data!.profilePhoto.toString().isEmpty)
-                              ? const Icon(
-                            Icons.person,
-                            size: 70,
-                            color: Colors.white,
-                          )
-                              : null,
+
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                          top: topPadding + 15,
+                          bottom: 40,
                         ),
-
-
-                        const SizedBox(width: 18),
-
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children:  [
-                            TextConst(
-                              title: "Welcome back 👋",
-                              size: 15,
-                              color: Colors.white70,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColor.royalBlue,
+                              AppColor.royalBlue.withOpacity(0.8),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(28),
+                            bottomRight: Radius.circular(28),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundColor: Colors.grey.shade300,
+                              backgroundImage: (data?.profilePhoto != null &&
+                                  data!.profilePhoto.toString().isNotEmpty)
+                                  ? NetworkImage(data.profilePhoto.toString())
+                                  : null,
+                              child: (data?.profilePhoto == null ||
+                                  data!.profilePhoto.toString().isEmpty)
+                                  ? const Icon(
+                                Icons.person,
+                                size: 70,
+                                color: Colors.white,
+                              )
+                                  : null,
                             ),
-                            SizedBox(height: 5),
-                            TextConst(
-                              title:
-                              "${driverProfileVm.driverProfileModel?.data?.firstName ?? ""} "
-                                  "${driverProfileVm.driverProfileModel?.data?.lastName ?? ""}",
-                              size: 22,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
 
+
+                            const SizedBox(width: 18),
+
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children:  [
+                                TextConst(
+                                  title: "Welcome back 👋",
+                                  size: 15,
+                                  color: Colors.white70,
+                                ),
+                                SizedBox(height: 5),
+                                TextConst(
+                                  title:
+                                  "${driverProfileVm.driverProfileModel?.data?.firstName ?? ""} "
+                                      "${driverProfileVm.driverProfileModel?.data?.lastName ?? ""}",
+                                  size: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+
+                              ],
+                            ),
                           ],
                         ),
+                      ),
+                      Positioned(
+                        right: 20,
+                        bottom: -25,
+                        child: _onlineSwitch(),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 45),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    child: Row(
+                      children: [
+                        _statsBox("Rides", "05", Icons.local_taxi_rounded),
+
+                      const SizedBox(width: 12),
+                      _statsBox("Earnings", "₹ 540", Icons.payments_rounded,
+                      onTap: (){
+                        Navigator.push(context, CupertinoPageRoute(builder: (context)=> DailyWeeklyEarningReport()));
+
+                      }
+                      ),
+                        const SizedBox(width: 12),
+                        _statsBox("Distance", "12 km", Icons.route_rounded),
                       ],
                     ),
                   ),
-                  Positioned(
-                    right: 20,
-                    bottom: -25,
-                    child: _onlineSwitch(),
+
+                  const SizedBox(height: 17),
+
+
+                  _activeRideCard(),
+                  _scheduledRideCard(context),
+
+                  const SizedBox(height: 15),
+
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextConst(
+                        title: "Quick Actions",
+                        size: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: GridView.count(
+                      crossAxisCount: 3,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      childAspectRatio: 0.82,
+                      children: [
+                        _actionItem(Icons.person, "Profile",onTap: (){
+                          print("tapped");
+                          Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverProfile()));
+                        }),
+                        _actionItem(Icons.account_balance_wallet, "Wallet Settlemant",onTap: (){
+                          Navigator.push(context, CupertinoPageRoute(builder: (context)=> WalletSettlement()));
+                        }),
+                        _actionItem(Icons.account_balance, "Add Bank",onTap: (){
+                          Navigator.push(context, CupertinoPageRoute(builder: (context)=> AddBank()));
+                        }),
+                        _actionItem(Icons.account_balance_outlined, "Bank Update Status",onTap: (){
+                          Navigator.push(context, CupertinoPageRoute(builder: (context)=> CabBanUpdateStatus()));
+                        }),
+                        _actionItem(Icons.local_taxi, "Ride History",onTap: (){
+                          Navigator.push(context, CupertinoPageRoute(builder: (context)=> CabRideHistory()));
+                        }),
+                        _actionItem(Icons.settings_rounded, "Settings"),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
                 ],
               ),
-
-              const SizedBox(height: 45),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Row(
-                  children: [
-                    _statsBox("Rides", "05", Icons.local_taxi_rounded),
-
-                  const SizedBox(width: 12),
-                  _statsBox("Earnings", "₹ 540", Icons.payments_rounded,
-                  onTap: (){
-                    Navigator.push(context, CupertinoPageRoute(builder: (context)=> DailyWeeklyEarningReport()));
-
-                  }
-                  ),
-                    const SizedBox(width: 12),
-                    _statsBox("Distance", "12 km", Icons.route_rounded),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 17),
-
-
-              _activeRideCard(),
-              _scheduledRideCard(context),
-
-              const SizedBox(height: 15),
-
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextConst(
-                    title: "Quick Actions",
-                    size: 18,
-                    fontWeight: FontWeight.w700,
+            ),
+            if (driverOnlineVm.loading)
+              Container(
+                color: Colors.black54,
+                child: Center(
+                  child: Container(
+                    height: Sizes.screenHeight * 0.13,
+                    width: Sizes.screenWidth * 0.28,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: GradientCirPro(
+                        strokeWidth: 6,
+                        size: 70,
+                        gradient: AppColor.circularIndicator,
+                      ),
+                    ),
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  childAspectRatio: 0.82,
-                  children: [
-                    _actionItem(Icons.person, "Profile",onTap: (){
-                      print("tapped");
-                      Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverProfile()));
-                    }),
-                    _actionItem(Icons.account_balance_wallet, "Wallet Settlemant",onTap: (){
-                      Navigator.push(context, CupertinoPageRoute(builder: (context)=> WalletSettlement()));
-                    }),
-                    _actionItem(Icons.account_balance, "Add Bank",onTap: (){
-                      Navigator.push(context, CupertinoPageRoute(builder: (context)=> AddBank()));
-                    }),
-                    _actionItem(Icons.account_balance_outlined, "Bank Update Status",onTap: (){
-                      Navigator.push(context, CupertinoPageRoute(builder: (context)=> CabBanUpdateStatus()));
-                    }),
-                    _actionItem(Icons.local_taxi, "Ride History",onTap: (){
-                      Navigator.push(context, CupertinoPageRoute(builder: (context)=> CabRideHistory()));
-                    }),
-                    _actionItem(Icons.settings_rounded, "Settings"),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 30),
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -224,6 +260,10 @@ class _DriverHomePageState extends State<DriverHomePage> {
     final driverProfileVm = Provider.of<DriverProfileViewModel>(context);
     final driverOnlineVm =
     Provider.of<DriverOnlineStatusViewModel>(context, listen: false);
+
+    /// 🔥 ONLINE STATUS DIRECT FROM PROFILE
+    final bool isOnline =
+        driverProfileVm.driverProfileModel?.data?.onlineStatus == 1;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
@@ -247,17 +287,28 @@ class _DriverHomePageState extends State<DriverHomePage> {
             fontWeight: FontWeight.w600,
           ),
           const SizedBox(width: 8),
+
           CupertinoSwitch(
             value: isOnline,
             activeColor: Colors.green,
             onChanged: (value) async {
-              setState(() => isOnline = value);
-
               int status = value ? 1 : 0;
 
               final position = await LocationUtils.getLocation();
-              driverOnlineVm.driverOnlineStatusApi(status, position.latitude, position.longitude, context);
 
+              await driverOnlineVm.driverOnlineStatusApi(
+                status,
+                position.latitude,
+                position.longitude,
+                context,
+              );
+
+              /// 🔁 API SUCCESS KE BAAD PROFILE REFRESH
+              await driverProfileVm.driverProfileApi(
+                position.latitude.toString(),
+                position.longitude.toString(),
+                context,
+              );
             },
           ),
         ],

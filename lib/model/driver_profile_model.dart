@@ -73,6 +73,7 @@ class Data {
   dynamic currentLongitude;
   dynamic createdAt;
   dynamic updatedAt;
+  dynamic onlineStatus;
 
   Data(
       {this.id,
@@ -127,7 +128,9 @@ class Data {
         this.currentLatitude,
         this.currentLongitude,
         this.createdAt,
-        this.updatedAt});
+        this.updatedAt,
+        this.onlineStatus,
+      });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -185,6 +188,7 @@ class Data {
     currentLongitude = json['current_longitude'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
+    onlineStatus = json['online_status'];
   }
 
   Map<String, dynamic> toJson() {
@@ -244,6 +248,7 @@ class Data {
     data['current_longitude'] = currentLongitude;
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;
+    data['online_status'] = onlineStatus;
     return data;
   }
 }

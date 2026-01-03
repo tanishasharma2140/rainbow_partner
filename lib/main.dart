@@ -10,6 +10,8 @@ import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/delete_expired_order_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_offer_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
@@ -151,6 +153,8 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> DriverOnlineStatusViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverCanDiscountViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverOfferViewModel()),
+          ChangeNotifierProvider(create: (context)=> DeleteExpiredOrderViewModel()),
+          ChangeNotifierProvider(create: (context)=> ChangeCabOrderStatusViewModel()),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

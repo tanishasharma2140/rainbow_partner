@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -7,11 +8,13 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view_model/cabdriver/delete_expired_order_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_offer_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
-
 import 'home/driver_accepted_scree.dart';
+import 'dart:ui' as ui;
+import 'package:flutter/services.dart';
 
 
 class RideWaitingScreen extends StatefulWidget {
@@ -23,10 +26,85 @@ class RideWaitingScreen extends StatefulWidget {
 
 class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
+  Timer? _deleteOrderTimer;
+  final Map<String, bool> _discountFetchedForOrder = {};
+  BitmapDescriptor? _currentLocationIcon;
+
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getCurrentLocation();
+      _loadMarkerIcon();
+
+      final deleteOrder =
+      Provider.of<DeleteExpiredOrderViewModel>(context, listen: false);
+
+      /// 🔥 FIRST CALL
+      deleteOrder.deleteExpiredOrderApi();
+
+      /// 🔁 EVERY 1 MINUTE
+      _deleteOrderTimer = Timer.periodic(
+        const Duration(minutes: 1),
+            (timer) {
+          deleteOrder.deleteExpiredOrderApi();
+        },
+      );
+    });
+  }
+
+  Future<BitmapDescriptor> _resizeMarker(
+      String assetPath,
+      int width,
+      ) async {
+    final ByteData data = await rootBundle.load(assetPath);
+    final ui.Codec codec = await ui.instantiateImageCodec(
+      data.buffer.asUint8List(),
+      targetWidth: width, // 👈 CONTROL SIZE HERE
+    );
+    final ui.FrameInfo fi = await codec.getNextFrame();
+    final ByteData? bytes =
+    await fi.image.toByteData(format: ui.ImageByteFormat.png);
+
+    return BitmapDescriptor.fromBytes(bytes!.buffer.asUint8List());
+  }
+
+
+  Future<void> _loadMarkerIcon() async {
+    _currentLocationIcon = await _resizeMarker(
+      'assets/location_oin.png',
+      190,
+    );
+
+    if (_currentLatLng != null) {
+      _updateCurrentLocationMarker(_currentLatLng!);
+    }
+  }
+
+
+
+  Set<Marker> _markers = {};
+
+  void _updateCurrentLocationMarker(LatLng latLng) {
+    _markers.clear();
+
+    _markers.add(
+      Marker(
+        markerId: const MarkerId("current_location"),
+        position: latLng,
+        icon: _currentLocationIcon ?? BitmapDescriptor.defaultMarker,
+        anchor: const Offset(0.5, 0.6),
+      ),
+    );
+
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _deleteOrderTimer?.cancel();
+    super.dispose();
   }
 
   LatLng? _currentLatLng;
@@ -44,15 +122,21 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
       desiredAccuracy: LocationAccuracy.high,
     );
 
+    final latLng = LatLng(position.latitude, position.longitude);
+
     setState(() {
-      _currentLatLng = LatLng(position.latitude, position.longitude);
+      _currentLatLng = latLng;
     });
 
-    // Map camera move
+    // ✅ ADD THIS
+    _updateCurrentLocationMarker(latLng);
+
     _mapController?.animateCamera(
-      CameraUpdate.newLatLngZoom(_currentLatLng!, 16),
+      CameraUpdate.newLatLngZoom(latLng, 16),
     );
   }
+
+
 
   void _goToAcceptedRide({
     required int orderId,
@@ -101,19 +185,27 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
         body: Stack(
           children: [
-            /// ================= MAP =================
-            GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: _currentLatLng ?? const LatLng(26.8467, 80.9462),
-                zoom: 15,
+            /// ================= MAP (REDUCED HEIGHT) =================
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: MediaQuery.of(context).size.height * 0.55,
+              child: GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: _currentLatLng ?? const LatLng(26.8467, 80.9462),
+                  zoom: 15,
+                ),
+                onMapCreated: (controller) {
+                  _mapController = controller;
+                },
+                myLocationEnabled: false, // ❌ default blue dot off
+                markers: _markers,        // ✅ custom image marker
+                zoomControlsEnabled: false,
+                myLocationButtonEnabled: false,
               ),
-              onMapCreated: (controller) {
-                _mapController = controller;
-              },
-              myLocationEnabled: true,
-              zoomControlsEnabled: false,
-              myLocationButtonEnabled: false,
             ),
+
 
 
             /// ================= REALTIME FIREBASE =================
@@ -122,9 +214,9 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                 stream: FirebaseFirestore.instance
                     .collection('cab_orders')
                     .where(
-                      'matched_driver_ids', // ✅ EXACT FIELD
-                      arrayContains: driverId,
-                    )
+                  'matched_driver_ids',
+                  arrayContains: driverId,
+                )
                     .snapshots(),
                 builder: (context, snapshot) {
                   debugPrint(
@@ -133,12 +225,12 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
                   // LOADING
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return _waitingCenter();
+                    return _waitingUI();
                   }
 
                   // ERROR
                   if (snapshot.hasError) {
-                    return const Center(child: Text("Error loading rides"));
+                    return _waitingUI(error: true);
                   }
 
                   final docs = snapshot.data?.docs ?? [];
@@ -147,18 +239,17 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
                   // NO RIDES
                   if (docs.isEmpty) {
-                    return _waitingCenter();
+                    return _waitingUI();
                   }
 
-
-
                   // RIDES FOUND
-                  return Align(
-                    alignment: Alignment.bottomCenter,
+                  return Positioned(
+                    top: MediaQuery.of(context).size.height * 0.35,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
                     child: _orderListSheet(docs),
                   );
-
-
                 },
               ),
 
@@ -172,40 +263,76 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
   }
 
   /// =====================================================
-  /// WAITING UI
+  /// WAITING UI - NOW POSITIONED BELOW MAP
   /// =====================================================
-  Widget _waitingCenter() {
-    return Align(
-      alignment: const Alignment(0, -0.25),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            height: 120,
-            width: 120,
-            decoration: BoxDecoration(
-              color: AppColor.royalBlue.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(
-              Icons.local_taxi_rounded,
-              size: 50,
-              color: AppColor.royalBlue,
-            ),
+  Widget _waitingUI({bool error = false}) {
+    return Positioned(
+      top: MediaQuery.of(context).size.height * 0.55,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Container(
+        color: Colors.white,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!error) ...[
+                Container(
+                  height: 100,
+                  width: 100,
+                  decoration: BoxDecoration(
+                    color: AppColor.royalBlue.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: const Icon(
+                    Icons.local_taxi_rounded,
+                    size: 45,
+                    color: AppColor.royalBlue,
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                const TextConst(
+                  title: "Waiting for ride...",
+                  size: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+
+                const SizedBox(height: 6),
+
+                const TextConst(
+                  title: "Please stay online",
+                  size: 14,
+                  color: Colors.black54,
+                ),
+
+                const SizedBox(height: 20),
+
+                // 🔥 Uber / Rapido style Linear Progress
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      minHeight: 6,
+                      backgroundColor:
+                      AppColor.royalBlue.withOpacity(0.15),
+                      valueColor: const AlwaysStoppedAnimation(
+                        AppColor.royalBlue,
+                      ),
+                    ),
+                  ),
+                ),
+              ] else
+                const Text(
+                  "Error loading rides",
+                  style: TextStyle(color: Colors.red),
+                ),
+            ],
           ),
-          const SizedBox(height: 16),
-          const TextConst(
-            title: "Searching for nearby rides…",
-            size: 16,
-            fontWeight: FontWeight.w700,
-          ),
-          const SizedBox(height: 6),
-          const TextConst(
-            title: "Please stay online",
-            size: 14,
-            color: Colors.black54,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -218,7 +345,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
     Provider.of<DriverOfferViewModel>(context);
 
     return Container(
-      height: 460,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -262,42 +388,35 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                 final data = docs[index].data() as Map<String, dynamic>;
 
                 /// ---------------- CORE DATA ----------------
-                final int baseAmount =
-                    data['estimated_amount'] ?? 0;
-
-                final ValueNotifier<int> amount =
-                ValueNotifier<int>(baseAmount);
-
-                final String userIdOrder =
-                    data['user_id']?.toString() ?? '';
-
+                final int baseAmount = data['estimated_amount'] ?? 0;
                 final String orderId = docs[index].id;
+                final String userIdOrder = data['user_id']?.toString() ?? '';
+                final int vehicleId = data['vehicle_id'] ?? 0;
 
-                /// CALL DISCOUNT API (ONLY ONCE)
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (driverCanDiscountVm.driverDiscount == null) {
-                    driverCanDiscountVm.driverDiscountApi(
-                      data['vehicle_id'],
-                      baseAmount,
-                      context,
-                    );
-                  }
-                });
-
-
+                /// ✅ FETCH DISCOUNT ONLY ONCE PER ORDER
+                if (_discountFetchedForOrder[orderId] != true) {
+                  _discountFetchedForOrder[orderId] = true;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (driverCanDiscountVm.driverDiscount == null) {
+                      driverCanDiscountVm.driverDiscountApi(
+                        vehicleId,
+                        baseAmount,
+                        context,
+                      );
+                    }
+                  });
+                }
 
                 /// DISCOUNT LOGIC (± FROM BASE)
                 final int maxDiscount =
                 (double.tryParse(
                   driverCanDiscountVm.driverDiscount ?? '0',
-                ) ??
-                    0)
-                    .round();
+                ) ?? 0).round();
 
-                final int minAllowedAmount =
-                    baseAmount - maxDiscount;
-                final int maxAllowedAmount =
-                    baseAmount + maxDiscount;
+                final int minAllowedAmount = baseAmount - maxDiscount;
+                final int maxAllowedAmount = baseAmount + maxDiscount;
+
+                final ValueNotifier<int> amount = ValueNotifier<int>(baseAmount);
 
                 if (data['order_status'] == 1 && _currentLatLng != null) {
                   _goToAcceptedRide(
@@ -317,12 +436,10 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                     children: [
                       /// ORDER ID + DISTANCE
                       Row(
-                        mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           TextConst(
-                            title:
-                            "Order #${data['order_id'] ?? orderId}",
+                            title: "Order #${data['order_id'] ?? orderId}",
                             size: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -332,10 +449,8 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color:
-                              Colors.green.withOpacity(0.12),
-                              borderRadius:
-                              BorderRadius.circular(20),
+                              color: Colors.green.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(20),
                             ),
                             child: TextConst(
                               title: "${data['distance_km']} km",
@@ -351,8 +466,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
                       /// PICKUP
                       Row(
-                        crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Icon(
                             Icons.radio_button_checked,
@@ -362,8 +476,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextConst(
-                              title:
-                              data['pickup_location'] ?? '',
+                              title: data['pickup_location'] ?? '',
                               size: 13,
                             ),
                           ),
@@ -374,8 +487,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
                       /// DROP
                       Row(
-                        crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Icon(
                             Icons.location_on,
@@ -385,8 +497,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextConst(
-                              title:
-                              data['drop_location'] ?? '',
+                              title: data['drop_location'] ?? '',
                               size: 13,
                             ),
                           ),
@@ -407,29 +518,22 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                       ValueListenableBuilder<int>(
                         valueListenable: amount,
                         builder: (_, value, __) {
-                          final bool canMinus =
-                              value > minAllowedAmount;
-                          final bool canPlus =
-                              value < maxAllowedAmount;
+                          final bool canMinus = value > minAllowedAmount;
+                          final bool canPlus = value < maxAllowedAmount;
 
                           return Container(
                             height: 50,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius:
-                              BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade300),
                             ),
                             child: Row(
                               children: [
                                 /// MINUS
                                 Expanded(
                                   child: InkWell(
-                                    onTap: canMinus
-                                        ? () =>
-                                    amount.value -= 1
-                                        : null,
+                                    onTap: canMinus ? () => amount.value -= 1 : null,
                                     child: Center(
                                       child: Container(
                                         height: 32,
@@ -437,28 +541,20 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           color: canMinus
-                                              ? AppColor
-                                              .royalBlue
-                                              .withOpacity(
-                                            0.12,
-                                          )
+                                              ? AppColor.royalBlue.withOpacity(0.12)
                                               : Colors.grey.shade200,
                                           border: Border.all(
                                             color: canMinus
-                                                ? AppColor
-                                                .royalBlue
-                                                : Colors
-                                                .grey.shade400,
+                                                ? AppColor.royalBlue
+                                                : Colors.grey.shade400,
                                           ),
                                         ),
                                         child: Icon(
                                           Icons.remove,
                                           size: 18,
                                           color: canMinus
-                                              ? AppColor
-                                              .royalBlue
-                                              : Colors
-                                              .grey.shade400,
+                                              ? AppColor.royalBlue
+                                              : Colors.grey.shade400,
                                         ),
                                       ),
                                     ),
@@ -473,10 +569,8 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                                       "₹$value",
                                       style: const TextStyle(
                                         fontSize: 16,
-                                        fontWeight:
-                                        FontWeight.bold,
-                                        color:
-                                        AppColor.royalBlue,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColor.royalBlue,
                                       ),
                                     ),
                                   ),
@@ -485,10 +579,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                                 /// PLUS
                                 Expanded(
                                   child: InkWell(
-                                    onTap: canPlus
-                                        ? () =>
-                                    amount.value += 1
-                                        : null,
+                                    onTap: canPlus ? () => amount.value += 1 : null,
                                     child: Center(
                                       child: Container(
                                         height: 32,
@@ -496,28 +587,20 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           color: canPlus
-                                              ? AppColor
-                                              .royalBlue
-                                              .withOpacity(
-                                            0.12,
-                                          )
+                                              ? AppColor.royalBlue.withOpacity(0.12)
                                               : Colors.grey.shade200,
                                           border: Border.all(
                                             color: canPlus
-                                                ? AppColor
-                                                .royalBlue
-                                                : Colors
-                                                .grey.shade400,
+                                                ? AppColor.royalBlue
+                                                : Colors.grey.shade400,
                                           ),
                                         ),
                                         child: Icon(
                                           Icons.add,
                                           size: 18,
                                           color: canPlus
-                                              ? AppColor
-                                              .royalBlue
-                                              : Colors
-                                              .grey.shade400,
+                                              ? AppColor.royalBlue
+                                              : Colors.grey.shade400,
                                         ),
                                       ),
                                     ),
@@ -528,8 +611,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                           );
                         },
                       ),
-
-
 
                       const SizedBox(height: 16),
 
@@ -558,7 +639,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                           );
                         },
                       ),
-
                     ],
                   ),
                 );

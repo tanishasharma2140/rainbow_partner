@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
-import 'package:rainbow_partner/repo/cabdriver/driver_offer_repo.dart';
+import 'package:rainbow_partner/repo/cabdriver/change_cab_order_status_repo.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
-class DriverOfferViewModel with ChangeNotifier {
-  final _driverOfferRepo = DriverOfferRepo();
+class ChangeCabOrderStatusViewModel with ChangeNotifier {
+  final _changeCabOrderStatusRepo = ChangeCabOrderStatusRepo();
+
   bool _loading = false;
   bool get loading => _loading;
 
@@ -13,28 +14,29 @@ class DriverOfferViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> driverOfferApi(
-      dynamic userIdOrder,
+  Future<void> changeCabOrderApi(
       dynamic orderId,
-      dynamic offerAmount,
-      dynamic estimatedAmount,
+      dynamic orderStatus,
+      dynamic orderOtp,
+      dynamic cancelReason,
       BuildContext context,
       ) async {
     setLoading(true);
 
     try {
       UserViewModel userViewModel = UserViewModel();
-      String? userId = await userViewModel.getUser();
+      String? driverId = await userViewModel.getUser();
 
       Map data = {
-        "user_id": userIdOrder,
-        "driver_id": userId,
         "order_id": orderId,
-        "offer_amount": offerAmount,
-        "estimated_amount": estimatedAmount,
+        "order_status": orderStatus,
+        "orderOtp": orderOtp,
+        "type": 2,
+        "driver_id": driverId,
+        "cancel_reason": cancelReason
       };
 
-      final response = await _driverOfferRepo.driverOfferApi(data);
+      final response = await _changeCabOrderStatusRepo.changeCabOrderApi(data);
 
       final int statusCode = response['statusCode'] ?? 0;
       final Map<String, dynamic> body = response['body'] ?? {};
