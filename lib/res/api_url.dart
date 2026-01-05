@@ -1,5 +1,5 @@
 class ApiUrl {
-  static const String baseUrl ="https://yoyomiles.codescarts.com/api/";
+  static const String baseUrl ="https://admin.rainbowsenterprises.com/api/";
   /// ServiceMan
   static const String servicemanLoginUrl ="${baseUrl}serviceman_login";
   static const String servicemanRegisterUrl ="${baseUrl}serviceman_register";
@@ -38,6 +38,7 @@ class ApiUrl {
   static const String deleteExpiredUrl ="${baseUrl}delete-expired-orders";
   static const String changeCabOrderStatusUrl ="${baseUrl}change-cab-order-status";
   static const String driverTransactionUrl ="${baseUrl}driver_transactions";
+  static const String cabEarningUrl ="${baseUrl}cab-earning";
 
 
 

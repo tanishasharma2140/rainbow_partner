@@ -15,6 +15,7 @@ import 'package:rainbow_partner/view/Cab%20Driver/home/wallet/add_bank.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/wallet/cab_bank_update_status.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/wallet/wallet_and_settlement.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/ride_waiting_screen.dart';
+import 'package:rainbow_partner/view_model/cabdriver/cab_earning_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/driver_online_status_view_model.dart';
 import 'earning report/daily_weekly_earning_report.dart';
@@ -37,6 +38,8 @@ class _DriverHomePageState extends State<DriverHomePage> {
       position.longitude.toString(),
       context,
     );
+    final cabEarning = Provider.of<CabEarningViewModel>(context,listen: false);
+    cabEarning.cabEarningApi("1", context);
   }
 
   @override
@@ -55,6 +58,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
     final data = driverProfileVm.driverProfileModel?.data;
     final driverOnlineVm =
     Provider.of<DriverOnlineStatusViewModel>(context);
+    final cabEarningVm = Provider.of<CabEarningViewModel>(context);
 
     return SafeArea(
       top: false,
@@ -152,17 +156,17 @@ class _DriverHomePageState extends State<DriverHomePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 18),
                     child: Row(
                       children: [
-                        _statsBox("Rides", "05", Icons.local_taxi_rounded),
+                        _statsBox("Rides", cabEarningVm.cabEarningModel!.data!.totalCompletedRide.toString(), Icons.local_taxi_rounded),
 
                       const SizedBox(width: 12),
-                      _statsBox("Earnings", "₹ 540", Icons.payments_rounded,
+                      _statsBox("Earnings", "₹${cabEarningVm.cabEarningModel!.data!.totalEarning}", Icons.payments_rounded,
                       onTap: (){
                         Navigator.push(context, CupertinoPageRoute(builder: (context)=> DailyWeeklyEarningReport()));
 
                       }
                       ),
                         const SizedBox(width: 12),
-                        _statsBox("Distance", "12 km", Icons.route_rounded),
+                        _statsBox("Distance", "${cabEarningVm.cabEarningModel!.data!.totalDistance}km", Icons.route_rounded),
                       ],
                     ),
                   ),

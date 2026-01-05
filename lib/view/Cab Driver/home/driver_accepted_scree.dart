@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
+import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/home/driver_home_page.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
@@ -34,6 +36,11 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
   bool isCompletingRide = false;
   GoogleMapController? _mapController;
   bool _rideCompletedDialogShown = false;
+  bool _navigatedToPaymentScreen = false;
+  int? _previousOrderStatus;
+  int? _previousPayMode;
+  bool _paymentSuccessDialogShown = false;
+
 
 
   Map<String, dynamic>? orderData;
@@ -123,20 +130,118 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
           .listen((orderDoc) {
         if (orderDoc.exists) {
           final data = orderDoc.data();
+          final int newStatus = data?['order_status'] ?? 0;
+          final int newPayMode = data?['pay_mode'] ?? 0;
+
+// 🔥 STORE PREVIOUS VALUES
+          final int? oldStatus = _previousOrderStatus;
+          final int? oldPayMode = _previousPayMode;
+
+// 🔥 UPDATE CURRENT
+          _previousOrderStatus = newStatus;
+          _previousPayMode = newPayMode;
+
           setState(() {
             orderData = data;
             isLoading = false;
           });
+
+          print("🟡 OLD STATUS = $oldStatus → NEW STATUS = $newStatus");
+          print("🟡 OLD PAYMODE = $oldPayMode → NEW PAYMODE = $newPayMode");
           _updateMapMarkers();
           _calculateETA();
 
-          // ✅ Navigate to payment pages when ride is completed
-          if (data?['order_status'] == 4) {
-            _handleRideCompletion();
+          final int orderStatus = data?['order_status'] ?? 0;
+          final int payMode = data?['pay_mode'] ?? 0;
+
+          print("🔥 DRIVER LISTENER");
+          print("➡️ orderStatus = $orderStatus");
+          print("➡️ payMode = $payMode");
+          print("➡️ navigated = $_navigatedToPaymentScreen");
+
+          if (oldStatus != 4 && newStatus == 4) {
+            _goToPaymentFlow();
           }
-          if (data?['order_status'] == 5 && !_rideCompletedDialogShown) {
-            _showRideCompletedPopup();
+
+          if (newStatus == 4 &&
+              oldPayMode != null &&
+              oldPayMode != newPayMode) {
+
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+
+              print("🔁 SWITCH PAYMENT SCREEN: $oldPayMode → $newPayMode");
+
+              final amount = _getPayableAmount(orderData!);
+              final userName = orderData!['user_name'];
+
+              /// 🔥 IMPORTANT: replace current payment screen
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) {
+                    if (newPayMode == 1) {
+                      /// 💳 ONLINE
+                      return WaitingForPaymentScreen(
+                        orderId: widget.orderId,
+                        amount: amount,
+                        userName: userName,
+                      );
+                    }
+
+                    else if (newPayMode == 2) {
+                      /// 💵 CASH
+                      return CollectCashScreen(
+                        orderId: widget.orderId,
+                        amount: amount,
+                        userName: userName,
+                      );
+                    }
+
+                    else {
+                      /// 👛 WALLET
+                      return CollectByWalletScreen(
+                        orderId: widget.orderId,
+                        amount: amount,
+                        userName: userName,
+                      );
+                    }
+                  },
+                ),
+              );
+            });
           }
+
+          bool _finalHandled = false;
+
+          if (newStatus == 5 && !_finalHandled) {
+            _finalHandled = true;
+
+            debugPrint("🔥 STATUS 5 FINAL | payMode = $newPayMode");
+
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              if (!mounted) return;
+
+              if (Navigator.of(context, rootNavigator: true).canPop()) {
+                Navigator.of(context, rootNavigator: true).pop();
+              }
+
+              await Future.delayed(const Duration(milliseconds: 300));
+              if (!mounted) return;
+
+              if (newPayMode == 2) {
+                _showRideCompletedPopup();
+              } else if (newPayMode == 1) {
+                _showPaymentSuccessPopup();
+              } else if (newPayMode == 3) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => DriverHomePage()),
+                      (_) => false,
+                );
+              }
+            });
+          }
+
+
         }
       });
     } catch (e) {
@@ -147,30 +252,50 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
     }
   }
 
-  void _handleRideCompletion() {
-    final int payMode = orderData?['pay_mode'] ?? 1;
+  void _goToPaymentFlow() {
+    final payMode = orderData!['pay_mode'] ?? 1;
+    final walletApply = orderData!['wallet_apply'] ?? 0;
+    final amount = _getPayableAmount(orderData!);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (_navigatedToPaymentScreen) return;
+    _navigatedToPaymentScreen = true;
+
+    print("🚗 GOING TO PAYMENT FLOW");
+
+    Future.microtask(() {
+      if (!mounted) return;
+
       if (payMode == 1) {
-        // Online Payment
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => WaitingForPaymentScreen(
               orderId: widget.orderId,
-              amount: orderData!['estimated_amount'],
+              amount: amount,
               userName: orderData!['user_name'],
             ),
           ),
         );
-      } else if (payMode == 2) {
-        // Cash Payment
-        Navigator.pushReplacement(
+      }
+      else if (payMode == 2) {
+        Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => CollectCashScreen(
               orderId: widget.orderId,
-              amount: orderData!['estimated_amount'],
+              amount: amount,
+              userName: orderData!['user_name'],
+            ),
+          ),
+        );
+      }
+      else if (payMode == 3 && walletApply == 1) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CollectByWalletScreen(
+              orderId: widget.orderId,
+              amount: amount,
               userName: orderData!['user_name'],
             ),
           ),
@@ -178,6 +303,168 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
       }
     });
   }
+
+
+  void _showPaymentSuccessPopup() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) {
+          return Dialog(
+            backgroundColor: AppColor.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                  Container(
+                    height: 90,
+                    width: 90,
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle,
+                      size: 60,
+                      color: Colors.orange,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                   TextConst(
+                     title:
+                    "Payment Successful",
+                     size: 18,
+                     fontWeight: FontWeight.w700,
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  const Text(
+                    "Customer has completed the payment",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: AppFonts.kanitReg,
+                      color: Colors.black54,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) => DriverHomePage()),
+                            (route) => false,
+                      );
+                    },
+                    child: Container(
+                      height: 48,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "OK",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    });
+  }
+
+
+  double _getPayableAmount(Map<String, dynamic> orderData) {
+    final int payMode = orderData['pay_mode'] ?? 1;
+    final int walletApply = orderData['wallet_apply'] ?? 0;
+
+    if ((payMode == 1 && walletApply == 1) ||
+        (payMode == 3 && walletApply == 1)) {
+      return (orderData['amount_after_wallet'] ?? 0).toDouble();
+    }
+
+    return (orderData['final_amount'] ?? 0).toDouble();
+  }
+
+
+  void _handleRideCompletion() {
+    if (!mounted) return;
+
+    final int payMode = orderData?['pay_mode'] ?? 1;
+    final int walletApply = orderData?['wallet_apply'] ?? 0;
+    final double amount = _getPayableAmount(orderData!);
+
+    print("➡️ HANDLE COMPLETION FIXED");
+
+    /// 🔥 VERY IMPORTANT
+    _orderSubscription?.cancel();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      final navigator = Navigator.of(context, rootNavigator: true);
+
+      if (payMode == 1) {
+        print("✅ PUSH WaitingForPaymentScreen");
+        navigator.pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => WaitingForPaymentScreen(
+              orderId: widget.orderId,
+              amount: amount,
+              userName: orderData!['user_name'],
+            ),
+          ),
+        );
+      }
+      else if (payMode == 2) {
+        print("✅ PUSH CollectCashScreen");
+        navigator.pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => CollectCashScreen(
+              orderId: widget.orderId,
+              amount: amount,
+              userName: orderData!['user_name'],
+            ),
+          ),
+        );
+      }
+      else if (payMode == 3 && walletApply == 1) {
+        print("✅ PUSH CollectByWalletScreen");
+        navigator.pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => CollectByWalletScreen(
+              orderId: widget.orderId,
+              amount: amount,
+              userName: orderData!['user_name'],
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+
+
 
 
   void _showRideCompletedPopup() {
@@ -190,6 +477,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
         barrierDismissible: false,
         builder: (ctx) {
           return Dialog(
+            backgroundColor: AppColor.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -214,31 +502,31 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
 
                   const SizedBox(height: 20),
 
-                  const Text(
+                   TextConst(
+                     title:
                     "Ride Completed",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+                     size: 18,
+                     fontWeight: FontWeight.w700,
                   ),
 
                   const SizedBox(height: 8),
 
-                  const Text(
-                    "Payment collected successfully",
+                  const TextConst(
+                    title:
+                    "Thank you for riding with us",
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black54,
-                    ),
+                    size: 14,
+                    color: Colors.black54,
                   ),
 
                   const SizedBox(height: 24),
 
                   GestureDetector(
                     onTap: () {
-                      Navigator.of(context)
-                          .popUntil((route) => route.isFirst);
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) => DriverHomePage()),
+                            (route) => false,
+                      );
                     },
                     child: Container(
                       height: 48,
@@ -252,6 +540,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                         "Done",
                         style: TextStyle(
                           color: Colors.white,
+                          fontFamily: AppFonts.kanitReg,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -807,7 +1096,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                                 child: _infoItem(
                                   icon: Icons.currency_rupee,
                                   title: 'Amount',
-                                  value: "₹${orderData!['estimated_amount']}",
+                                  value: "₹${_getPayableAmount(orderData!)}",
                                   color: Colors.green,
                                 ),
                               ),
@@ -1454,14 +1743,112 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
                 onAccepted: () async {
                   await changeCabOrder.changeCabOrderApi(
                     widget.orderId,
-                    5, // ✅ CASH COLLECTED STATUS
+                    5,
                     "",
                     "",
                     context,
                   );
+                  // Navigator.pop(context);
                 },
               ),
 
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CollectByWalletScreen extends StatelessWidget {
+  final int orderId;
+  final double amount;
+  final String userName;
+
+  const CollectByWalletScreen({
+    super.key,
+    required this.orderId,
+    required this.amount,
+    required this.userName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                height: 140,
+                width: 140,
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet,
+                  size: 70,
+                  color: Colors.purple,
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              const Text(
+                "Wallet Payment",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                "$userName paid via wallet",
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+
+              const SizedBox(height: 40),
+
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.purple.withOpacity(0.3),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const Text("Amount Received"),
+                    const SizedBox(height: 8),
+                    Text(
+                      "₹$amount",
+                      style: const TextStyle(
+                        fontSize: 42,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.purple,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context)
+                      .popUntil((route) => route.isFirst);
+                },
+                child: const Text("Done"),
+              ),
             ],
           ),
         ),
