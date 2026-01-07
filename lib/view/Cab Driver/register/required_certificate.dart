@@ -11,6 +11,7 @@ import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_four_view_model.dart';
 
 class RequiredCertificates extends StatefulWidget {
@@ -252,14 +253,9 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                             pollutionCertificate == null ||
                             insuranceCertificate == null ||
                             policeCertificate == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  "Please upload all required certificates"),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
+                          Utils.showErrorMessage(context, "Please upload all required certificates");
+
+                        return;
                         }
 
                         driverRegisterFour.driverRegisterFourApi(

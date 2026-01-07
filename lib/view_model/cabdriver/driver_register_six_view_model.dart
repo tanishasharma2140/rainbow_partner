@@ -30,7 +30,7 @@ class DriverRegisterSixViewModel with ChangeNotifier {
     required File vehiclePermitA,
     required File vehiclePermitB,
     required File vehicleRegistrationFront,
-    required File vehicleRegistrationBack,
+     File? vehicleRegistrationBack,
     required String vehicleInfoStatus,
     required BuildContext context,
   }) async {

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/auth/splash.dart';
+import 'package:rainbow_partner/res/app_fonts.dart';
+import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
+import 'package:rainbow_partner/view_model/user_view_model.dart';
 
 class DriverProfile extends StatefulWidget {
   const DriverProfile({super.key});
@@ -26,7 +30,27 @@ class _DriverProfileState extends State<DriverProfile> {
         backgroundColor: AppColor.royalBlue,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          GestureDetector(
+              onTap: () {
+                showModalBottomSheet(
+                  backgroundColor: AppColor.white,
+                  context: context,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(10)),
+                  ),
+                  builder: (BuildContext context) {
+                    return logoutBottomSheet(context);
+                  },
+                );
+              },
+              child: Icon(Icons.logout)),
+          SizedBox(width: 13,)
+        ],
       ),
+
+
 
       body: Consumer<DriverProfileViewModel>(
         builder: (context, vm, _) {
@@ -282,4 +306,74 @@ class _DriverProfileState extends State<DriverProfile> {
       ],
     );
   }
+  Widget logoutBottomSheet(context) {
+    return SafeArea(
+      bottom: true,
+      child: Padding(
+        padding: EdgeInsets.all(Sizes.screenHeight * 0.02),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextConst(
+                title: "Are you sure you want to log out?",
+                size: 16,
+                color:AppColor.black),
+            SizedBox(height: Sizes.screenHeight * 0.03),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    height: Sizes.screenHeight * 0.058,
+                    width: Sizes.screenWidth * 0.4,
+                    decoration: BoxDecoration(
+                      color: AppColor.white,
+                      border: Border.all(
+                          color: AppColor.royalBlue.withOpacity(0.75), width: 2),
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
+                    ),
+                    child: Center(
+                      child: TextConst(
+                          fontWeight: FontWeight.w600,
+                          fontFamily: AppFonts.kanitReg,
+                          title: "No", color: AppColor.royalBlue),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: Sizes.screenWidth * 0.02,
+                ),
+                InkWell(
+                  onTap: () {
+                    UserViewModel().remove();
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const Splash()),
+                            (context) => false);
+                  },
+                  child: Container(
+                    height: Sizes.screenHeight * 0.058,
+                    width: Sizes.screenWidth * 0.4,
+                    decoration: BoxDecoration(
+                      color: AppColor.royalBlue,
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
+                    ),
+                    child: Center(
+                      child: TextConst(title: "Yes", color: AppColor.white,fontFamily:AppFonts.kanitReg,fontWeight: FontWeight.w400,),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 }

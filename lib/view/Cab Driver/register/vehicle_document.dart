@@ -363,7 +363,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                               vehicleRegistrationFront:
                                   vehicleRegistrationFront!,
                               vehicleRegistrationBack:
-                                  vehicleRegistrationBack!, // optional
+                                  vehicleRegistrationBack, // optional
                               vehicleInfoStatus: "1",
                               context: context,
                             );

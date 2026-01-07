@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
@@ -11,6 +12,8 @@ import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
+import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/register/aadhaar_info.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_five_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_colors_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_model_view_model.dart';
@@ -64,6 +67,54 @@ class _VehicleInformationState extends State<VehicleInformation> {
       vehicleColorVm.vehicleColorsApi(context);
     });
   }
+
+  final RegExp vehicleNumberRegex =
+  RegExp(r'^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$');
+  String? vehicleNumberError;
+
+  bool _validateVehicleInfo() {
+    if (vehiclePhoto == null) {
+      _showError("Please upload vehicle photo");
+      return false;
+    }
+
+    if (selectedBrandId == null) {
+      _showError("Please select vehicle brand");
+      return false;
+    }
+
+    if (selectedModelId == null) {
+      _showError("Please select vehicle model");
+      return false;
+    }
+
+    if (selectedColor == null || selectedColor!.isEmpty) {
+      _showError("Please select vehicle color");
+      return false;
+    }
+
+    if (plateController.text.trim().isEmpty) {
+      _showError("Please enter vehicle plate number");
+      return false;
+    }
+    if (vehicleNumberError != null) {
+      _showError("Please enter valid vehicle number");
+      return false;
+    }
+
+
+    if (yearController.text.trim().isEmpty) {
+      _showError("Please select vehicle production year");
+      return false;
+    }
+
+    return true;
+  }
+
+  void _showError(String message) {
+     Utils.showErrorMessage(context, message);
+  }
+
 
   Future<void> pickImage(bool fromCamera) async {
     final file = await picker.pickImage(
@@ -173,24 +224,6 @@ class _VehicleInformationState extends State<VehicleInformation> {
                         child: const Icon(Icons.close, size: 20),
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              // ---------------- SEARCH BAR (UI ONLY) ----------------
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 18),
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.search, color: Colors.grey),
-                    SizedBox(width: 10),
-                    Text("Start typing", style: TextStyle(color: Colors.grey)),
                   ],
                 ),
               ),
@@ -509,7 +542,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
                   ),
 
                   inputField(
-                    hint: "Plate number",
+                    hint: "Vehicle Number",
                     controller: plateController,
                   ),
 
@@ -565,19 +598,22 @@ class _VehicleInformationState extends State<VehicleInformation> {
                           bgColor: AppColor.royalBlue,
                           textColor: Colors.white,
                           onTap: () {
+                            if (!_validateVehicleInfo()) return;
+
                             driverRegisterFiveVm.driverRegisterFiveApi(
                               vehiclePhoto: vehiclePhoto!,
                               vehicleInfoStatus: "1",
-                              brandId: selectedBrandId,
-                              brandName: selectedBrand,
-                              modelId: selectedModelId,
-                              modelName: selectedModel,
-                              vehicleColor: selectedColor,
-                              vehiclePlateNumber: plateController.text,
-                              vehicleProductionYear: yearController.text,
+                              brandId: selectedBrandId!,
+                              brandName: selectedBrand!,
+                              modelId: selectedModelId!,
+                              modelName: selectedModel!,
+                              vehicleColor: selectedColor!,
+                              vehiclePlateNumber: plateController.text.trim(),
+                              vehicleProductionYear: yearController.text.trim(),
                               context: context,
                             );
                           },
+
                         ),
                       ),
                     ],
@@ -621,25 +657,60 @@ class _VehicleInformationState extends State<VehicleInformation> {
     );
   }
 
+
+
   Widget inputField({
     required String hint,
     required TextEditingController controller,
     bool readOnly = false,
     VoidCallback? onTap,
   }) {
-    return Container(
+    final bool isVehicleNumber = hint == "Vehicle Number";
+
+    Widget field = Container(
       height: 55,
       padding: const EdgeInsets.symmetric(horizontal: 18),
       margin: const EdgeInsets.only(top: 18),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(15),
+
+        /// 🔴 RED BORDER ONLY FOR VEHICLE NUMBER
+        border: isVehicleNumber && vehicleNumberError != null
+            ? Border.all(color: Colors.red)
+            : null,
       ),
       alignment: Alignment.centerLeft,
       child: TextField(
         controller: controller,
         readOnly: readOnly,
         onTap: onTap,
+
+        /// ⌨️ INPUT FORMAT ONLY FOR VEHICLE NUMBER
+        inputFormatters: isVehicleNumber
+            ? [
+          FilteringTextInputFormatter.allow(
+            RegExp(r'[A-Za-z0-9]'),
+          ),
+          LengthLimitingTextInputFormatter(10),
+          UpperCaseTextFormatter(),
+        ]
+            : null,
+
+        /// 🔍 VALIDATION ONLY FOR VEHICLE NUMBER
+        onChanged: isVehicleNumber
+            ? (value) {
+          if (value.isEmpty) {
+            setState(() => vehicleNumberError = null);
+          } else if (!vehicleNumberRegex.hasMatch(value)) {
+            setState(() => vehicleNumberError =
+            "Enter valid vehicle number (e.g. KA01AB1234)");
+          } else {
+            setState(() => vehicleNumberError = null);
+          }
+        }
+            : null,
+
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(
@@ -649,12 +720,36 @@ class _VehicleInformationState extends State<VehicleInformation> {
           ),
           border: InputBorder.none,
           suffixIcon: readOnly
-              ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey)
+              ? const Icon(Icons.calendar_today,
+              size: 20, color: Colors.grey)
               : null,
         ),
       ),
     );
+
+    /// ⛔ ERROR TEXT ONLY FOR VEHICLE NUMBER
+    if (!isVehicleNumber) return field;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        field,
+        if (vehicleNumberError != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 12, top: 6),
+            child: Text(
+              vehicleNumberError!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+              ),
+            ),
+          ),
+      ],
+    );
   }
+
+
 
 
 }

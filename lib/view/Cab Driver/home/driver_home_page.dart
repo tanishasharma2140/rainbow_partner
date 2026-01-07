@@ -156,17 +156,17 @@ class _DriverHomePageState extends State<DriverHomePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 18),
                     child: Row(
                       children: [
-                        _statsBox("Rides", cabEarningVm.cabEarningModel!.data!.totalCompletedRide.toString(), Icons.local_taxi_rounded),
+                        _statsBox("Rides", cabEarningVm.cabEarningModel?.data?.totalCompletedRide.toString()??"0", Icons.local_taxi_rounded),
 
                       const SizedBox(width: 12),
-                      _statsBox("Earnings", "₹${cabEarningVm.cabEarningModel!.data!.totalEarning}", Icons.payments_rounded,
+                      _statsBox("Earnings", "₹${cabEarningVm.cabEarningModel?.data?.totalEarning??"0"}", Icons.payments_rounded,
                       onTap: (){
                         Navigator.push(context, CupertinoPageRoute(builder: (context)=> DailyWeeklyEarningReport()));
 
                       }
                       ),
                         const SizedBox(width: 12),
-                        _statsBox("Distance", "${cabEarningVm.cabEarningModel!.data!.totalDistance}km", Icons.route_rounded),
+                        _statsBox("Distance", "${cabEarningVm.cabEarningModel?.data?.totalDistance??"0"}km", Icons.route_rounded),
                       ],
                     ),
                   ),

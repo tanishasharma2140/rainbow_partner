@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
@@ -11,6 +12,7 @@ import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
+import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab Driver/register/vehicle_information.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/register/required_certificate.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_three_view_model.dart';
@@ -45,6 +47,44 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
       onSelected(File(file.path));
       setState(() {});
     }
+  }
+
+  bool _validateFields() {
+    if (aadhaarFront == null) {
+      _showError("Please upload Aadhaar front side");
+      return false;
+    }
+
+    if (aadhaarBack == null) {
+      _showError("Please upload Aadhaar back side");
+      return false;
+    }
+
+    if (aadhaarNumberController.text.trim().isEmpty) {
+      _showError("Please enter Aadhaar number");
+      return false;
+    }
+
+    if (panFront == null) {
+      _showError("Please upload PAN card front side");
+      return false;
+    }
+
+    if (panBack == null) {
+      _showError("Please upload PAN card back side");
+      return false;
+    }
+
+    if (panNumberController.text.trim().isEmpty) {
+      _showError("Please enter PAN number");
+      return false;
+    }
+
+    return true;
+  }
+
+  void _showError(String message) {
+    Utils.showErrorMessage(context, message);
   }
 
   // BOTTOM SHEET
@@ -106,7 +146,10 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(20),
                   image: image != null
-                      ? DecorationImage(image: FileImage(image), fit: BoxFit.cover)
+                      ? DecorationImage(
+                          image: FileImage(image),
+                          fit: BoxFit.cover,
+                        )
                       : null,
                 ),
                 child: image == null
@@ -122,13 +165,17 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                   child: GestureDetector(
                     onTap: () {
                       /// Remove image
-                      if (label.contains("Aadhaar") && label.contains("Front")) {
+                      if (label.contains("Aadhaar") &&
+                          label.contains("Front")) {
                         aadhaarFront = null;
-                      } else if (label.contains("Aadhaar") && label.contains("Back")) {
+                      } else if (label.contains("Aadhaar") &&
+                          label.contains("Back")) {
                         aadhaarBack = null;
-                      } else if (label.contains("PAN") && label.contains("Front")) {
+                      } else if (label.contains("PAN") &&
+                          label.contains("Front")) {
                         panFront = null;
-                      } else if (label.contains("PAN") && label.contains("Back")) {
+                      } else if (label.contains("PAN") &&
+                          label.contains("Back")) {
                         panBack = null;
                       }
                       setState(() {});
@@ -140,7 +187,11 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                         color: Colors.red,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.close, color: Colors.white, size: 18),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                     ),
                   ),
                 ),
@@ -160,12 +211,16 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
     );
   }
 
-
   // TEXT FIELD
+
   Widget _inputField({
     required String hint,
     required TextEditingController controller,
+    required int maxLength,
   }) {
+    final bool isAadhaar = hint == "Aadhaar Number";
+    final bool isPan = hint == "PAN Number";
+
     return Container(
       height: 55,
       padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -177,8 +232,36 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
       ),
       child: TextField(
         controller: controller,
+
+        /// ⌨️ KEYBOARD TYPE
+        keyboardType: isAadhaar ? TextInputType.number : TextInputType.text,
+
+        /// 🔤 CAPITALIZATION FOR PAN
+        textCapitalization: isPan
+            ? TextCapitalization.characters
+            : TextCapitalization.none,
+
+        /// 🚫 INPUT FORMATTERS
+        inputFormatters: isAadhaar
+            ? [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(12),
+              ]
+            : isPan
+            ? [
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+                LengthLimitingTextInputFormatter(10),
+                UpperCaseTextFormatter(), // 👈 CUSTOM FORMATTER
+              ]
+            : null,
+
+        /// 🧮 MAX LENGTH
+        maxLength: isAadhaar ? 12 : maxLength,
+        maxLengthEnforcement: MaxLengthEnforcement.enforced,
+
         decoration: InputDecoration(
           hintText: hint,
+          counterText: "",
           hintStyle: const TextStyle(fontFamily: AppFonts.kanitReg),
           border: InputBorder.none,
         ),
@@ -188,7 +271,9 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
 
   @override
   Widget build(BuildContext context) {
-    final driverRegisterThreeVm = Provider.of<DriverRegisterThreeViewModel>(context);
+    final driverRegisterThreeVm = Provider.of<DriverRegisterThreeViewModel>(
+      context,
+    );
     return Stack(
       children: [
         SafeArea(
@@ -236,6 +321,7 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                   _inputField(
                     hint: "Aadhaar Number",
                     controller: aadhaarNumberController,
+                    maxLength: 12,
                   ),
 
                   const SizedBox(height: 20),
@@ -267,11 +353,10 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                   _inputField(
                     hint: "PAN Number",
                     controller: panNumberController,
+                    maxLength: 10,
                   ),
 
-                   SizedBox(
-                     height: Sizes.screenHeight*0.025,
-                   ),
+                  SizedBox(height: Sizes.screenHeight * 0.025),
 
                   /// ------------------ FOOTER ------------------
                   Row(
@@ -314,15 +399,19 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                           textColor: AppColor.white,
                           title: "Next",
                           onTap: () {
+                            if (!_validateFields()) return;
+
                             driverRegisterThreeVm.driverRegisterThreeApi(
-                                aadhaarFront: aadhaarFront!,
-                                aadhaarBack: aadhaarBack!,
-                                panCardFront: panFront!,
-                                panCardBack: panBack!,
-                                aadhaarPanStatus: "1",
-                                aadhaarNumber: aadhaarNumberController.text,
-                                panCardNumber: panNumberController.text,
-                                context: context);
+                              aadhaarFront: aadhaarFront!,
+                              aadhaarBack: aadhaarBack!,
+                              panCardFront: panFront!,
+                              panCardBack: panBack!,
+                              aadhaarPanStatus: "1",
+                              aadhaarNumber: aadhaarNumberController.text
+                                  .trim(),
+                              panCardNumber: panNumberController.text.trim(),
+                              context: context,
+                            );
                           },
                         ),
                       ),
@@ -364,6 +453,19 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
             ),
           ),
       ],
+    );
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return newValue.copyWith(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
     );
   }
 }

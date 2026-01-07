@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
@@ -561,101 +563,145 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
     if (orderData == null) return;
 
     final int orderStatus = orderData!['order_status'] ?? 1;
-    final pickupLat = orderData!['pickup_latitude'] ?? 0.0;
-    final pickupLng = orderData!['pickup_longitude'] ?? 0.0;
-    final dropLat = orderData!['drop_latitude'] ?? 0.0;
-    final dropLng = orderData!['drop_longitude'] ?? 0.0;
+
+    final pickup = LatLng(
+      orderData!['pickup_latitude'],
+      orderData!['pickup_longitude'],
+    );
+
+    final drop = LatLng(
+      orderData!['drop_latitude'],
+      orderData!['drop_longitude'],
+    );
+
+    final driver = LatLng(widget.driverLat, widget.driverLng);
 
     if (orderStatus == 3) {
-      // Status 3: Show pickup to drop
-      setState(() {
-        markers = {
-          Marker(
-            markerId: MarkerId('pickup'),
-            position: LatLng(pickupLat, pickupLng),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-            infoWindow: InfoWindow(title: 'Pickup Location'),
+      /// PICKUP ➝ DROP
+      markers = {
+        Marker(
+          markerId: const MarkerId('pickup'),
+          position: pickup,
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueGreen,
           ),
-          Marker(
-            markerId: MarkerId('drop'),
-            position: LatLng(dropLat, dropLng),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-            infoWindow: InfoWindow(title: 'Drop Location'),
+        ),
+        Marker(
+          markerId: const MarkerId('drop'),
+          position: drop,
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueRed,
           ),
-        };
+        ),
+      };
 
-        polylines = {
-          Polyline(
-            polylineId: PolylineId('pickup_to_drop'),
-            points: [
-              LatLng(pickupLat, pickupLng),
-              LatLng(dropLat, dropLng),
-            ],
-            color: Colors.green,
-            width: 4,
-          ),
-        };
-      });
+      _drawRoutePolyline(
+        origin: pickup,
+        destination: drop,
+      );
     } else {
-      // Status 1: Show driver to pickup
-      setState(() {
-        markers = {
-          Marker(
-            markerId: MarkerId('pickup'),
-            position: LatLng(pickupLat, pickupLng),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-            infoWindow: InfoWindow(title: 'Pickup Location'),
+      /// DRIVER ➝ PICKUP
+      markers = {
+        Marker(
+          markerId: const MarkerId('driver'),
+          position: driver,
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueBlue,
           ),
-          Marker(
-            markerId: MarkerId('driver'),
-            position: LatLng(widget.driverLat, widget.driverLng),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-            infoWindow: InfoWindow(title: 'Your Location'),
+        ),
+        Marker(
+          markerId: const MarkerId('pickup'),
+          position: pickup,
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueGreen,
           ),
-        };
+        ),
+      };
 
-        polylines = {
-          Polyline(
-            polylineId: PolylineId('driver_to_pickup'),
-            points: [
-              LatLng(widget.driverLat, widget.driverLng),
-              LatLng(pickupLat, pickupLng),
-            ],
-            color: Colors.blue,
-            width: 4,
-          ),
-        };
-      });
+      _drawRoutePolyline(
+        origin: driver,
+        destination: pickup,
+      );
     }
 
-    if (_mapController != null) {
-      final bounds = orderStatus == 3
-          ? LatLngBounds(
-        southwest: LatLng(
-          pickupLat < dropLat ? pickupLat : dropLat,
-          pickupLng < dropLng ? pickupLng : dropLng,
-        ),
-        northeast: LatLng(
-          pickupLat > dropLat ? pickupLat : dropLat,
-          pickupLng > dropLng ? pickupLng : dropLng,
-        ),
-      )
-          : LatLngBounds(
-        southwest: LatLng(
-          widget.driverLat < pickupLat ? widget.driverLat : pickupLat,
-          widget.driverLng < pickupLng ? widget.driverLng : pickupLng,
-        ),
-        northeast: LatLng(
-          widget.driverLat > pickupLat ? widget.driverLat : pickupLat,
-          widget.driverLng > pickupLng ? widget.driverLng : pickupLng,
-        ),
-      );
+    setState(() {});
+  }
 
-      _mapController!.animateCamera(
-        CameraUpdate.newLatLngBounds(bounds, 100),
-      );
+  Future<void> _drawRoutePolyline({
+    required LatLng origin,
+    required LatLng destination,
+  }) async {
+    const String googleApiKey = "AIzaSyCm7ErTUTWLiTIT9KvG9bziUokOEt5wCBI";
+    final String url =
+        "https://maps.googleapis.com/maps/api/directions/json"
+        "?origin=${origin.latitude},${origin.longitude}"
+        "&destination=${destination.latitude},${destination.longitude}"
+        "&mode=driving"
+        "&key=$googleApiKey";
+
+    try {
+      final response = await Uri.parse(url).resolveUri(Uri());
+      final result = await NetworkAssetBundle(response).load("");
+
+      final decoded = String.fromCharCodes(result.buffer.asUint8List());
+      final data = jsonDecode(decoded);
+
+      if (data['routes'] == null || data['routes'].isEmpty) return;
+
+      final String encodedPolyline =
+      data['routes'][0]['overview_polyline']['points'];
+
+      final List<LatLng> polylinePoints = _decodePolyline(encodedPolyline);
+
+      setState(() {
+        polylines = {
+          Polyline(
+            polylineId: const PolylineId("route"),
+            points: polylinePoints,
+            color: AppColor.royalBlue,
+            width: 5,
+          ),
+        };
+      });
+    } catch (e) {
+      debugPrint("❌ Polyline error: $e");
     }
   }
+
+  List<LatLng> _decodePolyline(String encoded) {
+    List<LatLng> points = [];
+    int index = 0, len = encoded.length;
+    int lat = 0, lng = 0;
+
+    while (index < len) {
+      int b, shift = 0, result = 0;
+
+      // Latitude
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lat += dlat;
+
+      // Longitude
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lng += dlng;
+
+      points.add(LatLng(lat / 1E5, lng / 1E5));
+    }
+
+    return points;
+  }
+
 
   Future<void> _openNavigator() async {
     if (orderData == null) return;

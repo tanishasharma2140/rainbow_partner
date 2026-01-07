@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:rainbow_partner/model/driver_transaction_model.dart';
 import 'package:rainbow_partner/res/animated_gradient_border.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
-import 'package:rainbow_partner/res/custom_text_field.dart';
+import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_transaction_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/service_get_bank_detail_view_model.dart';
 
 class WalletSettlement extends StatefulWidget {
   const WalletSettlement({super.key});
@@ -16,77 +21,31 @@ class WalletSettlement extends StatefulWidget {
 class _WalletSettlementState extends State<WalletSettlement> {
   final TextEditingController amountController = TextEditingController();
 
-  final double walletBalance = 15250.00;
-  final double dueBalance = 3250.00;
-  final double totalBalance = 18500.00;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final driverTransactionVm = Provider.of<DriverTransactionViewModel>(context, listen: false);
+       driverTransactionVm.driverTransactionApi(context);
+      Provider.of<ServiceGetBankDetailViewModel>(
+        context,
+        listen: false,
+      ).serviceBankDetailApi(2, context);
+
+    });
+  }
+
 
   // Static transaction data
-  final List<Map<String, dynamic>> transactions = [
-    {
-      'id': '1',
-      'type': 'Online Payment',
-      'paymentBy': 1,
-      'totalAmount': '2000.00',
-      'platformFee': '100.00',
-      'amount': '1900.00',
-      'orderId': 'ORD-2024-001',
-      'createdAt': '2024-01-15T10:30:00Z',
-      'status': 'Completed'
-    },
-    {
-      'id': '2',
-      'type': 'Due Payment',
-      'paymentBy': 2,
-      'totalAmount': '1500.00',
-      'platformFee': '0.00',
-      'amount': '1500.00',
-      'orderId': 'ORD-2024-002',
-      'createdAt': '2024-01-14T14:45:00Z',
-      'status': 'Pending'
-    },
-    {
-      'id': '3',
-      'type': 'Offline Payment',
-      'paymentBy': 3,
-      'totalAmount': '3000.00',
-      'platformFee': '150.00',
-      'amount': '2850.00',
-      'orderId': 'ORD-2024-003',
-      'createdAt': '2024-01-13T09:15:00Z',
-      'status': 'Completed'
-    },
-    {
-      'id': '4',
-      'type': 'Online Payment',
-      'paymentBy': 1,
-      'totalAmount': '1200.00',
-      'platformFee': '60.00',
-      'amount': '1140.00',
-      'orderId': 'ORD-2024-004',
-      'createdAt': '2024-01-12T16:20:00Z',
-      'status': 'Completed'
-    },
-    {
-      'id': '5',
-      'type': 'Due Payment',
-      'paymentBy': 2,
-      'totalAmount': '800.00',
-      'platformFee': '0.00',
-      'amount': '800.00',
-      'orderId': 'ORD-2024-005',
-      'createdAt': '2024-01-11T11:10:00Z',
-      'status': 'Pending'
-    },
-  ];
 
   // Static bank details
-  final Map<String, dynamic> bankDetails = {
-    'hasBank': true,
-    'bankName': 'HDFC Bank',
-    'accountNumber': 'XXXXXX4567',
-    'accountHolder': 'John Doe',
-    'ifscCode': 'HDFC0001234'
-  };
+  // final Map<String, dynamic> bankDetails = {
+  //   'hasBank': true,
+  //   'bankName': 'HDFC Bank',
+  //   'accountNumber': 'XXXXXX4567',
+  //   'accountHolder': 'John Doe',
+  //   'ifscCode': 'HDFC0001234'
+  // };
 
   @override
   Widget build(BuildContext context) {
@@ -130,6 +89,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
   }
 
   Widget _buildBalanceCard() {
+    final profileVm = Provider.of<DriverProfileViewModel>(context);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: Sizes.screenWidth * 0.045),
       child: AnimatedGradientBorder(
@@ -160,7 +120,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
               SizedBox(height: 8),
               // Total Balance
               Text(
-                '₹${totalBalance.toStringAsFixed(2)}',
+                '₹${profileVm.driverProfileModel?.data?.wallet??"0"}',
                 style: TextStyle(
                   color: AppColor.black,
                   fontFamily: AppFonts.kanitReg,
@@ -189,7 +149,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                   Expanded(
                     child: _buildWalletItem(
                       'Main Wallet',
-                      '₹${walletBalance.toStringAsFixed(2)}',
+                      '₹${profileVm.driverProfileModel?.data?.wallet??"0"}',
                       Icons.account_balance_wallet,
                       Colors.green,
                     ),
@@ -198,7 +158,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                   Expanded(
                     child: _buildWalletItem(
                       'Due Wallet',
-                      '₹${dueBalance.toStringAsFixed(2)}',
+                      '₹${profileVm.driverProfileModel?.data?.dueWallet??"0"}',
                       Icons.pending,
                       Colors.orange,
                     ),
@@ -308,160 +268,193 @@ class _WalletSettlementState extends State<WalletSettlement> {
   }
 
   Widget _buildTransactionHistory() {
+    final driverTransactionVm = Provider.of<DriverTransactionViewModel>(context);
+
+    final transactions = driverTransactionVm.driverTransactionsModel?.data ?? [];
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Recent Transactions',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
+          const Text(
+            'Recent Transactions',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
 
-          if (transactions.isEmpty)
-            Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 50),
+          if (driverTransactionVm.loading)
+            _transactionShimmerList()
+
+          else if (transactions.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 60),
+              child: Center(
                 child: Text(
                   "No Transactions Found",
                   style: TextStyle(
-                    color: Colors.grey,
                     fontSize: 14,
+                    color: Colors.grey,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
             )
+
+          // 🔹 3. DATA FOUND
           else
-            SizedBox(
-              height: 400,
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: transactions.length,
-                itemBuilder: (context, index) {
-                  final transaction = transactions[index];
-                  return _buildTransactionItem(transaction);
-                },
-              ),
+            ListView.builder(
+              itemCount: transactions.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                final data = transactions[index];
+
+                final int sectionStatus = data.sectionStatus ?? 0;
+                final Payment? payment = data.payment;
+
+                final String statusText = _getStatusText(sectionStatus);
+                final String paymentStatus = _getPaymentStatus(sectionStatus);
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _getStatusColor(sectionStatus).withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(sectionStatus).withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _getStatusIcon(sectionStatus),
+                          color: _getStatusColor(sectionStatus),
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (sectionStatus == 1) ...[
+                              _buildTransactionText('Amount', payment?.amount, Colors.green),
+                              _buildTransactionText('Platform Fee', payment?.platformFee, Colors.orange),
+                              _buildTransactionText('Final Amount', payment?.finalAmount, Colors.blue),
+                            ],
+
+                            if (sectionStatus == 2)
+                              _buildTransactionText('Amount', payment?.amount, Colors.green),
+
+                            if (sectionStatus == 3) ...[
+                              _buildTransactionText('Amount', payment?.amount, Colors.green),
+                              _buildTransactionText('Platform Fee', payment?.platformFee, Colors.orange),
+                            ],
+
+                            const SizedBox(height: 6),
+                            Text(
+                              'Txn ID: ${payment?.id ?? 'N/A'}',
+                              style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                            ),
+                            Text(
+                              _formatDate(payment?.paymentDate ?? ''),
+                              style: const TextStyle(fontSize: 11, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 6),
+                            _buildStatusBadge(statusText, sectionStatus),
+                          ],
+                        ),
+                      ),
+
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '₹${_getDisplayAmount(payment, sectionStatus)}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: _getAmountColor(sectionStatus),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _getAmountLabel(sectionStatus),
+                            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                          ),
+                          Text(
+                            paymentStatus,
+                            style: TextStyle(fontSize: 10, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
         ],
       ),
     );
   }
 
-  Widget _buildTransactionItem(Map<String, dynamic> transaction) {
-    int paymentBy = transaction['paymentBy'] ?? 1;
-    String paymentStatus = _getPaymentStatus(paymentBy);
-    String statusText = _getStatusText(paymentBy);
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 12),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: _getStatusColor(paymentBy).withOpacity(0.2),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: _getStatusColor(paymentBy).withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _getStatusIcon(paymentBy),
-              color: _getStatusColor(paymentBy),
-              size: 20,
-            ),
+  Widget _transactionShimmerList() {
+    return ListView.builder(
+      itemCount: 6,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
           ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (paymentBy == 1) ...[
-                  _buildTransactionText('Total Amount', transaction['totalAmount'], Colors.green),
-                  SizedBox(height: 2),
-                  _buildTransactionText('Platform Fee', transaction['platformFee'], Colors.orange),
-                  SizedBox(height: 2),
-                  _buildTransactionText('Final Amount', transaction['amount'], Colors.blue),
-                ],
-                if (paymentBy == 2) ...[
-                  _buildTransactionText('Total Amount', transaction['totalAmount'], Colors.green),
-                ],
-                if (paymentBy == 3) ...[
-                  _buildTransactionText('Total Amount', transaction['totalAmount'], Colors.green),
-                  SizedBox(height: 2),
-                  _buildTransactionText('Platform Fee', transaction['platformFee'], Colors.orange),
-                ],
-
-                SizedBox(height: 4),
-                Text(
-                  transaction['orderId'] ?? 'N/A',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: AppColor.grey,
-                    fontSize: 14,
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  _formatDate(transaction['createdAt']),
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
-                ),
-                SizedBox(height: 6),
-                _buildStatusBadge(statusText, paymentBy),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Row(
             children: [
-              Text(
-                '₹${_getDisplayAmount(transaction, paymentBy)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: _getAmountColor(paymentBy),
-                  fontSize: 16,
+              // LEFT ICON SHIMMER
+              const ShimmerLoader(
+                width: 40,
+                height: 40,
+                borderRadius: 50,
+              ),
+
+              const SizedBox(width: 12),
+
+              // CENTER TEXT SHIMMER
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    ShimmerLoader(height: 12, width: 120),
+                    SizedBox(height: 8),
+                    ShimmerLoader(height: 10, width: 80),
+                  ],
                 ),
               ),
-              SizedBox(height: 4),
-              Text(
-                _getAmountLabel(paymentBy),
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              ),
-              SizedBox(height: 2),
-              Text(
-                paymentStatus,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey[500],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+
+              // RIGHT AMOUNT SHIMMER
+              const ShimmerLoader(height: 14, width: 60),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
+
+
+
 
   Widget _buildTransactionText(String label, dynamic value, Color color) {
     return RichText(
@@ -514,73 +507,80 @@ class _WalletSettlementState extends State<WalletSettlement> {
     );
   }
 
-  String _getPaymentStatus(int paymentBy) {
-    switch (paymentBy) {
+  String _getPaymentStatus(int sectionStatus) {
+    switch (sectionStatus) {
       case 1:
         return 'Online Payment';
       case 2:
-        return 'Due Payment';
-      case 3:
         return 'Offline Payment';
+      case 3:
+        return 'Wallet Payment';
       default:
         return 'Unknown';
     }
   }
 
-  String _getStatusText(int paymentBy) {
-    switch (paymentBy) {
+
+  String _getStatusText(int sectionStatus) {
+    switch (sectionStatus) {
       case 1:
         return 'Online';
       case 2:
-        return 'Due';
-      case 3:
         return 'Offline';
+      case 3:
+        return 'Wallet';
       default:
         return 'Unknown';
     }
   }
 
-  Color _getStatusColor(int paymentBy) {
-    switch (paymentBy) {
+
+  Color _getStatusColor(int sectionStatus) {
+    switch (sectionStatus) {
       case 1:
         return Colors.blue;
       case 2:
-        return Colors.orange;
-      case 3:
         return Colors.green;
+      case 3:
+        return Colors.orange;
       default:
         return Colors.grey;
     }
   }
 
-  IconData _getStatusIcon(int paymentBy) {
-    switch (paymentBy) {
+
+  IconData _getStatusIcon(int sectionStatus) {
+    switch (sectionStatus) {
       case 1:
-        return Icons.online_prediction;
+        return Icons.wifi;
       case 2:
-        return Icons.pending;
+        return Icons.money;
       case 3:
-        return Icons.offline_pin;
+        return Icons.account_balance_wallet;
       default:
         return Icons.help;
     }
   }
 
-  String _getDisplayAmount(Map<String, dynamic> transaction, int paymentBy) {
-    switch (paymentBy) {
+
+  String _getDisplayAmount(Payment? payment, int sectionStatus) {
+    if (payment == null) return '0';
+
+    switch (sectionStatus) {
       case 1:
-        return transaction['amount'] ?? '0.00';
+        return payment.finalAmount?.toString() ?? '0';
       case 2:
-        return transaction['totalAmount'] ?? '0.00';
+        return payment.amount?.toString() ?? '0';
       case 3:
-        return transaction['amount'] ?? '0.00';
+        return payment.amount?.toString() ?? '0';
       default:
-        return '0.00';
+        return '0';
     }
   }
 
-  Color _getAmountColor(int paymentBy) {
-    switch (paymentBy) {
+
+  Color _getAmountColor(int sectionStatus) {
+    switch (sectionStatus) {
       case 1:
         return Colors.blue;
       case 2:
@@ -592,18 +592,19 @@ class _WalletSettlementState extends State<WalletSettlement> {
     }
   }
 
-  String _getAmountLabel(int paymentBy) {
-    switch (paymentBy) {
+  String _getAmountLabel(int sectionStatus) {
+    switch (sectionStatus) {
       case 1:
         return 'After Fee';
       case 2:
         return 'Total';
       case 3:
-        return 'Total';
+        return 'Wallet';
       default:
         return 'Amount';
     }
   }
+
 
   String _formatDate(String dateString) {
     try {
@@ -615,6 +616,10 @@ class _WalletSettlementState extends State<WalletSettlement> {
   }
 
   void _showWithdrawalDialog() {
+    final profileVm = Provider.of<DriverProfileViewModel>(context,listen: false);
+    final getBankVm = Provider.of<ServiceGetBankDetailViewModel>(context,listen: false);
+    final hasBank =
+        getBankVm.serviceBankDetailModel?.bankDetails != null;
     showDialog(
       context: context,
       builder: (context) {
@@ -679,7 +684,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                                   style: TextStyle(fontSize: 12, color: Colors.grey),
                                 ),
                                 Text(
-                                  '₹${walletBalance.toStringAsFixed(2)}',
+                                  '₹${profileVm.driverProfileModel?.data?.wallet??"0"}',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -704,7 +709,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                       keyboardType: TextInputType.number,
                     ),
                     SizedBox(height: 16),
-                    if (!bankDetails['hasBank'])
+                    if (!hasBank)
                       Padding(
                         padding: const EdgeInsets.all(12),
                         child: Text(
@@ -737,12 +742,12 @@ class _WalletSettlementState extends State<WalletSettlement> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    bankDetails['bankName'],
+                                    getBankVm.serviceBankDetailModel?.bankDetails?.bankName??"",
                                     style: TextStyle(
                                         fontWeight: FontWeight.w600, fontSize: 14),
                                   ),
                                   Text(
-                                    'Account: ${bankDetails['accountNumber']}',
+                                    'Account: ${getBankVm.serviceBankDetailModel?.bankDetails?.accountNumber??""}',
                                     style: TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
                                 ],
@@ -776,13 +781,6 @@ class _WalletSettlementState extends State<WalletSettlement> {
                           if (amountController.text.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('Please enter amount')),
-                            );
-                            return;
-                          }
-                          if (!bankDetails['hasBank']) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text('Please add bank account first')),
                             );
                             return;
                           }
@@ -894,6 +892,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
   // }
 
   void _showDueWalletDialog() {
+    final profileVm = Provider.of<DriverProfileViewModel>(context,listen: false);
     final TextEditingController dueAmountController = TextEditingController();
 
     showDialog(
@@ -913,12 +912,12 @@ class _WalletSettlementState extends State<WalletSettlement> {
                   Container(
                     padding: EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: AppColor.royalBlue.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.wallet,
-                      color: Colors.orange,
+                      color: AppColor.royalBlue,
                       size: 30,
                     ),
                   ),
@@ -940,15 +939,15 @@ class _WalletSettlementState extends State<WalletSettlement> {
                     Container(
                       padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.05),
+                        color: AppColor.royalBlue.withOpacity(0.05),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.orange.withOpacity(0.2),
+                          color: AppColor.royalBlue.withOpacity(0.2),
                         ),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.pending, color: Colors.orange, size: 20),
+                          Icon(Icons.pending, color: AppColor.royalBlue, size: 20),
                           SizedBox(width: 8),
                           Expanded(
                             child: Column(
@@ -959,11 +958,11 @@ class _WalletSettlementState extends State<WalletSettlement> {
                                   style: TextStyle(fontSize: 12, color: Colors.grey),
                                 ),
                                 Text(
-                                  '₹${dueBalance.toStringAsFixed(2)}',
+                                  '₹${profileVm.driverProfileModel?.data?.dueWallet??"0"}',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.orange,
+                                    color: AppColor.royalBlue,
                                   ),
                                 ),
                               ],
@@ -975,27 +974,44 @@ class _WalletSettlementState extends State<WalletSettlement> {
                     SizedBox(height: 20),
                     TextFormField(
                       controller: dueAmountController,
+                      keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: 'Enter Due Amount',
-                        hintText: 'Maximum: ₹${dueBalance.toStringAsFixed(2)}',
-                        prefixIcon: Icon(Icons.currency_rupee, color: Colors.orange),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        hintText:
+                        'Maximum: ₹${profileVm.driverProfileModel?.data?.dueWallet ?? "0"}',
+                        prefixIcon:
+                        const Icon(Icons.currency_rupee, color: AppColor.royalBlue),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.trim().isEmpty) {
                           return 'Please enter amount';
                         }
-                        final amount = double.tryParse(value);
-                        if (amount == null) {
+
+                        final enteredAmount = double.tryParse(value);
+                        if (enteredAmount == null) {
                           return 'Enter valid amount';
                         }
-                        if (amount > dueBalance) {
+
+                        final maxDue = double.tryParse(
+                          profileVm.driverProfileModel?.data?.dueWallet?.toString() ?? "0",
+                        ) ??
+                            0;
+
+                        if (enteredAmount > maxDue) {
                           return 'Amount cannot exceed due balance';
                         }
+
+                        if (enteredAmount <= 0) {
+                          return 'Amount must be greater than zero';
+                        }
+
                         return null;
                       },
                     ),
+
                     SizedBox(height: 10),
                     Text(
                       'Enter the amount you want to pay from your due wallet.',
@@ -1042,12 +1058,12 @@ class _WalletSettlementState extends State<WalletSettlement> {
                             return;
                           }
 
-                          if (amount > dueBalance) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Amount exceeds due balance')),
-                            );
-                            return;
-                          }
+                          // if (amount > dueBalance) {
+                          //   ScaffoldMessenger.of(context).showSnackBar(
+                          //     SnackBar(content: Text('Amount exceeds due balance')),
+                          //   );
+                          //   return;
+                          // }
 
                           setState(() => isLoading = true);
                           await Future.delayed(Duration(seconds: 2));
@@ -1086,7 +1102,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
+                          backgroundColor: AppColor.royalBlue,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
                         ),

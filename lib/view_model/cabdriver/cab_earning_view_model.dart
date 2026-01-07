@@ -22,17 +22,28 @@ class CabEarningViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> cabEarningApi(
-    dynamic type,
-    context,
-  ) async {
+  void clearEarningData() {
+    _cabEarningModel = null;
+    notifyListeners();
+  }
+
+  Future<void> cabEarningApi(dynamic type, context) async {
     setLoading(true);
+
     UserViewModel userViewModel = UserViewModel();
     String? driverId = await userViewModel.getUser();
-    Map data = {
+
+    if (driverId == null || driverId.isEmpty) {
+      setLoading(false);
+      Utils.showErrorMessage(context, "Driver not logged in");
+      return;
+    }
+
+    Map<String, dynamic> data = {
       "driver_id": driverId,
-      "type": type
+      "type": type.toString(),
     };
+
     try {
       final response = await _cabEarningRepo.cabEarningApi(data);
 
@@ -42,16 +53,14 @@ class CabEarningViewModel with ChangeNotifier {
       if (statusCode == 200 || statusCode == 201) {
         final model = CabEarningModel.fromJson(body);
         setCabDriverModelData(model);
-        Utils.showSuccessMessage(context, body["message"]);
       } else {
-        if (kDebugMode) print("❌ Error Status: $statusCode → $body");
-        Utils.showErrorMessage(context, body["message"]);
+        Utils.showErrorMessage(context, body["message"] ?? "Something went wrong");
       }
     } catch (e) {
-      if (kDebugMode) print("ViewModel Error → $e");
-      Utils.showErrorMessage(context, "$e");
+      print("error: ${e.toString()}");
     } finally {
       setLoading(false);
     }
   }
+
 }

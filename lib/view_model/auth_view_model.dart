@@ -451,10 +451,18 @@ class AuthViewModel with ChangeNotifier {
       final userPref =
       Provider.of<UserViewModel>(context, listen: false);
 
-      userPref.saveRole(authModel.platformType);
-      userPref.saveUser(authModel.servicemanId.toString());
-      print("jhuyjhu");
-      print(authModel.platformType);
+      /// 🔥 ALWAYS await
+      await userPref.saveRole(authModel.platformType);
+
+      /// 🔥 ROLE BASED ID SAVE
+      if (authModel.platformType == 2) {
+        // 🚕 CAB DRIVER
+        await userPref.saveUser(authModel.driverId.toString());
+      } else if (authModel.platformType == 1) {
+        // 🛠 SERVICE MAN
+        await userPref.saveUser(authModel.servicemanId.toString());
+      }
+
 
       Utils.showSuccessMessage(
         context,

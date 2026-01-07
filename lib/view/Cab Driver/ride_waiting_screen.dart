@@ -185,7 +185,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
         body: Stack(
           children: [
-            /// ================= MAP (REDUCED HEIGHT) =================
             Positioned(
               top: 0,
               left: 0,
