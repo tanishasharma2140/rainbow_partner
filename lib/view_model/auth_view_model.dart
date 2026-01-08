@@ -525,5 +525,12 @@ class AuthViewModel with ChangeNotifier {
       body['message'] ?? "Login failed",
     );
   }
+  @override
+  void dispose() {
+    phoneController.clear();
+    super.dispose();
+  }
+
 
 }
+

@@ -205,6 +205,7 @@ import 'package:rainbow_partner/view/Cab Driver/register/personal_information.da
 import 'package:rainbow_partner/view/Cab Driver/register/required_certificate.dart';
 import 'package:rainbow_partner/view/Cab Driver/register/vehicle_document.dart';
 import 'package:rainbow_partner/view/Cab Driver/register/vehicle_information.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/home/driver_home_page.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 
 class DocumentVerified extends StatefulWidget {
@@ -305,12 +306,7 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
       subTitle: "You are ready to accept ride requests",
       showButton: true,
       onButtonTap: () {
-        Navigator.pushReplacement(
-          context,
-          CupertinoPageRoute(
-            builder: (_) => const DocumentVerificationSteps(),
-          ),
-        );
+        Navigator.push(context, CupertinoPageRoute(builder: (context)=>DriverHomePage()));
       },
     );
   }

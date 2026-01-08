@@ -9,17 +9,18 @@ import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/action/driver_profile.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/home/driver_accepted_scree.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/ride%20history/cab_ride_history.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/schedule/schedule_ride_card.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/wallet/add_bank.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/wallet/cab_bank_update_status.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/wallet/wallet_and_settlement.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/ride_waiting_screen.dart';
+import 'package:rainbow_partner/view_model/cabdriver/active_ride_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_earning_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/driver_online_status_view_model.dart';
 import 'earning report/daily_weekly_earning_report.dart';
-
 
 class DriverHomePage extends StatefulWidget {
   const DriverHomePage({super.key});
@@ -38,7 +39,26 @@ class _DriverHomePageState extends State<DriverHomePage> {
       position.longitude.toString(),
       context,
     );
-    final cabEarning = Provider.of<CabEarningViewModel>(context,listen: false);
+    final activeRide = await Provider.of<ActiveRideViewModel>(
+      context,
+      listen: false,
+    ).activeRideApi();
+
+    if (activeRide != null && mounted) {
+      final position = await LocationUtils.getLocation();
+      Navigator.push(
+        context,
+        CupertinoPageRoute(
+          builder: (_) => DriverRideAcceptedScreen(
+            orderId: activeRide["order_id"],
+            orderStatus: activeRide["order_status"],
+            driverLat: position.latitude,
+            driverLng: position.longitude,
+          ),
+        ),
+      );
+    }
+    final cabEarning = Provider.of<CabEarningViewModel>(context, listen: false);
     cabEarning.cabEarningApi("1", context);
   }
 
@@ -56,8 +76,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
   Widget build(BuildContext context) {
     final driverProfileVm = Provider.of<DriverProfileViewModel>(context);
     final data = driverProfileVm.driverProfileModel?.data;
-    final driverOnlineVm =
-    Provider.of<DriverOnlineStatusViewModel>(context);
+    final driverOnlineVm = Provider.of<DriverOnlineStatusViewModel>(context);
     final cabEarningVm = Provider.of<CabEarningViewModel>(context);
 
     return SafeArea(
@@ -71,7 +90,6 @@ class _DriverHomePageState extends State<DriverHomePage> {
             SingleChildScrollView(
               child: Column(
                 children: [
-
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -102,26 +120,27 @@ class _DriverHomePageState extends State<DriverHomePage> {
                             CircleAvatar(
                               radius: 40,
                               backgroundColor: Colors.grey.shade300,
-                              backgroundImage: (data?.profilePhoto != null &&
-                                  data!.profilePhoto.toString().isNotEmpty)
+                              backgroundImage:
+                                  (data?.profilePhoto != null &&
+                                      data!.profilePhoto.toString().isNotEmpty)
                                   ? NetworkImage(data.profilePhoto.toString())
                                   : null,
-                              child: (data?.profilePhoto == null ||
-                                  data!.profilePhoto.toString().isEmpty)
+                              child:
+                                  (data?.profilePhoto == null ||
+                                      data!.profilePhoto.toString().isEmpty)
                                   ? const Icon(
-                                Icons.person,
-                                size: 70,
-                                color: Colors.white,
-                              )
+                                      Icons.person,
+                                      size: 70,
+                                      color: Colors.white,
+                                    )
                                   : null,
                             ),
-
 
                             const SizedBox(width: 18),
 
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children:  [
+                              children: [
                                 TextConst(
                                   title: "Welcome back 👋",
                                   size: 15,
@@ -130,13 +149,12 @@ class _DriverHomePageState extends State<DriverHomePage> {
                                 SizedBox(height: 5),
                                 TextConst(
                                   title:
-                                  "${driverProfileVm.driverProfileModel?.data?.firstName ?? ""} "
+                                      "${driverProfileVm.driverProfileModel?.data?.firstName ?? ""} "
                                       "${driverProfileVm.driverProfileModel?.data?.lastName ?? ""}",
                                   size: 22,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                 ),
-
                               ],
                             ),
                           ],
@@ -156,23 +174,40 @@ class _DriverHomePageState extends State<DriverHomePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 18),
                     child: Row(
                       children: [
-                        _statsBox("Rides", cabEarningVm.cabEarningModel?.data?.totalCompletedRide.toString()??"0", Icons.local_taxi_rounded),
+                        _statsBox(
+                          "Rides",
+                          cabEarningVm.cabEarningModel?.data?.totalCompletedRide
+                                  .toString() ??
+                              "0",
+                          Icons.local_taxi_rounded,
+                        ),
 
-                      const SizedBox(width: 12),
-                      _statsBox("Earnings", "₹${cabEarningVm.cabEarningModel?.data?.totalEarning??"0"}", Icons.payments_rounded,
-                      onTap: (){
-                        Navigator.push(context, CupertinoPageRoute(builder: (context)=> DailyWeeklyEarningReport()));
-
-                      }
-                      ),
                         const SizedBox(width: 12),
-                        _statsBox("Distance", "${cabEarningVm.cabEarningModel?.data?.totalDistance??"0"}km", Icons.route_rounded),
+                        _statsBox(
+                          "Earnings",
+                          "₹${cabEarningVm.cabEarningModel?.data?.totalEarning ?? "0"}",
+                          Icons.payments_rounded,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                builder: (context) =>
+                                    DailyWeeklyEarningReport(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 12),
+                        _statsBox(
+                          "Distance",
+                          "${cabEarningVm.cabEarningModel?.data?.totalDistance ?? "0"}km",
+                          Icons.route_rounded,
+                        ),
                       ],
                     ),
                   ),
 
                   const SizedBox(height: 17),
-
 
                   _activeRideCard(),
                   _scheduledRideCard(context),
@@ -198,22 +233,67 @@ class _DriverHomePageState extends State<DriverHomePage> {
                       physics: const NeverScrollableScrollPhysics(),
                       childAspectRatio: 0.82,
                       children: [
-                        _actionItem(Icons.person, "Profile",onTap: (){
-                          print("tapped");
-                          Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverProfile()));
-                        }),
-                        _actionItem(Icons.account_balance_wallet, "Wallet Settlemant",onTap: (){
-                          Navigator.push(context, CupertinoPageRoute(builder: (context)=> WalletSettlement()));
-                        }),
-                        _actionItem(Icons.account_balance, "Add Bank",onTap: (){
-                          Navigator.push(context, CupertinoPageRoute(builder: (context)=> AddBank()));
-                        }),
-                        _actionItem(Icons.account_balance_outlined, "Bank Update Status",onTap: (){
-                          Navigator.push(context, CupertinoPageRoute(builder: (context)=> CabBanUpdateStatus()));
-                        }),
-                        _actionItem(Icons.local_taxi, "Ride History",onTap: (){
-                          Navigator.push(context, CupertinoPageRoute(builder: (context)=> CabRideHistory()));
-                        }),
+                        _actionItem(
+                          Icons.person,
+                          "Profile",
+                          onTap: () {
+                            print("tapped");
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                builder: (context) => DriverProfile(),
+                              ),
+                            );
+                          },
+                        ),
+                        _actionItem(
+                          Icons.account_balance_wallet,
+                          "Wallet Settlemant",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                builder: (context) => WalletSettlement(),
+                              ),
+                            );
+                          },
+                        ),
+                        _actionItem(
+                          Icons.account_balance,
+                          "Add Bank",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                builder: (context) => AddBank(),
+                              ),
+                            );
+                          },
+                        ),
+                        _actionItem(
+                          Icons.account_balance_outlined,
+                          "Bank Update Status",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                builder: (context) => CabBanUpdateStatus(),
+                              ),
+                            );
+                          },
+                        ),
+                        _actionItem(
+                          Icons.local_taxi,
+                          "Ride History",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                builder: (context) => CabRideHistory(),
+                              ),
+                            );
+                          },
+                        ),
                         _actionItem(Icons.settings_rounded, "Settings"),
                       ],
                     ),
@@ -262,8 +342,10 @@ class _DriverHomePageState extends State<DriverHomePage> {
   // -------------------------------------------------
   Widget _onlineSwitch() {
     final driverProfileVm = Provider.of<DriverProfileViewModel>(context);
-    final driverOnlineVm =
-    Provider.of<DriverOnlineStatusViewModel>(context, listen: false);
+    final driverOnlineVm = Provider.of<DriverOnlineStatusViewModel>(
+      context,
+      listen: false,
+    );
 
     /// 🔥 ONLINE STATUS DIRECT FROM PROFILE
     final bool isOnline =
@@ -279,7 +361,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
             color: AppColor.royalBlue.withOpacity(0.18),
             blurRadius: 8,
             offset: const Offset(0, 3),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -324,11 +406,11 @@ class _DriverHomePageState extends State<DriverHomePage> {
   //                     STATS BOX
   // -------------------------------------------------
   Widget _statsBox(
-      String title,
-      String value,
-      IconData icon, {
-        VoidCallback? onTap,
-      }) {
+    String title,
+    String value,
+    IconData icon, {
+    VoidCallback? onTap,
+  }) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -342,7 +424,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                 color: AppColor.royalBlue.withOpacity(0.08),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
           ),
           child: Column(
@@ -369,8 +451,11 @@ class _DriverHomePageState extends State<DriverHomePage> {
   // -------------------------------------------------
   Widget _activeRideCard() {
     return GestureDetector(
-      onTap: (){
-        Navigator.push(context, CupertinoPageRoute(builder: (context)=> RideWaitingScreen()));
+      onTap: () {
+        Navigator.push(
+          context,
+          CupertinoPageRoute(builder: (context) => RideWaitingScreen()),
+        );
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
@@ -384,7 +469,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                 color: AppColor.royalBlue.withOpacity(0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
           ),
           child: Row(
@@ -458,7 +543,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                 color: Colors.orange.withOpacity(0.12),
                 blurRadius: 14,
                 offset: const Offset(0, 6),
-              )
+              ),
             ],
           ),
           child: Row(
@@ -494,8 +579,9 @@ class _DriverHomePageState extends State<DriverHomePage> {
                     const SizedBox(height: 4),
 
                     TextConst(
-                      title: DateFormat('dd MMM • hh:mm a')
-                          .format(DateTime(2025, 9, 25, 8, 30)),
+                      title: DateFormat(
+                        'dd MMM • hh:mm a',
+                      ).format(DateTime(2025, 9, 25, 8, 30)),
                       size: 13,
                       color: Colors.black54,
                     ),
@@ -521,8 +607,10 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
               /// STATUS
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.orange.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
@@ -540,7 +628,6 @@ class _DriverHomePageState extends State<DriverHomePage> {
       ),
     );
   }
-
 
   // -------------------------------------------------
   //                QUICK ACTION ITEM
@@ -570,5 +657,4 @@ class _DriverHomePageState extends State<DriverHomePage> {
       ),
     );
   }
-
 }

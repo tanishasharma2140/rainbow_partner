@@ -10,6 +10,7 @@ import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/active_ride_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_earning_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_history_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
@@ -161,6 +162,7 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> CabEarningViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverTransactionViewModel()),
           ChangeNotifierProvider(create: (context)=> CabHistoryViewModel()),
+          ChangeNotifierProvider(create: (context)=> ActiveRideViewModel()),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

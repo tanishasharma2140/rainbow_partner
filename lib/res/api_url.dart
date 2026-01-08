@@ -40,6 +40,8 @@ class ApiUrl {
   static const String driverTransactionUrl ="${baseUrl}driver_transactions";
   static const String cabEarningUrl ="${baseUrl}cab-earning";
   static const String cabHistoryUrl ="${baseUrl}cab-history";
+  static const String activeRideUrl ="${baseUrl}active-ride";
+
 
 
 

@@ -20,12 +20,14 @@ class DriverRideAcceptedScreen extends StatefulWidget {
   final int orderId;
   final double driverLat;
   final double driverLng;
+  final int? orderStatus;
+
 
   const DriverRideAcceptedScreen({
     super.key,
     required this.orderId,
     required this.driverLat,
-    required this.driverLng,
+    required this.driverLng, this.orderStatus,
   });
 
   @override
