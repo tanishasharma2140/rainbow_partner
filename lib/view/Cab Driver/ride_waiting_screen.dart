@@ -5,17 +5,20 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
+import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view_model/cabdriver/accept_later_ride_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/delete_expired_order_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_ignore_order_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_offer_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'home/driver_accepted_scree.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
-
+import 'package:audioplayers/audioplayers.dart';
 
 class RideWaitingScreen extends StatefulWidget {
   const RideWaitingScreen({super.key});
@@ -25,10 +28,14 @@ class RideWaitingScreen extends StatefulWidget {
 }
 
 class _RideWaitingScreenState extends State<RideWaitingScreen> {
-
   Timer? _deleteOrderTimer;
   final Map<String, bool> _discountFetchedForOrder = {};
   BitmapDescriptor? _currentLocationIcon;
+
+  // 🔊 RINGER MANAGEMENT
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isRingerPlaying = false;
+  Set<String> _playedOrderIds = {};
 
   @override
   void initState() {
@@ -38,51 +45,82 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
       _getCurrentLocation();
       _loadMarkerIcon();
 
-      final deleteOrder =
-      Provider.of<DeleteExpiredOrderViewModel>(context, listen: false);
-
-      /// 🔥 FIRST CALL
-      deleteOrder.deleteExpiredOrderApi();
-
-      /// 🔁 EVERY 1 MINUTE
-      _deleteOrderTimer = Timer.periodic(
-        const Duration(minutes: 1),
-            (timer) {
-          deleteOrder.deleteExpiredOrderApi();
-        },
+      final deleteOrder = Provider.of<DeleteExpiredOrderViewModel>(
+        context,
+        listen: false,
       );
+
+      /// FIRST CALL
+      deleteOrder.deleteExpiredOrderApi().then((success) {
+        if (success) {
+          _stopRinger();
+        }
+      });
+
+      /// EVERY 1 MINUTE
+      _deleteOrderTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+        deleteOrder.deleteExpiredOrderApi().then((success) {
+          if (success) {
+            _stopRinger();
+          }
+        });
+      });
+    });
+
+    // 🔊 Listen to audio player completion
+    _audioPlayer.onPlayerComplete.listen((event) {
+      _isRingerPlaying = false;
     });
   }
 
-  Future<BitmapDescriptor> _resizeMarker(
-      String assetPath,
-      int width,
-      ) async {
+  // 🔊 PLAY RINGER (LOOP CONTINUOUSLY)
+  Future<void> _playRinger() async {
+    if (_isRingerPlaying) return;
+
+    _isRingerPlaying = true;
+
+    try {
+      // Play in loop mode
+      await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+      await _audioPlayer.play(AssetSource('driver_ring.mp3'));
+
+      debugPrint("🔊 Ringer Started (Loop Mode)");
+    } catch (e) {
+      debugPrint("🔊 Ringer Error: $e");
+      _isRingerPlaying = false;
+    }
+  }
+
+  // 🔇 STOP RINGER
+  Future<void> _stopRinger() async {
+    if (!_isRingerPlaying) return;
+
+    await _audioPlayer.stop();
+    _isRingerPlaying = false;
+    debugPrint("🔇 Ringer Stopped");
+  }
+
+  Future<BitmapDescriptor> _resizeMarker(String assetPath, int width) async {
     final ByteData data = await rootBundle.load(assetPath);
     final ui.Codec codec = await ui.instantiateImageCodec(
       data.buffer.asUint8List(),
-      targetWidth: width, // 👈 CONTROL SIZE HERE
+      targetWidth: width,
     );
     final ui.FrameInfo fi = await codec.getNextFrame();
-    final ByteData? bytes =
-    await fi.image.toByteData(format: ui.ImageByteFormat.png);
+    final ByteData? bytes = await fi.image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
 
     return BitmapDescriptor.fromBytes(bytes!.buffer.asUint8List());
   }
 
-
   Future<void> _loadMarkerIcon() async {
-    _currentLocationIcon = await _resizeMarker(
-      'assets/location_oin.png',
-      190,
-    );
+    _currentLocationIcon = await _resizeMarker('assets/location_oin.png', 190);
 
     if (_currentLatLng != null) {
       _updateCurrentLocationMarker(_currentLatLng!);
     }
   }
-
-
 
   Set<Marker> _markers = {};
 
@@ -104,6 +142,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
   @override
   void dispose() {
     _deleteOrderTimer?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -128,20 +167,16 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
       _currentLatLng = latLng;
     });
 
-    // ✅ ADD THIS
     _updateCurrentLocationMarker(latLng);
 
-    _mapController?.animateCamera(
-      CameraUpdate.newLatLngZoom(latLng, 16),
-    );
+    _mapController?.animateCamera(CameraUpdate.newLatLngZoom(latLng, 16));
   }
 
-
-
-  void _goToAcceptedRide({
-    required int orderId,
-  }) {
+  void _goToAcceptedRide({required int orderId}) {
     if (_currentLatLng == null) return;
+
+    // 🔇 STOP RINGER WHEN NAVIGATING TO ACCEPTED RIDE
+    _stopRinger();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Navigator.pushReplacement(
@@ -156,7 +191,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
       );
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -198,24 +232,19 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                 onMapCreated: (controller) {
                   _mapController = controller;
                 },
-                myLocationEnabled: false, // ❌ default blue dot off
-                markers: _markers,        // ✅ custom image marker
+                myLocationEnabled: false,
+                markers: _markers,
                 zoomControlsEnabled: false,
                 myLocationButtonEnabled: false,
               ),
             ),
-
-
 
             /// ================= REALTIME FIREBASE =================
             if (driverId != null)
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('cab_orders')
-                    .where(
-                  'matched_driver_ids',
-                  arrayContains: driverId,
-                )
+                    .where('matched_driver_ids', arrayContains: driverId)
                     .snapshots(),
                 builder: (context, snapshot) {
                   debugPrint(
@@ -234,10 +263,48 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
                   final docs = snapshot.data?.docs ?? [];
 
-                  debugPrint("📦 DOCS COUNT => ${docs.length}");
+                  /// 🔥 FILTER OLD STATUS (only allow 0 & 1)
+                  final filteredDocs = docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final status = data['order_status'] ?? 0;
+                    return status < 2; // only 0 & 1
+                  }).toList();
 
-                  // NO RIDES
-                  if (docs.isEmpty) {
+                  debugPrint(
+                    "📦 FILTERED DOCS COUNT => ${filteredDocs.length}",
+                  );
+
+                  // 🔊 PLAY RINGER WHEN NEW RIDE ARRIVES
+                  if (filteredDocs.isNotEmpty) {
+                    debugPrint("🔊 Total Orders: ${filteredDocs.length}");
+                    debugPrint("🔊 Already Played: $_playedOrderIds");
+
+                    for (var doc in filteredDocs) {
+                      final orderId = doc.id;
+                      debugPrint("🔊 Checking Order: $orderId");
+
+                      if (!_playedOrderIds.contains(orderId)) {
+                        debugPrint("✅ NEW ORDER DETECTED! Playing ringer...");
+                        _playedOrderIds.add(orderId);
+                        _playRinger();
+                        break; // Only play once for first new order
+                      } else {
+                        debugPrint("⏭️ Order already played: $orderId");
+                      }
+                    }
+                  } else {
+                    debugPrint("🔇 No orders, clearing played IDs");
+                    _playedOrderIds.clear();
+                  }
+
+                  // NO RIDES AFTER FILTER
+                  if (filteredDocs.isEmpty) {
+                    debugPrint(
+                      "🔇 No rides, stopping ringer & clearing played IDs",
+                    );
+                    // 🔇 STOP RINGER IF NO RIDES
+                    _stopRinger();
+                    _playedOrderIds.clear();
                     return _waitingUI();
                   }
 
@@ -247,7 +314,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    child: _orderListSheet(docs),
+                    child: _orderListSheet(filteredDocs),
                   );
                 },
               ),
@@ -309,15 +376,13 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
                 const SizedBox(height: 20),
 
-                // 🔥 Uber / Rapido style Linear Progress
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
                       minHeight: 6,
-                      backgroundColor:
-                      AppColor.royalBlue.withOpacity(0.15),
+                      backgroundColor: AppColor.royalBlue.withOpacity(0.15),
                       valueColor: const AlwaysStoppedAnimation(
                         AppColor.royalBlue,
                       ),
@@ -336,12 +401,13 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
     );
   }
 
-
   Widget _orderListSheet(List<QueryDocumentSnapshot> docs) {
-    final driverCanDiscountVm =
-    Provider.of<DriverCanDiscountViewModel>(context);
-    final driverOfferVm =
-    Provider.of<DriverOfferViewModel>(context);
+    final driverCanDiscountVm = Provider.of<DriverCanDiscountViewModel>(
+      context,
+    );
+    final driverOfferVm = Provider.of<DriverOfferViewModel>(context);
+    final driverIgnoreVm = Provider.of<DriverIgnoreOrderViewModel>(context);
+    final acceptLaterRideVm = Provider.of<AcceptLaterRideViewModel>(context);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
@@ -374,7 +440,11 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
           const Text(
             "New Ride Requests",
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              fontFamily: AppFonts.kanitReg,
+            ),
           ),
 
           const SizedBox(height: 14),
@@ -391,9 +461,15 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                 final String orderId = docs[index].id;
                 final String userIdOrder = data['user_id']?.toString() ?? '';
                 final int vehicleId = data['vehicle_id'] ?? 0;
+                final int orderType = data['order_type'] ?? 1; // 🆕 ORDER TYPE
 
-                /// ✅ FETCH DISCOUNT ONLY ONCE PER ORDER
-                if (_discountFetchedForOrder[orderId] != true) {
+                // 🆕 User details for order_type 2
+                final String userName = data['user_name'] ?? '';
+                final String userMobile = data['user_mobile']?.toString() ?? '';
+
+                /// ✅ FETCH DISCOUNT ONLY ONCE PER ORDER (only for order_type 1)
+                if (orderType == 1 &&
+                    _discountFetchedForOrder[orderId] != true) {
                   _discountFetchedForOrder[orderId] = true;
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (driverCanDiscountVm.driverDiscount == null) {
@@ -406,244 +482,458 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                   });
                 }
 
-                /// DISCOUNT LOGIC (± FROM BASE)
-                final int maxDiscount =
-                (double.tryParse(
-                  driverCanDiscountVm.driverDiscount ?? '0',
-                ) ?? 0).round();
+                /// DISCOUNT LOGIC (± FROM BASE) - only for order_type 1
+                final int maxDiscount = orderType == 1
+                    ? (double.tryParse(
+                                driverCanDiscountVm.driverDiscount ?? '0',
+                              ) ??
+                              0)
+                          .round()
+                    : 0;
 
                 final int minAllowedAmount = baseAmount - maxDiscount;
                 final int maxAllowedAmount = baseAmount + maxDiscount;
 
-                final ValueNotifier<int> amount = ValueNotifier<int>(baseAmount);
+                final ValueNotifier<int> amount = ValueNotifier<int>(
+                  baseAmount,
+                );
 
                 if (data['order_status'] == 1 && _currentLatLng != null) {
-                  _goToAcceptedRide(
-                    orderId: data['order_id'],
-                  );
+                  _goToAcceptedRide(orderId: data['order_id']);
                 }
 
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColor.whiteDark,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      /// ORDER ID + DISTANCE
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextConst(
-                            title: "Order #${data['order_id'] ?? orderId}",
-                            size: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: TextConst(
-                              title: "${data['distance_km']} km",
-                              color: Colors.green,
-                              size: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      /// PICKUP
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.radio_button_checked,
-                            size: 14,
-                            color: Colors.green,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextConst(
-                              title: data['pickup_location'] ?? '',
-                              size: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      /// DROP
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.location_on,
-                            size: 16,
-                            color: Colors.red,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextConst(
-                              title: data['drop_location'] ?? '',
-                              size: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      TextConst(
-                        title: "Estimated Amount: ₹${data['estimated_amount']}",
-                        size: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      /// FARE AMOUNT (± BASE RANGE)
-                      ValueListenableBuilder<int>(
-                        valueListenable: amount,
-                        builder: (_, value, __) {
-                          final bool canMinus = value > minAllowedAmount;
-                          final bool canPlus = value < maxAllowedAmount;
-
-                          return Container(
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: Row(
-                              children: [
-                                /// MINUS
-                                Expanded(
-                                  child: InkWell(
-                                    onTap: canMinus ? () => amount.value -= 1 : null,
-                                    child: Center(
-                                      child: Container(
-                                        height: 32,
-                                        width: 32,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: canMinus
-                                              ? AppColor.royalBlue.withOpacity(0.12)
-                                              : Colors.grey.shade200,
-                                          border: Border.all(
-                                            color: canMinus
-                                                ? AppColor.royalBlue
-                                                : Colors.grey.shade400,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.remove,
-                                          size: 18,
-                                          color: canMinus
-                                              ? AppColor.royalBlue
-                                              : Colors.grey.shade400,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                /// AMOUNT TEXT
-                                Expanded(
-                                  flex: 2,
-                                  child: Center(
-                                    child: Text(
-                                      "₹$value",
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColor.royalBlue,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                /// PLUS
-                                Expanded(
-                                  child: InkWell(
-                                    onTap: canPlus ? () => amount.value += 1 : null,
-                                    child: Center(
-                                      child: Container(
-                                        height: 32,
-                                        width: 32,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: canPlus
-                                              ? AppColor.royalBlue.withOpacity(0.12)
-                                              : Colors.grey.shade200,
-                                          border: Border.all(
-                                            color: canPlus
-                                                ? AppColor.royalBlue
-                                                : Colors.grey.shade400,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.add,
-                                          size: 18,
-                                          color: canPlus
-                                              ? AppColor.royalBlue
-                                              : Colors.grey.shade400,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      /// AGREE BUTTON
-                      CustomButton(
-                        title: "Agree",
-                        bgColor: AppColor.royalBlue,
-                        onTap: () {
-                          final int offerAmount = amount.value;
-
-                          if (offerAmount < minAllowedAmount ||
-                              offerAmount > maxAllowedAmount) {
-                            Utils.showErrorMessage(
-                              context,
-                              "Invalid offer amount",
-                            );
-                            return;
-                          }
-
-                          driverOfferVm.driverOfferApi(
-                            userIdOrder,
-                            orderId,
-                            offerAmount,
-                            baseAmount,
-                            context,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                );
+                // 🆕 RENDER BASED ON ORDER_TYPE
+                if (orderType == 2) {
+                  return _buildOrderType2Card(
+                    data: data,
+                    orderId: orderId,
+                    userIdOrder: userIdOrder,
+                    userName: userName,
+                    userMobile: userMobile,
+                    baseAmount: baseAmount,
+                    acceptLaterRideVm: acceptLaterRideVm,
+                    driverIgnoreVm: driverIgnoreVm,
+                  );
+                } else {
+                  return _buildOrderType1Card(
+                    data: data,
+                    orderId: orderId,
+                    userIdOrder: userIdOrder,
+                    baseAmount: baseAmount,
+                    minAllowedAmount: minAllowedAmount,
+                    maxAllowedAmount: maxAllowedAmount,
+                    amount: amount,
+                    driverOfferVm: driverOfferVm,
+                    driverIgnoreVm: driverIgnoreVm,
+                  );
+                }
               },
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  /// 🆕 ORDER TYPE 2 CARD - Simple with user details and Accept button
+  Widget _buildOrderType2Card({
+    required Map<String, dynamic> data,
+    required String orderId,
+    required String userIdOrder,
+    required String userName,
+    required String userMobile,
+    required int baseAmount,
+    required AcceptLaterRideViewModel acceptLaterRideVm,
+    required DriverIgnoreOrderViewModel driverIgnoreVm,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColor.whiteDark,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// ORDER ID + DISTANCE + CLOSE BUTTON
+          Row(
+            children: [
+              TextConst(
+                title: "Order #${data['order_id'] ?? orderId}",
+                size: 13,
+                fontWeight: FontWeight.w600,
+              ),
+              const SizedBox(width: 5),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextConst(
+                  title: "${data['distance_km']} km",
+                  color: Colors.green,
+                  size: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              InkWell(
+                onTap: () {
+                  // 🔇 STOP RINGER WHEN IGNORING
+                  _stopRinger();
+                  driverIgnoreVm.driverIgnoreOrderApi(orderId, context);
+                },
+                child: Container(
+                  height: 28,
+                  width: 28,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red,
+                  ),
+                  child: const Icon(Icons.close, size: 18, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          /// 👤 USER NAME
+          Row(
+            children: [
+              const Icon(Icons.person, size: 16, color: AppColor.royalBlue),
+              const SizedBox(width: 8),
+              TextConst(title: userName, size: 14, fontWeight: FontWeight.w600),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          /// 📱 USER MOBILE
+          Row(
+            children: [
+              const Icon(Icons.phone, size: 16, color: AppColor.royalBlue),
+              const SizedBox(width: 8),
+              TextConst(
+                title: userMobile,
+                size: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          /// PICKUP
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.radio_button_checked,
+                size: 14,
+                color: Colors.green,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextConst(
+                  title: data['pickup_location'] ?? '',
+                  size: 13,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          /// DROP
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.location_on, size: 16, color: Colors.red),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextConst(title: data['drop_location'] ?? '', size: 13),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          /// ACCEPT BUTTON
+          acceptLaterRideVm.loading
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColor.royalBlue),
+                )
+              : CustomButton(
+                  title: "Accept",
+                  bgColor: AppColor.royalBlue,
+                  onTap: () {
+                    // 🔇 STOP RINGER WHEN ACCEPTING
+                    _stopRinger();
+
+                    acceptLaterRideVm.acceptLaterRideApi(orderId, data['user_id'],  _currentLatLng!.latitude,
+                        _currentLatLng!.longitude, context);
+
+                    // driverOfferVm.driverOfferApi(
+                    //   userIdOrder,
+                    //   orderId,
+                    //   baseAmount, // No negotiation for order_type 2
+                    //   baseAmount,
+                    //   context,
+                    // );
+                  },
+                ),
+        ],
+      ),
+    );
+  }
+
+  /// ORDER TYPE 1 CARD - Original with amount negotiation
+  Widget _buildOrderType1Card({
+    required Map<String, dynamic> data,
+    required String orderId,
+    required String userIdOrder,
+    required int baseAmount,
+    required int minAllowedAmount,
+    required int maxAllowedAmount,
+    required ValueNotifier<int> amount,
+    required DriverOfferViewModel driverOfferVm,
+    required DriverIgnoreOrderViewModel driverIgnoreVm,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColor.whiteDark,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// ORDER ID + DISTANCE
+          Row(
+            children: [
+              TextConst(
+                title: "Order #${data['order_id'] ?? orderId}",
+                size: 13,
+                fontWeight: FontWeight.w600,
+              ),
+              const SizedBox(width: 5),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextConst(
+                  title: "${data['distance_km']} km",
+                  color: Colors.green,
+                  size: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              InkWell(
+                onTap: () {
+                  // 🔇 STOP RINGER WHEN IGNORING
+                  _stopRinger();
+                  driverIgnoreVm.driverIgnoreOrderApi(orderId, context);
+                },
+                child: Container(
+                  height: 28,
+                  width: 28,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red,
+                  ),
+                  child: const Icon(Icons.close, size: 18, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          /// PICKUP
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.radio_button_checked,
+                size: 14,
+                color: Colors.green,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextConst(
+                  title: data['pickup_location'] ?? '',
+                  size: 13,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          /// DROP
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.location_on, size: 16, color: Colors.red),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextConst(title: data['drop_location'] ?? '', size: 13),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          TextConst(
+            title: "Estimated Amount: ₹${data['estimated_amount']}",
+            size: 13,
+            fontWeight: FontWeight.w600,
+          ),
+
+          const SizedBox(height: 16),
+
+          /// FARE AMOUNT (± BASE RANGE)
+          ValueListenableBuilder<int>(
+            valueListenable: amount,
+            builder: (_, value, __) {
+              final bool canMinus = value > minAllowedAmount;
+              final bool canPlus = value < maxAllowedAmount;
+
+              return Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Row(
+                  children: [
+                    /// MINUS
+                    Expanded(
+                      child: InkWell(
+                        onTap: canMinus ? () => amount.value -= 1 : null,
+                        child: Center(
+                          child: Container(
+                            height: 32,
+                            width: 32,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: canMinus
+                                  ? AppColor.royalBlue.withOpacity(0.12)
+                                  : Colors.grey.shade200,
+                              border: Border.all(
+                                color: canMinus
+                                    ? AppColor.royalBlue
+                                    : Colors.grey.shade400,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.remove,
+                              size: 18,
+                              color: canMinus
+                                  ? AppColor.royalBlue
+                                  : Colors.grey.shade400,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    /// AMOUNT TEXT
+                    Expanded(
+                      flex: 2,
+                      child: Center(
+                        child: Text(
+                          "₹$value",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColor.royalBlue,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    /// PLUS
+                    Expanded(
+                      child: InkWell(
+                        onTap: canPlus ? () => amount.value += 1 : null,
+                        child: Center(
+                          child: Container(
+                            height: 32,
+                            width: 32,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: canPlus
+                                  ? AppColor.royalBlue.withOpacity(0.12)
+                                  : Colors.grey.shade200,
+                              border: Border.all(
+                                color: canPlus
+                                    ? AppColor.royalBlue
+                                    : Colors.grey.shade400,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.add,
+                              size: 18,
+                              color: canPlus
+                                  ? AppColor.royalBlue
+                                  : Colors.grey.shade400,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          /// AGREE BUTTON WITH LOADER
+          driverOfferVm.loading
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColor.royalBlue),
+                )
+              : CustomButton(
+                  title: "Agree",
+                  bgColor: AppColor.royalBlue,
+                  onTap: () {
+                    final int offerAmount = amount.value;
+
+                    if (offerAmount < minAllowedAmount ||
+                        offerAmount > maxAllowedAmount) {
+                      Utils.showErrorMessage(context, "Invalid offer amount");
+                      return;
+                    }
+
+                    // 🔇 STOP RINGER WHEN ACCEPTING
+                    _stopRinger();
+
+                    driverOfferVm.driverOfferApi(
+                      userIdOrder,
+                      orderId,
+                      offerAmount,
+                      baseAmount,
+                      context,
+                    );
+                  },
+                ),
         ],
       ),
     );

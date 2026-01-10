@@ -10,12 +10,14 @@ import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/accept_later_ride_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/active_ride_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_earning_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_history_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/delete_expired_order_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_ignore_order_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_offer_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_five_view_model.dart';
@@ -25,6 +27,8 @@ import 'package:rainbow_partner/view_model/cabdriver/driver_register_six_view_mo
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_three_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_two_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_transaction_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_withdraw_history_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_withdraw_request_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_colors_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_model_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_view_model.dart';
@@ -163,6 +167,10 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> DriverTransactionViewModel()),
           ChangeNotifierProvider(create: (context)=> CabHistoryViewModel()),
           ChangeNotifierProvider(create: (context)=> ActiveRideViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverIgnoreOrderViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverWithdrawRequestViewModel()),
+          ChangeNotifierProvider(create: (context)=> DriverWithdrawHistoryViewModel()),
+          ChangeNotifierProvider(create: (context)=> AcceptLaterRideViewModel()),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

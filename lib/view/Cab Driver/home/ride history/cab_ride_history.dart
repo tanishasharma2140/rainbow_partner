@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
+import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_history_view_model.dart';
 
@@ -302,61 +303,63 @@ class _CabRideHistoryState extends State<CabRideHistory> {
             SizedBox(height: 16),
 
             // Vehicle Info
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColor.royalBlue.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.directions_car,
-                      color: AppColor.royalBlue, size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${ride.brandName ?? ''} ${ride.modelName ?? ''}'
-                              .trim(),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: textPrimary,
-                          ),
-                        ),
-                        if (ride.vehiclePlateNumber != null)
-                          Text(
-                            ride.vehiclePlateNumber.toString(),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: textSecondary,
-                            ),
-                          ),
-                      ],
-                    ),
+            // Pickup Location
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.location_on, size: 16, color: Colors.green),
+                SizedBox(width: 6),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextConst(
+                        title: "Pickup",
+                        size: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        ride.pickupLocation ?? "N/A",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 13, color: Colors.black54,fontFamily: AppFonts.kanitReg),
+                      ),
+                    ],
                   ),
-                  if (ride.vehicleColor != null)
-                    Container(
-                      padding:
-                      EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        ride.vehicleColor.toString(),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: textSecondary,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+                )
+              ],
             ),
+            SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.location_on, size: 16, color: Colors.red),
+                SizedBox(width: 6),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextConst(
+                        title: "Drop",
+                        size: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        ride.dropLocation ?? "N/A",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 13, color: Colors.black54,fontFamily: AppFonts.kanitReg),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+
 
             SizedBox(height: 16),
 

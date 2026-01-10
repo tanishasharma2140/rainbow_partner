@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/model/driver_transaction_model.dart';
@@ -7,8 +8,11 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/home/driver_withdraw_history.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_transaction_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_withdraw_request_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_get_bank_detail_view_model.dart';
 
 class WalletSettlement extends StatefulWidget {
@@ -228,7 +232,9 @@ class _WalletSettlementState extends State<WalletSettlement> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildActionButton('Withdraw', Icons.currency_rupee, _showWithdrawalDialog),
-          _buildActionButton('History', Icons.history, _viewHistory),
+          _buildActionButton('History', Icons.history, (){
+            Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverWithdrawHistory()));
+          }),
             // bankDetails['hasBank'] ? 'Bank History' : 'Add Bank',
             // bankDetails['hasBank'] ? Icons.history : Icons.account_balance,
             // bankDetails['hasBank'] ? _goToBankHistory : _addBankAccount,
@@ -618,6 +624,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
   void _showWithdrawalDialog() {
     final profileVm = Provider.of<DriverProfileViewModel>(context,listen: false);
     final getBankVm = Provider.of<ServiceGetBankDetailViewModel>(context,listen: false);
+    final driverWithdrawVm = Provider.of<DriverWithdrawRequestViewModel>(context,listen: false);
     final hasBank =
         getBankVm.serviceBankDetailModel?.bankDetails != null;
     showDialog(
@@ -760,54 +767,61 @@ class _WalletSettlementState extends State<WalletSettlement> {
                 ),
               ),
               actions: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                StatefulBuilder(
+                  builder: (context, setStateDialog) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+                          ),
                         ),
-                        child: Text('Cancel', style: TextStyle(color: Colors.grey)),
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: isLoading
-                            ? null
-                            : () async {
-                          if (amountController.text.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Please enter amount')),
-                            );
-                            return;
-                          }
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: driverWithdrawVm.loading
+                                ? null
+                                : () async {
+                              final amount = amountController.text.trim();
+                              if (amount.isEmpty) {
+                                Utils.showErrorMessage(context, "Enter Amount");
+                                return;
+                              }
 
-                          setState(() => isLoading = true);
-                          await Future.delayed(
-                              Duration(seconds: 2)); // Simulate API call
-                          setState(() => isLoading = false);
+                              // Run Loader
+                              driverWithdrawVm.setLoading(true);
+                              setStateDialog(() {});
 
-                          amountController.clear();
-                          Navigator.pop(context);
-                          _showSuccessDialog();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.royalBlue,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                              await driverWithdrawVm.driverWithdrawRequestApi(amount, context);
+
+                              driverWithdrawVm.setLoading(false);
+                              setStateDialog(() {});
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColor.royalBlue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: driverWithdrawVm.loading
+                                ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                                : const TextConst(title: 'Withdraw', color: Colors.white),
+                          ),
                         ),
-                        child: isLoading
-                            ? CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2)
-                            : TextConst(title: 'Withdraw', color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
+                      ],
+                    );
+                  },
+                )
               ],
+
             );
           },
         );
@@ -815,64 +829,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
     );
   }
 
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 60),
-            SizedBox(height: 16),
-            Text('Success!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text('Withdrawal request submitted successfully!',
-                textAlign: TextAlign.center),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  void _addBankAccount() {
-    // Simple dialog for demo
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Add Bank Account'),
-        content: Text('Bank account addition page would open here'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _viewHistory() {
-    // Simple dialog for demo
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Withdrawal History'),
-        content: Text('Withdrawal history page would open here'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 
   // void _goToBankHistory() {
   //   // Simple dialog for demo

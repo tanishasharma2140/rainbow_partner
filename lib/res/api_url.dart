@@ -41,6 +41,10 @@ class ApiUrl {
   static const String cabEarningUrl ="${baseUrl}cab-earning";
   static const String cabHistoryUrl ="${baseUrl}cab-history";
   static const String activeRideUrl ="${baseUrl}active-ride";
+  static const String driverIgnoreOrderUrl ="${baseUrl}driver-ignore-ride-order";
+  static const String driverWithdrawRequestUrl ="${baseUrl}driver-withdraw-request";
+  static const String driverWithdrawHistoryUrl ="${baseUrl}driver-withdraw-history";
+  static const String acceptLaterRideUrl ="${baseUrl}accept-later-ride";
 
 
 

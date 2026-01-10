@@ -54,6 +54,8 @@ class Data {
   dynamic rating;
   dynamic userName;
   dynamic userMobile;
+  dynamic pickupLocation;
+  dynamic dropLocation;
 
   Data(
       {this.id,
@@ -81,7 +83,10 @@ class Data {
         this.orderOtp,
         this.rating,
         this.userName,
-        this.userMobile});
+        this.userMobile,
+        this.pickupLocation,
+        this.dropLocation,
+      });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -110,6 +115,8 @@ class Data {
     rating = json['rating'];
     userName = json['user_name'];
     userMobile = json['user_mobile'];
+    pickupLocation = json['pickup_location'];
+    dropLocation = json['drop_location'];
   }
 
   Map<String, dynamic> toJson() {
@@ -140,6 +147,8 @@ class Data {
     data['rating'] = rating;
     data['user_name'] = userName;
     data['user_mobile'] = userMobile;
+    data['pickup_location'] = pickupLocation;
+    data['drop_location'] = dropLocation;
     return data;
   }
 }
