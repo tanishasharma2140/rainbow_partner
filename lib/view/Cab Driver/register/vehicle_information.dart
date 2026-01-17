@@ -131,45 +131,40 @@ class _VehicleInformationState extends State<VehicleInformation> {
   Future<void> _selectYear(BuildContext context) async {
     int currentYear = DateTime.now().year;
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            dialogBackgroundColor: Colors.white,
-            colorScheme: ColorScheme.light(
-              primary: AppColor.royalBlue, // year selected color
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColor.royalBlue,
-              ),
-            ),
-          ),
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text(
-              "Select Production Year",
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            content: SizedBox(
-              height: 260,
-              child: YearPicker(
-                firstDate: DateTime(1980),
-                lastDate: DateTime(currentYear),
-                selectedDate: DateTime(currentYear),
-                onChanged: (DateTime dateTime) {
-                  yearController.text = dateTime.year.toString();
-                  Navigator.pop(context);
-                },
-              ),
+        return SafeArea(
+          child: Container(
+            height: 350,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                const Text(
+                  "Select Production Year",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: YearPicker(
+                    firstDate: DateTime(1980),
+                    lastDate: DateTime(currentYear),
+                    selectedDate: DateTime(currentYear),
+                    onChanged: (DateTime dateTime) {
+                      yearController.text = dateTime.year.toString();
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         );

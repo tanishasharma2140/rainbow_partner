@@ -51,6 +51,6 @@ class ApiUrl {
 
 
 
-  static const String sendOtpUrl ="https://otp.fctechteam.org/send_otp.php?mode=test&digit=4&mobile=";
-  static const String verifyOtpUrl ="https://otp.fctechteam.org/verifyotp.php?mobile=";
+  static const String sendOtpUrl ="https://admin.rainbowsenterprises.com/api/send_otp?mode=live&digit=4&mobile=";
+  static const String verifyOtpUrl ="https://admin.rainbowsenterprises.com/api/verifyotp?mobile=";
 }

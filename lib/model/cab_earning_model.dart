@@ -8,38 +8,32 @@ class CabEarningModel {
     success = json['success'];
     data = json['data'] != null ? Data.fromJson(json['data']) : null;
   }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['success'] = success;
-    if (this.data != null) {
-      data['data'] = this.data!.toJson();
-    }
-    return data;
-  }
 }
 
 class Data {
-  double? totalEarning;
-  int? totalCompletedRide;
-  double? totalDistance;
+  double totalEarning = 0.0;
+  int totalCompletedRide = 0;
+  double totalDistance = 0.0;
   OnlineTime? onlineTime;
   List<TripDetails>? tripDetails;
 
-  Data(
-      {this.totalEarning,
-        this.totalCompletedRide,
-        this.totalDistance,
-        this.onlineTime,
-        this.tripDetails});
+  Data({
+    this.totalEarning = 0.0,
+    this.totalCompletedRide = 0,
+    this.totalDistance = 0.0,
+    this.onlineTime,
+    this.tripDetails,
+  });
 
   Data.fromJson(Map<String, dynamic> json) {
-    totalEarning = json['total_earning'];
-    totalCompletedRide = json['total_completed_ride'];
-    totalDistance = json['total_distance'];
+    totalEarning = _parseDouble(json['total_earning']);
+    totalCompletedRide = _parseInt(json['total_completed_ride']);
+    totalDistance = _parseDouble(json['total_distance']);
+
     onlineTime = json['online_time'] != null
         ? OnlineTime.fromJson(json['online_time'])
         : null;
+
     if (json['trip_details'] != null) {
       tripDetails = <TripDetails>[];
       json['trip_details'].forEach((v) {
@@ -47,82 +41,63 @@ class Data {
       });
     }
   }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['total_earning'] = totalEarning;
-    data['total_completed_ride'] = totalCompletedRide;
-    data['total_distance'] = totalDistance;
-    if (onlineTime != null) {
-      data['online_time'] = onlineTime!.toJson();
-    }
-    if (tripDetails != null) {
-      data['trip_details'] = tripDetails!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
 }
 
 class OnlineTime {
-  int? hours;
-  int? minutes;
+  int hours = 0;
+  int minutes = 0;
 
-  OnlineTime({this.hours, this.minutes});
+  OnlineTime({this.hours = 0, this.minutes = 0});
 
   OnlineTime.fromJson(Map<String, dynamic> json) {
-    hours = json['hours'];
-    minutes = json['minutes'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['hours'] = hours;
-    data['minutes'] = minutes;
-    return data;
+    hours = _parseInt(json['hours']);
+    minutes = _parseInt(json['minutes']);
   }
 }
 
 class TripDetails {
   dynamic id;
-  dynamic pickupLocation;
-  dynamic dropLocation;
+  String pickupLocation = "";
+  String dropLocation = "";
   dynamic orderStatus;
-  dynamic distanceKm;
-  dynamic finalAmount;
+  double distanceKm = 0.0;
+  double finalAmount = 0.0;
   dynamic payMode;
-  dynamic createdAt;
+  String createdAt = "";
 
   TripDetails(
       {this.id,
-        this.pickupLocation,
-        this.dropLocation,
+        this.pickupLocation = "",
+        this.dropLocation = "",
         this.orderStatus,
-        this.distanceKm,
-        this.finalAmount,
+        this.distanceKm = 0.0,
+        this.finalAmount = 0.0,
         this.payMode,
-        this.createdAt});
+        this.createdAt = ""});
 
   TripDetails.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    pickupLocation = json['pickup_location'];
-    dropLocation = json['drop_location'];
+    pickupLocation = json['pickup_location']?.toString() ?? "";
+    dropLocation = json['drop_location']?.toString() ?? "";
     orderStatus = json['order_status'];
-    distanceKm = json['distance_km'];
-    finalAmount = json['final_amount'];
+    distanceKm = _parseDouble(json['distance_km']);
+    finalAmount = _parseDouble(json['final_amount']);
     payMode = json['pay_mode'];
-    createdAt = json['created_at'];
+    createdAt = json['created_at']?.toString() ?? "";
   }
+}
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['pickup_location'] = pickupLocation;
-    data['drop_location'] = dropLocation;
-    data['order_status'] = orderStatus;
-    data['distance_km'] = distanceKm;
-    data['final_amount'] = finalAmount;
-    data['pay_mode'] = payMode;
-    data['created_at'] = createdAt;
-    return data;
-  }
+double _parseDouble(dynamic value) {
+  if (value == null) return 0.0;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0.0;
+  return 0.0;
+}
+
+int _parseInt(dynamic value) {
+  if (value == null) return 0;
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value) ?? 0;
+  if (value is double) return value.toInt();
+  return 0;
 }

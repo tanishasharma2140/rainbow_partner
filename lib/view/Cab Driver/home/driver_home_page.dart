@@ -11,7 +11,6 @@ import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/action/driver_profile.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/driver_accepted_scree.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/ride%20history/cab_ride_history.dart';
-import 'package:rainbow_partner/view/Cab%20Driver/home/schedule/schedule_ride_card.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/wallet/add_bank.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/wallet/cab_bank_update_status.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/wallet/wallet_and_settlement.dart';
@@ -210,8 +209,6 @@ class _DriverHomePageState extends State<DriverHomePage> {
                   const SizedBox(height: 17),
 
                   _activeRideCard(),
-                  _scheduledRideCard(context),
-
                   const SizedBox(height: 15),
 
                   const Padding(
@@ -512,122 +509,6 @@ class _DriverHomePageState extends State<DriverHomePage> {
     );
   }
 
-  Widget _scheduledRideCard(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ScheduledRideCard(
-                userName: "Rajesh Kumar",
-                userMobile: "+91 98765 43210",
-                pickup: "Gomti Nagar",
-                drop: "Indira Nagar, Lucknow",
-                distance: 8.5,
-                fare: 180.0,
-                scheduledTime: DateTime(2025, 9, 25, 8, 30),
-                status: RideStatus.scheduled,
-              ),
-            ),
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.orange.withOpacity(0.12),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// ICON
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.orange.withOpacity(0.15),
-                ),
-                child: const Icon(
-                  Icons.schedule_rounded,
-                  size: 28,
-                  color: Colors.orange,
-                ),
-              ),
-
-              const SizedBox(width: 16),
-
-              /// CONTENT
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const TextConst(
-                      title: "Scheduled Ride",
-                      size: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    TextConst(
-                      title: DateFormat(
-                        'dd MMM • hh:mm a',
-                      ).format(DateTime(2025, 9, 25, 8, 30)),
-                      size: 13,
-                      color: Colors.black54,
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Row(
-                      children: const [
-                        Icon(Icons.place, size: 16, color: Colors.green),
-                        SizedBox(width: 6),
-                        Expanded(
-                          child: TextConst(
-                            title: "Gomti Nagar → Indira Nagar",
-                            size: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              /// STATUS
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const TextConst(
-                  title: "UPCOMING",
-                  size: 11,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.orange,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   // -------------------------------------------------
   //                QUICK ACTION ITEM

@@ -36,7 +36,7 @@ class ServiceGetBankDetailViewModel with ChangeNotifier {
       if (statusCode == 200 || statusCode == 201) {
         final model = ServiceBankDetailModel.fromJson(body);
         setBankDetailModelData(model);
-        Utils.showSuccessMessage(context, body["message"]);
+        debugPrint(body["message"]);
       } else {
         if (kDebugMode) print("❌ Error Status: $statusCode → $body");
         Utils.showErrorMessage(context, body["message"]);

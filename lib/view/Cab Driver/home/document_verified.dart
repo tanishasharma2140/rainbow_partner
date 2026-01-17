@@ -191,6 +191,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
@@ -291,12 +292,35 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
   // ================= UI STATES =================
   Widget pendingWidget() {
     return statusLayout(
-      icon: Icons.hourglass_top,
+      icon: Icons.access_time_rounded,
       iconColor: Colors.orange,
-      title: "Verification Pending",
-      subTitle: "Your documents are under review.\nWe’ll notify you soon.",
+      title: "Verification in Progress",
+      subTitle: "We're currently reviewing your documents.\nYou'll be notified once completed.",
+      customTop: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.orange.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.hourglass_bottom, size: 18, color: Colors.orange),
+            SizedBox(width: 6),
+            Text(
+              "Pending Verification",
+              style: TextStyle(
+                color: Colors.orange,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
+
 
   Widget verifiedWidget() {
     return statusLayout(
@@ -339,6 +363,7 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
     bool showButton = false,
     bool isRejected = false,
     VoidCallback? onButtonTap,
+    Widget? customTop,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 22),
@@ -347,12 +372,24 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
         children: [
           const SizedBox(height: 40),
 
-          Icon(icon, size: 70, color: iconColor),
+          if (customTop != null) customTop,
+
+          if (customTop != null) const SizedBox(height: 16),
+
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: iconColor.withOpacity(0.12),
+            ),
+            child: Icon(icon, size: 36, color: iconColor),
+          ),
+
           const SizedBox(height: 20),
 
           TextConst(
             title: title,
-            size: 26,
+            size: 24,
             fontWeight: FontWeight.w700,
             color: iconColor,
           ),
@@ -362,13 +399,13 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
           TextConst(
             title: subTitle,
             size: 16,
-            color: isRejected ? Colors.red.shade700 : Colors.grey.shade700,
+            color: Colors.grey.shade700,
             fontFamily: AppFonts.poppinsReg,
           ),
 
           const Spacer(),
 
-          if (showButton)
+          if (showButton) ...[
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -390,12 +427,13 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
                 ),
               ),
             ),
-
-          SizedBox(height: Sizes.screenHeight * 0.04),
+            SizedBox(height: Sizes.screenHeight * 0.04),
+          ],
         ],
       ),
     );
   }
+
 
   // ================= BUILD =================
   @override
@@ -406,7 +444,7 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
         backgroundColor: AppColor.white,
         appBar: ConstantAppbar(
           onBack: () => Navigator.pop(context),
-          onClose: () => Navigator.pop(context),
+          onClose: () => SystemNavigator.pop(),
         ),
         body: RefreshIndicator(
           color: AppColor.royalBlue,

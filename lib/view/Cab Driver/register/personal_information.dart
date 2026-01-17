@@ -344,7 +344,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
                                           lastName: surnameController.text,
                                           dob: dobController.text,
                                           deviceId: "edfrgtyujy",
-                                          fcm: "dqefwtrhy",
+                                          fcm: fcmToken.toString(),
                                           context: context
                                       );
                                     },
