@@ -10,6 +10,8 @@ import 'package:rainbow_partner/service/socket_service.dart';
 import 'package:rainbow_partner/view/Service Man/home/service_booking_detail.dart';
 import 'package:rainbow_partner/view/service/ringtone_service.dart';
 import 'package:rainbow_partner/view_model/service_man/accept_order_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
+import 'package:rainbow_partner/view_model/user_view_model.dart';
 
 class ServiceTotalBooking extends StatefulWidget {
   const ServiceTotalBooking({super.key});
@@ -23,11 +25,13 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
 
   @override
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
+    UserViewModel userViewModel = UserViewModel();
+    String? userId = await userViewModel.getUser();
 
     SocketService().connect(
-      servicemanId: 1,
+      servicemanId: userId,
 
       onPendingOrders: (orders) {
         if (!mounted) return;

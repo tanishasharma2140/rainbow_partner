@@ -79,6 +79,18 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     });
   }
 
+  Future<void> _onRefresh() async {
+    final position = await LocationUtils.getLocation();
+    final lat = position.latitude.toString();
+    final lng = position.longitude.toString();
+
+    await Future.wait([
+      context.read<ServicemanProfileViewModel>().servicemanProfileApi(lat, lng, context),
+      context.read<ReviewViewModel>().reviewApi(context),
+      context.read<ServiceInfoViewModel>().serviceInfoApi(context),
+    ]);
+  }
+
   void _showBlockedDialog() {
     showDialog(
       context: context,
@@ -199,6 +211,8 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 
+
+
   @override
   Widget build(BuildContext context) {
     final serviceProfileVm = Provider.of<ServicemanProfileViewModel>(context);
@@ -244,236 +258,241 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
             ],
           ),
 
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 17),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  const SizedBox(height: 20),
-
-                  serviceProfileVm.loading ||
-                      serviceProfileVm.servicemanProfileModel == null ||
-                      serviceProfileVm.servicemanProfileModel!.data == null
-                      ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      ShimmerLoader(width: 180, height: 18),
-                      SizedBox(height: 6),
-                      ShimmerLoader(width: 120, height: 14),
-                    ],
-                  )
-                      : TextConst(
-                    title:
-                    "Hello, ${serviceProfileVm.servicemanProfileModel!.data!.firstName} ${serviceProfileVm.servicemanProfileModel!.data!.lastName}",
-                    size: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-
-                  TextConst(title: "Welcome back!", size: 13, color: Colors.grey),
-
-                  const SizedBox(height: 25),
-
-                  Container(
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(20),
+          body: RefreshIndicator(
+            backgroundColor: AppColor.white,
+            color: AppColor.royalBlue,
+            onRefresh: _onRefresh,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 17),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+            
+                    const SizedBox(height: 20),
+            
+                    serviceProfileVm.loading ||
+                        serviceProfileVm.servicemanProfileModel == null ||
+                        serviceProfileVm.servicemanProfileModel!.data == null
+                        ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        ShimmerLoader(width: 180, height: 18),
+                        SizedBox(height: 6),
+                        ShimmerLoader(width: 120, height: 14),
+                      ],
+                    )
+                        : TextConst(
+                      title:
+                      "Hello, ${serviceProfileVm.servicemanProfileModel!.data!.firstName} ${serviceProfileVm.servicemanProfileModel!.data!.lastName}",
+                      size: 18,
+                      fontWeight: FontWeight.w600,
                     ),
-                    child: Row(
+            
+                    TextConst(title: "Welcome back!", size: 13, color: Colors.grey),
+            
+                    const SizedBox(height: 25),
+            
+                    Container(
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 22,
+                            backgroundColor: AppColor.royalBlue,
+                            child: const Icon(Icons.account_balance_wallet,
+                                color: Colors.white, size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                              child: TextConst(title: "Total Cash in Hand", size: 16)),
+                          serviceProfileVm.loading ||
+                              serviceProfileVm.servicemanProfileModel == null ||
+                              serviceProfileVm.servicemanProfileModel!.data == null
+                              ? const ShimmerLoader(
+                            width: 80,
+                            height: 18,
+                            borderRadius: 6,
+                          )
+                              : TextConst(
+                            title:
+                            "₹${serviceProfileVm.servicemanProfileModel!.data!.wallet ?? "0.00"}",
+                            size: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColor.royalBlue,
+                          ),
+            
+                        ],
+                      ),
+                    ),
+            
+                    const SizedBox(height: 25),
+            
+                    Row(
                       children: [
-                        CircleAvatar(
-                          radius: 22,
-                          backgroundColor: AppColor.royalBlue,
-                          child: const Icon(Icons.account_balance_wallet,
-                              color: Colors.white, size: 22),
+                        Expanded(
+                          child: statBox(
+                            title: "Find Services",
+                            imagePath: "assets/sandy_loading.gif",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (_) => ServiceTotalBooking(),
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                        const SizedBox(width: 12),
-                        const Expanded(
-                            child: TextConst(title: "Total Cash in Hand", size: 16)),
-                        serviceProfileVm.loading ||
-                            serviceProfileVm.servicemanProfileModel == null ||
-                            serviceProfileVm.servicemanProfileModel!.data == null
-                            ? const ShimmerLoader(
-                          width: 80,
-                          height: 18,
-                          borderRadius: 6,
-                        )
-                            : TextConst(
-                          title:
-                          "₹${serviceProfileVm.servicemanProfileModel!.data!.wallet ?? "0.00"}",
-                          size: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColor.royalBlue,
+            
+            
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: statBox(
+                            value: serviceVm.serviceInfoModel?.data?.acceptedBooking.toString()??"0",
+                            title: "Accepted Bookings",
+                            icon: Icons.design_services,
+                            onTap: () {
+                              Navigator.push(context,
+                                  CupertinoPageRoute(builder: (_) => AcceptedBooking()));
+                            },
+                          ),
                         ),
-
                       ],
                     ),
-                  ),
-
-                  const SizedBox(height: 25),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: statBox(
-                          title: "Find Services",
-                          imagePath: "assets/sandy_loading.gif",
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              CupertinoPageRoute(
-                                builder: (_) => ServiceTotalBooking(),
-                              ),
-                            );
-                          },
+            
+                    const SizedBox(height: 15),
+            
+                    Row(
+                      children: [
+                        Expanded(
+                          child: statBox(
+                            value: serviceVm.serviceInfoModel?.data?.completedBooking.toString()??"",
+                            title: "Booking History",
+                            icon:  Icons.list_alt_outlined,
+                            onTap: () {
+                              Navigator.push(context,
+                                  CupertinoPageRoute(builder: (_) => CompleteBooking()));
+                            },
+                          ),
                         ),
-                      ),
-
-
-                      const SizedBox(width: 15),
-                      Expanded(
-                        child: statBox(
-                          value: serviceVm.serviceInfoModel?.data?.acceptedBooking.toString()??"0",
-                          title: "Accepted Bookings",
-                          icon: Icons.design_services,
-                          onTap: () {
-                            Navigator.push(context,
-                                CupertinoPageRoute(builder: (_) => AcceptedBooking()));
-                          },
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: statBox(
+                            value: "₹${serviceVm.serviceInfoModel?.data?.totalEarning??""}",
+                            title: "Total Revenue",
+                            icon: Icons.monetization_on_outlined,
+                            onTap: () {
+                              Navigator.push(context,
+                                  CupertinoPageRoute(builder: (_) => ServiceTotalRevenueEarning()));
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: statBox(
-                          value: serviceVm.serviceInfoModel?.data?.completedBooking.toString()??"",
-                          title: "Booking History",
-                          icon:  Icons.list_alt_outlined,
-                          onTap: () {
-                            Navigator.push(context,
-                                CupertinoPageRoute(builder: (_) => CompleteBooking()));
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 15),
-                      Expanded(
-                        child: statBox(
-                          value: "₹${serviceVm.serviceInfoModel?.data?.totalEarning??""}",
-                          title: "Total Revenue",
-                          icon: Icons.monetization_on_outlined,
-                          onTap: () {
-                            Navigator.push(context,
-                                CupertinoPageRoute(builder: (_) => ServiceTotalRevenueEarning()));
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  TextConst(title: "Monthly Revenue USD", size: 18, fontWeight: FontWeight.w600),
-                  const SizedBox(height: 15),
-
-                  // ------------------------------------------------------------------
-                  //                          BAR CHART 8 MONTHS
-                  // ------------------------------------------------------------------
-                  Container(
-                    height: 190,
-                    padding: const EdgeInsets.fromLTRB(12, 15, 12, 12),
-                    decoration: BoxDecoration(
-                      color: AppColor.whiteDark,
-                      borderRadius: BorderRadius.circular(12),
+                      ],
                     ),
-                    child: BarChart(
-                      BarChartData(
-                        alignment: BarChartAlignment.spaceAround,
-                        maxY: 15000,
-                        minY: 0,
-                        barTouchData: BarTouchData(enabled: false),
-
-                        gridData: FlGridData(
-                          show: true,
-                          drawVerticalLine: false,
-                          horizontalInterval: 5000,
-                          getDrawingHorizontalLine: (value) =>
-                              FlLine(color: Colors.grey.shade300, strokeWidth: 1),
-                        ),
-
-                        titlesData: FlTitlesData(
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              interval: 5000,
-                              reservedSize: 40,
-                              getTitlesWidget: (v, meta) => Text(
-                                v.toInt().toString(),
-                                style: TextStyle(fontSize: 11, color: Colors.grey),
-                              ),
-                            ),
+            
+                    const SizedBox(height: 20),
+            
+                    TextConst(title: "Monthly Revenue USD", size: 18, fontWeight: FontWeight.w600),
+                    const SizedBox(height: 15),
+            
+                    // ------------------------------------------------------------------
+                    //                          BAR CHART 8 MONTHS
+                    // ------------------------------------------------------------------
+                    Container(
+                      height: 190,
+                      padding: const EdgeInsets.fromLTRB(12, 15, 12, 12),
+                      decoration: BoxDecoration(
+                        color: AppColor.whiteDark,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: BarChart(
+                        BarChartData(
+                          alignment: BarChartAlignment.spaceAround,
+                          maxY: 15000,
+                          minY: 0,
+                          barTouchData: BarTouchData(enabled: false),
+            
+                          gridData: FlGridData(
+                            show: true,
+                            drawVerticalLine: false,
+                            horizontalInterval: 5000,
+                            getDrawingHorizontalLine: (value) =>
+                                FlLine(color: Colors.grey.shade300, strokeWidth: 1),
                           ),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 30,
-                              getTitlesWidget: (value, meta) {
-                                const months = [
-                                  "Jan", "Feb", "Mar", "Apr",
-                                  "May", "Jun", "Jul", "Aug"
-                                ];
-                                return Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Text(months[value.toInt()],
-                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        ),
-
-                        // ⭐ ANIMATED ONLY FIRST 3 MONTHS ⭐
-                        barGroups: List.generate(8, (i) {
-                          return BarChartGroupData(
-                            x: i,
-                            barRods: [
-                              BarChartRodData(
-                                toY: animatedValues[i],
-                                width: 18,
-                                color: i < 3
-                                    ? AppColor.royalBlue
-                                    : const Color(0xFF2E5F4D),
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(6),
-                                  topRight: Radius.circular(6),
+            
+                          titlesData: FlTitlesData(
+                            leftTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                interval: 5000,
+                                reservedSize: 40,
+                                getTitlesWidget: (v, meta) => Text(
+                                  v.toInt().toString(),
+                                  style: TextStyle(fontSize: 11, color: Colors.grey),
                                 ),
                               ),
-                            ],
-                          );
-                        }),
+                            ),
+                            bottomTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                reservedSize: 30,
+                                getTitlesWidget: (value, meta) {
+                                  const months = [
+                                    "Jan", "Feb", "Mar", "Apr",
+                                    "May", "Jun", "Jul", "Aug"
+                                  ];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Text(months[value.toInt()],
+                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          ),
+            
+                          // ⭐ ANIMATED ONLY FIRST 3 MONTHS ⭐
+                          barGroups: List.generate(8, (i) {
+                            return BarChartGroupData(
+                              x: i,
+                              barRods: [
+                                BarChartRodData(
+                                  toY: animatedValues[i],
+                                  width: 18,
+                                  color: i < 3
+                                      ? AppColor.royalBlue
+                                      : const Color(0xFF2E5F4D),
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(6),
+                                    topRight: Radius.circular(6),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
+                        ),
+            
+                        swapAnimationDuration: const Duration(milliseconds: 900),
+                        swapAnimationCurve: Curves.easeOutBack,
                       ),
-
-                      swapAnimationDuration: const Duration(milliseconds: 900),
-                      swapAnimationCurve: Curves.easeOutBack,
                     ),
-                  ),
-
-                  const SizedBox(height: 25),
-
-                  TextConst(title: "Reviews", size: 20, fontWeight: FontWeight.w600),
-                  const SizedBox(height: 15),
-
-                  reviewList(reviewVm)
-                ],
+            
+                    const SizedBox(height: 25),
+            
+                    TextConst(title: "Reviews", size: 20, fontWeight: FontWeight.w600),
+                    const SizedBox(height: 15),
+            
+                    reviewList(reviewVm)
+                  ],
+                ),
               ),
             ),
           ),

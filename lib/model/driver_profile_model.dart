@@ -6,12 +6,12 @@ class DriverProfileModel {
 
   DriverProfileModel.fromJson(Map<String, dynamic> json) {
     message = json['message'];
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    data = json['data'] != null ? Data.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['message'] = this.message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
@@ -76,6 +76,7 @@ class Data {
   dynamic currentLongitude;
   dynamic createdAt;
   dynamic updatedAt;
+  dynamic vehicleCategory;
 
   Data(
       {this.id,
@@ -133,7 +134,9 @@ class Data {
         this.currentLatitude,
         this.currentLongitude,
         this.createdAt,
-        this.updatedAt});
+        this.updatedAt,
+        this.vehicleCategory,
+      });
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -194,68 +197,70 @@ class Data {
     currentLongitude = json['current_longitude'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
+    vehicleCategory = json['vehicle_category'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['wallet'] = this.wallet;
-    data['due_wallet'] = this.dueWallet;
-    data['platform_type'] = this.platformType;
-    data['vehicle_type'] = this.vehicleType;
-    data['vehicle_name'] = this.vehicleName;
-    data['first_name'] = this.firstName;
-    data['last_name'] = this.lastName;
-    data['mobile'] = this.mobile;
-    data['date_of_birth'] = this.dateOfBirth;
-    data['profile_photo'] = this.profilePhoto;
-    data['device_id'] = this.deviceId;
-    data['fcm_token'] = this.fcmToken;
-    data['online_status'] = this.onlineStatus;
-    data['personal_information_status'] = this.personalInformationStatus;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['wallet'] = wallet;
+    data['due_wallet'] = dueWallet;
+    data['platform_type'] = platformType;
+    data['vehicle_type'] = vehicleType;
+    data['vehicle_name'] = vehicleName;
+    data['first_name'] = firstName;
+    data['last_name'] = lastName;
+    data['mobile'] = mobile;
+    data['date_of_birth'] = dateOfBirth;
+    data['profile_photo'] = profilePhoto;
+    data['device_id'] = deviceId;
+    data['fcm_token'] = fcmToken;
+    data['online_status'] = onlineStatus;
+    data['personal_information_status'] = personalInformationStatus;
     data['personal_information_reject_reason'] =
-        this.personalInformationRejectReason;
-    data['driver_licence_status'] = this.driverLicenceStatus;
-    data['driver_licence_reject_reason'] = this.driverLicenceRejectReason;
-    data['driver_licence_number'] = this.driverLicenceNumber;
-    data['licence_validity_date'] = this.licenceValidityDate;
-    data['driver_licence_front'] = this.driverLicenceFront;
-    data['driver_licence_back'] = this.driverLicenceBack;
-    data['aadhaar_pan_status'] = this.aadhaarPanStatus;
-    data['aadhaar_pan_reject_reason'] = this.aadhaarPanRejectReason;
-    data['aadhaar_number'] = this.aadhaarNumber;
-    data['pan_card_number'] = this.panCardNumber;
-    data['aadhaar_front'] = this.aadhaarFront;
-    data['aadhaar_back'] = this.aadhaarBack;
-    data['pan_card_front'] = this.panCardFront;
-    data['pan_card_back'] = this.panCardBack;
-    data['required_certificates_status'] = this.requiredCertificatesStatus;
+        personalInformationRejectReason;
+    data['driver_licence_status'] = driverLicenceStatus;
+    data['driver_licence_reject_reason'] = driverLicenceRejectReason;
+    data['driver_licence_number'] = driverLicenceNumber;
+    data['licence_validity_date'] = licenceValidityDate;
+    data['driver_licence_front'] = driverLicenceFront;
+    data['driver_licence_back'] = driverLicenceBack;
+    data['aadhaar_pan_status'] = aadhaarPanStatus;
+    data['aadhaar_pan_reject_reason'] = aadhaarPanRejectReason;
+    data['aadhaar_number'] = aadhaarNumber;
+    data['pan_card_number'] = panCardNumber;
+    data['aadhaar_front'] = aadhaarFront;
+    data['aadhaar_back'] = aadhaarBack;
+    data['pan_card_front'] = panCardFront;
+    data['pan_card_back'] = panCardBack;
+    data['required_certificates_status'] = requiredCertificatesStatus;
     data['required_certificates_reject_reason'] =
-        this.requiredCertificatesRejectReason;
-    data['fitness_certificate'] = this.fitnessCertificate;
-    data['pollution_certificate'] = this.pollutionCertificate;
-    data['insurance_certificate'] = this.insuranceCertificate;
-    data['police_certificate'] = this.policeCertificate;
-    data['vehicle_info_status'] = this.vehicleInfoStatus;
-    data['vehicle_info_reject_reason'] = this.vehicleInfoRejectReason;
-    data['brand_id'] = this.brandId;
-    data['brand_name'] = this.brandName;
-    data['model_id'] = this.modelId;
-    data['model_name'] = this.modelName;
-    data['vehicle_color'] = this.vehicleColor;
-    data['vehicle_plate_number'] = this.vehiclePlateNumber;
-    data['vehicle_production_year'] = this.vehicleProductionYear;
-    data['vehicle_photo'] = this.vehiclePhoto;
-    data['vehicle_documents_status'] = this.vehicleDocumentsStatus;
-    data['vehicle_documents_reject_reason'] = this.vehicleDocumentsRejectReason;
-    data['vehicle_permit_part_a'] = this.vehiclePermitPartA;
-    data['vehicle_permit_part_b'] = this.vehiclePermitPartB;
-    data['vehicle_registration_front'] = this.vehicleRegistrationFront;
-    data['vehicle_registration_back'] = this.vehicleRegistrationBack;
-    data['current_latitude'] = this.currentLatitude;
-    data['current_longitude'] = this.currentLongitude;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
+        requiredCertificatesRejectReason;
+    data['fitness_certificate'] = fitnessCertificate;
+    data['pollution_certificate'] = pollutionCertificate;
+    data['insurance_certificate'] = insuranceCertificate;
+    data['police_certificate'] = policeCertificate;
+    data['vehicle_info_status'] = vehicleInfoStatus;
+    data['vehicle_info_reject_reason'] = vehicleInfoRejectReason;
+    data['brand_id'] = brandId;
+    data['brand_name'] = brandName;
+    data['model_id'] = modelId;
+    data['model_name'] = modelName;
+    data['vehicle_color'] = vehicleColor;
+    data['vehicle_plate_number'] = vehiclePlateNumber;
+    data['vehicle_production_year'] = vehicleProductionYear;
+    data['vehicle_photo'] = vehiclePhoto;
+    data['vehicle_documents_status'] = vehicleDocumentsStatus;
+    data['vehicle_documents_reject_reason'] = vehicleDocumentsRejectReason;
+    data['vehicle_permit_part_a'] = vehiclePermitPartA;
+    data['vehicle_permit_part_b'] = vehiclePermitPartB;
+    data['vehicle_registration_front'] = vehicleRegistrationFront;
+    data['vehicle_registration_back'] = vehicleRegistrationBack;
+    data['current_latitude'] = currentLatitude;
+    data['current_longitude'] = currentLongitude;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
+    data['vehicle_category'] = vehicleCategory;
     return data;
   }
 }

@@ -16,6 +16,7 @@ import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view_model/device_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/categories_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_register_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/zone_cities_view_model.dart';
 
 class RegisterScreen extends StatefulWidget {
   final int profileId;
@@ -39,6 +40,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<CategoriesViewModel>(context, listen: false).categoriesApi();
+      Provider.of<ZoneCitiesViewModel>(context, listen: false).zoneCitiesApi();
     });
   }
 
@@ -49,11 +51,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Position? _currentPosition;
   String currentLat = "";
   String currentLng = "";
+  List<String> selectedCategoryNames = [];
+  List<String> selectedCategoryIds = [];
+  String? selectedCityId;
 
   // CONTROLLERS
   final TextEditingController firstController = TextEditingController();
   final TextEditingController lastController = TextEditingController();
-  final TextEditingController userController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
@@ -172,6 +177,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+
+
   // PICK PROFILE IMAGE ONLY (IMAGE)
   Future<void> pickProfileImage() async {
     final XFile? img =
@@ -258,8 +265,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // INPUT FIELDS
                     cardField("First Name", firstController),
                     cardField("Last Name", lastController),
-                    cardField("City", userController),
-                    cardField("Email Address", emailController),
+                    cardField(
+                      "City",
+                      cityController,
+                      isCity: true,
+                    ),
+                    cardField("Email Address (Optional)", emailController),
                     cardField(
                       "Full Address",
                       addressController,
@@ -267,12 +278,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
 
                     // CATEGORY DROPDOWN
-                    pickerCard(
-                      title: selectedCategory ?? "Select Category",
-                      onTap: showCategoryBottomSheet,
-                    ),
+                  pickerCard(
+                    title: selectedCategoryNames.isNotEmpty
+                        ? selectedCategoryNames.join(", ")
+                        : "Select Category",
+                    onTap: showCategoryBottomSheet,
+                  ),
 
-                    // GENDER SELECTION
+
+                  // GENDER SELECTION
                     genderSelector(),
 
                     const SizedBox(height: 15),
@@ -376,6 +390,88 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  void showCityBottomSheet() async {
+    final zoneVm = Provider.of<ZoneCitiesViewModel>(context, listen: false);
+
+    await zoneVm.zoneCitiesApi(); // 👈 API CALL
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (_) {
+        return Consumer<ZoneCitiesViewModel>(
+          builder: (context, vm, child) {
+            final cities = vm.zoneCitiesModel?.cities ?? [];
+
+            if (vm.loading) {
+              return SizedBox(
+                height: 200,
+                child: const Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            if (cities.isEmpty) {
+              return SizedBox(
+                height: 200,
+                child: const Center(child: Text("No Cities Found")),
+              );
+            }
+
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.75,
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    height: 5,
+                    width: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  const Text(
+                    "Select City",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Divider(),
+
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: cities.length,
+                      itemBuilder: (context, index) {
+                        final city = cities[index];
+
+                        return ListTile(
+                          title: Text(city.name ?? ""),
+                          onTap: () {
+                            setState(() {
+                              cityController.text = city.name ?? "";
+                              selectedCityId = city.id.toString();
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+
   // GENDER SELECTOR UI
   Widget genderSelector() {
     return Column(
@@ -424,6 +520,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       String hint,
       TextEditingController c, {
         bool isAddress = false,
+        bool isCity = false,
       }) {
     return Container(
       height: 58,
@@ -435,50 +532,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(14),
       ),
-      child: TextField(
+      child:TextField(
         controller: c,
-        readOnly: isAddress, // 👈 auto fill only
+        readOnly: isCity, // 👈 prevent keyboard + allow tap
+        onTap: () {
+          if (isCity) showCityBottomSheet();
+        },
         decoration: InputDecoration(
           hintText: hint,
+          hintStyle: const TextStyle(),
           border: InputBorder.none,
           suffixIcon: isAddress
               ? IconButton(
             icon: const Icon(Icons.my_location),
-            onPressed: () {
-              getCurrentAddress(c); // 👈 fetch location
+            onPressed: () async {
+              if (c.text.isEmpty) {
+                await getCurrentAddress(c);
+              }
             },
           )
-              : null,
+              : Icon(
+            isCity ? Icons.keyboard_arrow_down : null,
+          ),
         ),
       ),
+
     );
   }
 
 
-  // MOBILE
-  // Widget mobileField() {
-  //   return Container(
-  //     height: 58,
-  //     margin: const EdgeInsets.only(bottom: 18),
-  //     padding: const EdgeInsets.symmetric(horizontal: 18),
-  //     decoration: BoxDecoration(
-  //       color: Colors.grey.shade100,
-  //       borderRadius: BorderRadius.circular(14),
-  //     ),
-  //     child: TextField(
-  //       controller: mobileController,
-  //       maxLength: 10,
-  //       keyboardType: TextInputType.number,
-  //       decoration: const InputDecoration(
-  //         border: InputBorder.none,
-  //         counterText: "",
-  //         hintText: ,
-  //       ),
-  //     ),
-  //   );
-  // }
 
-  // BOX
   Widget uploadBox({required String title, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
@@ -526,68 +609,88 @@ class _RegisterScreenState extends State<RegisterScreen> {
       builder: (_) {
         final categories = categoriesVm.categoriesModel?.data ?? [];
 
-        return SizedBox(
-          height: MediaQuery.of(context).size.height * 0.65,
-          child: Column(
-            children: [
-              const SizedBox(height: 12),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
 
-              // drag handle
-              Container(
-                height: 4,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+                  Container(
+                    height: 4,
+                    width: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
 
-              const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-              const Text(
-                "Select Category",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-              ),
+                  const Text(
+                    "Select Category",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                  ),
 
-              const SizedBox(height: 8),
-              Divider(color: Colors.grey.shade300),
+                  const SizedBox(height: 8),
+                  Divider(color: Colors.grey.shade300),
 
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final cat = categories[index];
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      itemCount: categories.length,
+                      itemBuilder: (context, index) {
+                        final cat = categories[index];
 
-                    final String catName = cat.name ?? "";
-                    final String catId = cat.id.toString(); // 👈 ID
+                        final String catName = cat.name ?? "";
+                        final String catId = cat.id.toString();
 
-                    return ListTile(
-                      title: Text(
-                        catName,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.black,
-                        ),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = catName;     // ✅ NAME
-                          selectedCategoryId = catId;     // ✅ ID
-                        });
-                        Navigator.pop(context);
+                        final bool isChecked =
+                        selectedCategoryIds.contains(catId);
+
+                        return CheckboxListTile(
+                          value: isChecked,
+                          hoverColor: AppColor.royalBlue,
+                          activeColor: AppColor.royalBlue,
+                          title: Text(catName),
+                          onChanged: (val) {
+                            setModalState(() {
+                              if (val == true) {
+                                if (selectedCategoryIds.length >= 3) {
+                                  Utils.showErrorMessage(context, "You can select maximum 3 categories");
+                                  return;
+                                }
+                                selectedCategoryIds.add(catId);
+                                selectedCategoryNames.add(catName);
+                              } else {
+                                selectedCategoryIds.remove(catId);
+                                selectedCategoryNames.remove(catName);
+                              }
+                            });
+                          },
+                        );
                       },
-                    );
-                  },
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CustomButton(
+                    bgColor: AppColor.royalBlue,
+                      title: "Done", onTap: (){
+                    setState(() {});
+                    Navigator.pop(context);
+                  }),
                 ),
 
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -612,10 +715,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (selectedCategoryId == null) {
-      Utils.showErrorMessage(context, "Select a category");
-      return;
-    }
+    // if (selectedCategoryId == null) {
+    //   Utils.showErrorMessage(context, "Select a category");
+    //   return;
+    // }
 
     // ✔ Experience certificate only required when noSkill = false
     if (!noSkill && experienceCertificate == null) {
@@ -640,9 +743,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       firstName: firstController.text,
       lastName: lastController.text,
       email: emailController.text,
+      city: selectedCityId!,
       mobile: widget.mobileNumber,
       address: addressController.text,
-      serviceCategory: selectedCategoryId!,
+      serviceCategory: selectedCategoryIds.map((e) => int.parse(e)).toList(),
       deviceId: deviceId,
       fcmTokenI: fcmToken??"",
       skillStatus: skillStatusValue,

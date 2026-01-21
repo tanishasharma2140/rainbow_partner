@@ -8,7 +8,7 @@ class SocketService {
   IO.Socket? socket;
 
   void connect({
-    required int servicemanId,
+    required dynamic servicemanId,
     required Function(List<dynamic>) onPendingOrders,
     required Function(Map<String, dynamic>) onNewOrder,
     required Function(int orderId) onOrderRemoved,
@@ -18,7 +18,7 @@ class SocketService {
     socket?.dispose();
 
     socket = IO.io(
-      "https://yoyomiles.codescarts.com",
+      "https://admin.rainbowsenterprises.com",
       IO.OptionBuilder()
           .setPath("/socket/live")
           .setTransports(['websocket'])

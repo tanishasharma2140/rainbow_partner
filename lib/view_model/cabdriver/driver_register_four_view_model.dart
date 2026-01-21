@@ -30,7 +30,7 @@ class DriverRegisterFourViewModel with ChangeNotifier {
     required File fitnessCertificate,
     required File pollutionCertificate,
     required File insuranceCertificate,
-    required File policeCertificate,
+    required File? policeCertificate,
     required String requiresCertificateStatus,
     required BuildContext context,
   }) async {

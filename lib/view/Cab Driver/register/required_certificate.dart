@@ -43,7 +43,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
       certificateFiles["Insurance\nCertificate"];
 
   File? get policeCertificate =>
-      certificateFiles["Police Verification\nCertificate"];
+      certificateFiles["Police Verification\nCertificate\n(Optional)"];
 
   /// ---------------- IMAGE PICKER ----------------
   Future<void> pickImage(String key, ImageSource source) async {
@@ -251,8 +251,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                       onTap: () {
                         if (fitnessCertificate == null ||
                             pollutionCertificate == null ||
-                            insuranceCertificate == null ||
-                            policeCertificate == null) {
+                            insuranceCertificate == null ) {
                           Utils.showErrorMessage(context, "Please upload all required certificates");
 
                         return;
@@ -262,7 +261,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                           fitnessCertificate: fitnessCertificate!,
                           pollutionCertificate: pollutionCertificate!,
                           insuranceCertificate: insuranceCertificate!,
-                          policeCertificate: policeCertificate!,
+                          policeCertificate: policeCertificate,
                           requiresCertificateStatus: "1",
                           context: context,
                         );

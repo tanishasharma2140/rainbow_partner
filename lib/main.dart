@@ -12,6 +12,7 @@ import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/accept_later_ride_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/active_ride_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/cab_cancel_reason_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_earning_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_history_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
@@ -56,6 +57,7 @@ import 'package:rainbow_partner/view_model/service_man/serviceman_register_view_
 import 'package:rainbow_partner/view_model/service_man/transaction_history_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_brand_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/withdraw_request_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/zone_cities_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 import 'firebase_options.dart';
 
@@ -145,6 +147,8 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> ReviewViewModel()),
           ChangeNotifierProvider(create: (context)=> ServicemanEarningViewModel()),
           ChangeNotifierProvider(create: (context)=> ServiceInfoViewModel()),
+          ChangeNotifierProvider(create: (context)=> ZoneCitiesViewModel()),
+          ChangeNotifierProvider(create: (context)=> CabCancelReasonViewModel()),
 
           /// cab Driver
           ChangeNotifierProvider(create: (context)=> VehicleViewModel()),

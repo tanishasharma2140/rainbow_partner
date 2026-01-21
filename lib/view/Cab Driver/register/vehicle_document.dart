@@ -31,9 +31,6 @@ class _VehicleDocumentState extends State<VehicleDocument> {
     "Back side of\nregistration...": null,
   };
 
-  // ---------------------------
-  // PICK IMAGE (camera + gallery)
-  // ---------------------------
   Future<void> pickImage(String key, ImageSource source) async {
     final picked = await picker.pickImage(source: source, imageQuality: 70);
 

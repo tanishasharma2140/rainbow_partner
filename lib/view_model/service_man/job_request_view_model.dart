@@ -58,7 +58,6 @@ class JobRequestViewModel with ChangeNotifier {
 
     // 🔥 PRINT REQUEST DATA (DEBUG)
     debugPrint("=================== 📤 JOB REQUEST DEBUG ===================");
-    debugPrint("➡ URL: https://yoyomiles.codescarts.com/api/job_request");
 
     debugPrint("\n📌 TEXT FIELDS:");
     fields.forEach((key, value) {

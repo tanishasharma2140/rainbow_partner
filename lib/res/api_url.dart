@@ -23,6 +23,7 @@ class ApiUrl {
   static const String reviewUrl ="${baseUrl}serviceman-ratings";
   static const String servicemanEarningUrl ="${baseUrl}serviceman-earnings";
   static const String serviceInfoUrl ="${baseUrl}serviceman-service-info";
+  static const String zoneCitiesUrl ="${baseUrl}zone_cities";
 
   /// CabDriver
 
@@ -45,6 +46,7 @@ class ApiUrl {
   static const String driverWithdrawRequestUrl ="${baseUrl}driver-withdraw-request";
   static const String driverWithdrawHistoryUrl ="${baseUrl}driver-withdraw-history";
   static const String acceptLaterRideUrl ="${baseUrl}accept-later-ride";
+  static const String cabCancelReasonUrl ="${baseUrl}cab-cancel-reasons?";
 
 
 

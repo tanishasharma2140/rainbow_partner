@@ -16,14 +16,14 @@ import 'package:rainbow_partner/view/Cab%20Driver/register/required_certificate.
 import 'package:rainbow_partner/view/Cab%20Driver/register/vehicle_information.dart';
 
 class DriverRegisterFiveViewModel with ChangeNotifier {
-  final DriverRegisterFiveRepo _driverRegisterFiveRepo =
-  DriverRegisterFiveRepo();
+
+  final DriverRegisterFiveRepo _driverRegisterFiveRepo = DriverRegisterFiveRepo();
 
   bool _loading = false;
   bool get loading => _loading;
 
-  void setLoading(bool value) {
-    _loading = value;
+  void setLoading(bool val) {
+    _loading = val;
     notifyListeners();
   }
 
@@ -39,23 +39,11 @@ class DriverRegisterFiveViewModel with ChangeNotifier {
     required dynamic vehicleProductionYear,
     required BuildContext context,
   }) async {
+
     setLoading(true);
 
-    /// 🔹 GET USER ID
-    UserViewModel userViewModel = UserViewModel();
-    String? userId = await userViewModel.getUser();
-
-    /// 🔥 DEBUG PRINTS
-    if (kDebugMode) {
-      print("🚗 DRIVER REGISTER STEP 5");
-      print("🆔 User ID: $userId");
-      print("Brand ID: $brandId | Brand Name: $brandName");
-      print("Model ID: $modelId | Model Name: $modelName");
-      print("Vehicle Color: $vehicleColor");
-      print("Plate Number: $vehiclePlateNumber");
-      print("Production Year: $vehicleProductionYear");
-      print("Vehicle Photo Path: ${vehiclePhoto.path}");
-    }
+    UserViewModel userVM = UserViewModel();
+    String? userId = await userVM.getUser();
 
     Map<String, String> fields = {
       "vehicle_info_status": vehicleInfoStatus,
@@ -73,87 +61,67 @@ class DriverRegisterFiveViewModel with ChangeNotifier {
       "vehicle_photo": vehiclePhoto,
     };
 
-    if (kDebugMode) {
-      print("📤 FIELDS SENT TO API:");
-      fields.forEach((key, value) {
-        print("$key : $value");
-      });
-    }
-
     try {
-      final response =
-      await _driverRegisterFiveRepo.driverRegisterFiveApi(fields, files);
+      final response = await _driverRegisterFiveRepo.driverRegisterFiveApi(fields, files);
 
-      final int statusCode = response["statusCode"] ?? 0;
-      final Map<String, dynamic> body = response["body"] ?? {};
-
-      if (kDebugMode) {
-        print("📥 API STATUS CODE: $statusCode");
-        print("📦 API RESPONSE BODY: $body");
-      }
+      final statusCode = response["statusCode"] ?? 0;
+      final body = response["body"] ?? {};
 
       if (statusCode == 200 || statusCode == 201) {
-        Utils.showSuccessMessage(
-          context,
-          body["message"] ?? "Submitted successfully",
-        );
+        Utils.showSuccessMessage(context, body["message"] ?? "Submitted successfully");
 
         final position = await LocationUtils.getLocation();
-        // 🔹 REFRESH PROFILE
-        final profileVm =
-        Provider.of<DriverProfileViewModel>(context, listen: false);
 
-        await profileVm.driverProfileApi(position.latitude.toString(),
-            position.longitude.toString(), context);
+        final profileVm = Provider.of<DriverProfileViewModel>(context, listen: false);
+        await profileVm.driverProfileApi(position.latitude.toString(), position.longitude.toString(), context);
+
         final profile = profileVm.driverProfileModel?.data;
-
         if (profile == null) {
-          Utils.showErrorMessage(
-              context, "Profile not loaded. Try again.");
+          Utils.showErrorMessage(context, "Profile not loaded. Try again.");
           return;
         }
 
-        bool isPendingOrRejected(int? status) {
-          return status == 0 || status == 3;
+        bool isPendingOrRejected(int? status) => status == 0 || status == 3;
+
+        // 🔥 STEP BASED NAVIGATION
+        if (isPendingOrRejected(profile.personalInformationStatus)) {
+          Navigator.push(context, CupertinoPageRoute(builder: (_) => PersonalInformation(
+            vehicleId: "",
+            vehicleName: "",
+            mobileNumber: "",
+            profileId: 1,
+          )));
+        } else if (isPendingOrRejected(profile.driverLicenceStatus)) {
+          Navigator.push(context, CupertinoPageRoute(builder: (_) => DrivingLicense()));
+        } else if (isPendingOrRejected(profile.aadhaarPanStatus)) {
+          Navigator.push(context, CupertinoPageRoute(builder: (_) => AadhaarInfo()));
+        } else if (isPendingOrRejected(profile.requiredCertificatesStatus)) {
+          Navigator.push(context, CupertinoPageRoute(builder: (_) => RequiredCertificates()));
+        } else if (isPendingOrRejected(profile.vehicleInfoStatus)) {
+          Navigator.push(context, CupertinoPageRoute(builder: (_) => VehicleInformation()));
+        } else {
+          // 🔥 Category Based Final Step
+          if (profile.vehicleCategory != 2) {
+            // Documents Required
+            if (isPendingOrRejected(profile.vehicleDocumentsStatus)) {
+              Navigator.push(context, CupertinoPageRoute(builder: (_) => VehicleDocument()));
+            } else {
+              Navigator.push(context, CupertinoPageRoute(builder: (_) => DocumentVerified()));
+            }
+          } else {
+            // Category 2 => Auto Verified
+            Navigator.push(context, CupertinoPageRoute(builder: (_) => DocumentVerified()));
+          }
         }
 
-        // 🔥 STATUS-BASED NAVIGATION (SEQUENCE)
-        if (isPendingOrRejected(profile.personalInformationStatus)) {
-          Navigator.push(context, CupertinoPageRoute(builder: (context) =>
-              PersonalInformation(vehicleId: "",
-                  vehicleName: "",
-                  mobileNumber: "",
-                  profileId: 1)));
-        } else if (isPendingOrRejected(profile.driverLicenceStatus)) {
-          Navigator.push(context,
-              CupertinoPageRoute(builder: (context) => DrivingLicense()));
-        } else if (isPendingOrRejected(profile.aadhaarPanStatus)) {
-          Navigator.push(
-              context, CupertinoPageRoute(builder: (context) => AadhaarInfo()));
-        } else if (isPendingOrRejected(profile.requiredCertificatesStatus)) {
-          Navigator.push(context,
-              CupertinoPageRoute(builder: (context) => RequiredCertificates()));
-        } else if (isPendingOrRejected(profile.vehicleInfoStatus)) {
-          Navigator.push(context,
-              CupertinoPageRoute(builder: (context) => VehicleInformation()));
-        } else if (isPendingOrRejected(profile.vehicleDocumentsStatus)) {
-          Navigator.push(context,
-              CupertinoPageRoute(builder: (context) => VehicleDocument()));
-        } else {
-          Navigator.push(context,
-              CupertinoPageRoute(builder: (context) => DocumentVerified()));
-        }
       } else {
-        Utils.showErrorMessage(
-          context,
-          body["message"] ?? "Something went wrong!",
-        );
+        Utils.showErrorMessage(context, body["message"] ?? "Something went wrong!");
       }
+
     } catch (e) {
-      if (kDebugMode) {
-        print("❌ DriverRegisterFive Error → $e");
-      }
+      if (kDebugMode) print("❌ DriverRegisterFive Error → $e");
       Utils.showErrorMessage(context, "Request failed!");
+
     } finally {
       setLoading(false);
     }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
-import 'package:rainbow_partner/res/custom_button.dart';
+import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
-import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
+import 'package:rainbow_partner/utils/location_utils.dart';
 
 class EditServicemanProfile extends StatefulWidget {
   const EditServicemanProfile({super.key});
@@ -14,42 +14,20 @@ class EditServicemanProfile extends StatefulWidget {
 }
 
 class _EditServicemanProfileState extends State<EditServicemanProfile> {
-
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final vm = Provider.of<ServicemanProfileViewModel>(context, listen: false);
-      final position = await LocationUtils.getLocation();
 
+      final position = await LocationUtils.getLocation();
       final lat = position.latitude.toString();
       final lng = position.longitude.toString();
 
-      vm.servicemanProfileApi(lat, lng,context).then((_) {
-        final d = vm.servicemanProfileModel?.data;
-
-        setState(() {
-          firstName.text = d?.firstName ?? "";
-          lastName.text = d?.lastName ?? "";
-          email.text = d?.email ?? "";
-          username.text = d?.serviceName ?? "";
-          designation.text = d?.serviceCategory.toString() ?? "";
-          imagePath = d?.profilePhoto; // API image URL
-        });
-      });
+      vm.servicemanProfileApi(lat, lng, context);
     });
   }
-
-
-  // TEXT CONTROLLERS
-  final TextEditingController firstName = TextEditingController();
-  final TextEditingController lastName = TextEditingController();
-  final TextEditingController email = TextEditingController();
-  final TextEditingController username = TextEditingController();
-  final TextEditingController designation = TextEditingController();
-
-  String? imagePath;
 
   @override
   Widget build(BuildContext context) {
@@ -57,185 +35,172 @@ class _EditServicemanProfileState extends State<EditServicemanProfile> {
       top: false,
       child: Scaffold(
         backgroundColor: Colors.grey.shade100,
-
         appBar: AppBar(
           backgroundColor: AppColor.royalBlue,
           elevation: 0,
-          titleSpacing: 0,
-          automaticallyImplyLeading: false,
-          title: Row(
-            children: [
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-              ),
-              const TextConst(
-                title: "Edit Profile",
-                color: Colors.white,
-                size: 20,
-                fontWeight: FontWeight.w600,
-              ),
-            ],
+          leading: GestureDetector(
+              onTap: (){
+                Navigator.pop(context);
+              },
+              child: Icon(Icons.arrow_back,color: AppColor.white,)),
+          title:  TextConst(
+            title:
+            "Profile",
+            size: 20,
+            color: AppColor.white,
           ),
+          centerTitle: true,
         ),
 
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        body: Consumer<ServicemanProfileViewModel>(
+          builder: (context, vm, child) {
+            final d = vm.servicemanProfileModel?.data;
 
-              // ---------------- PROFILE PHOTO ----------------
-              Center(
-                child: Stack(
-                  children: [
-                    Container(
-                      height: 100,
-                      width: 100,
+            if (vm.loading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (d == null) {
+              return const Center(child: Text("No Profile Found"));
+            }
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  // ---------------- PROFILE PHOTO ---------------
+                  Center(
+                    child: Container(
+                      height: 110,
+                      width: 110,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.grey.shade300,
-                        image: imagePath != null
+                        image: d.profilePhoto != null
                             ? DecorationImage(
-                            image: NetworkImage(imagePath!),
-                            fit: BoxFit.cover)
+                          image: NetworkImage(d.profilePhoto),
+                          fit: BoxFit.cover,
+                        )
                             : const DecorationImage(
                           image: AssetImage("assets/prooo.jpg"),
                           fit: BoxFit.cover,
                         ),
                       ),
                     ),
+                  ),
 
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: GestureDetector(
-                        onTap: _showImagePicker,
-                        child: Container(
-                          height: 32,
-                          width: 32,
-                          decoration: const BoxDecoration(
-                            color: AppColor.royalBlue,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.edit, color: Colors.white, size: 18),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
+                  const SizedBox(height: 20),
+
+                  // ------------- BASIC DETAILS ------------------
+                  profileTitle("Basic Details"),
+                  profileRow("Name", "${d.firstName} ${d.lastName}"),
+                  profileRow("Mobile", d.mobile),
+                  profileRow("Address", d.address),
+                  profileRow("Service Name", d.serviceName),
+
+                  const SizedBox(height: 20),
+
+                  // ------------ DOCUMENTS ------------------
+                  profileTitle("Documents"),
+                  profileDoc("Aadhaar Front", d.aadhaarFront),
+                  profileDoc("Aadhaar Back", d.aadhaarBack),
+                  profileDoc("Experience Certificate", d.experienceCertificate),
+
+                  const SizedBox(height: 20),
+
+                  // ------------ OTHER INFO ------------------
+                  profileTitle("Other Info"),
+                  profileRow("Wallet", "₹${d.wallet}"),
+                  profileRow("Due Wallet", "₹${d.dueWallet}"),
+                  profileRow("Created At", d.createdAt),
+                ],
               ),
-
-              const SizedBox(height: 25),
-
-              // ---------------- TEXT FIELDS ----------------
-              fieldTitle("First Name"),
-              profileField(firstName),
-
-              fieldTitle("Last Name"),
-              profileField(lastName),
-
-              fieldTitle("Email"),
-              profileField(email),
-
-              fieldTitle("Service Name"),
-              profileField(username),
-
-              fieldTitle("Designation"),
-              profileField(designation),
-
-              const SizedBox(height: 30),
-
-              // ---------------- SAVE BUTTON ----------------
-               CustomButton(
-                   bgColor: AppColor.royalBlue,
-                   title: "Save Changes", onTap: (){}),
-
-              const SizedBox(height: 40),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  // ------------------------------------------------------------
-  // FIELD TITLE
-  // ------------------------------------------------------------
-  Widget fieldTitle(String title) {
+  Widget profileTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(top: 15, bottom: 8),
-      child: TextConst(
-        title: title,
-        size: 15,
-        fontWeight: FontWeight.w600,
-        color: Colors.black87,
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          color: Colors.black87,
+          fontFamily: AppFonts.kanitReg
+        ),
       ),
     );
   }
 
-  // ------------------------------------------------------------
-  // BEAUTIFUL INPUT FIELD
-  // ------------------------------------------------------------
-  Widget profileField(TextEditingController controller) {
+  Widget profileRow(String k, dynamic v) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: TextField(
-        controller: controller,
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text("$k:", style: const TextStyle(fontWeight: FontWeight.w600)),
+          Flexible(
+            child: Text(
+              "$v",
+              textAlign: TextAlign.end,
+              style: const TextStyle(color: Colors.black87),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // ------------------------------------------------------------
-  // IMAGE PICKER POPUP (GALLERY OR CAMERA)
-  // ------------------------------------------------------------
-  void _showImagePicker() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColor.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (_) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const TextConst(
-                title: "Choose Option",
-                size: 17,
-                fontWeight: FontWeight.w600,
-              ),
-              const SizedBox(height: 10),
-
-              ListTile(
-                leading: const Icon(Icons.camera_alt, color: AppColor.royalBlue),
-                title: const Text("Take a Photo"),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library, color: AppColor.royalBlue),
-                title: const Text("Choose from Gallery"),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-              const SizedBox(height: 10),
-            ],
-          ),
-        );
+  Widget profileDoc(String k, dynamic url) {
+    return GestureDetector(
+      onTap: () {
+        if (url != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => FullImageView(url)),
+          );
+        }
       },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(k, style: const TextStyle(fontWeight: FontWeight.w600,fontFamily: AppFonts.kanitReg)),
+            Icon(url != null ? Icons.visibility : Icons.remove_red_eye_outlined),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// ---------- IMAGE VIEW -------
+class FullImageView extends StatelessWidget {
+  final String url;
+  const FullImageView(this.url, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Document")),
+      body: Center(child: Image.network(url)),
     );
   }
 }

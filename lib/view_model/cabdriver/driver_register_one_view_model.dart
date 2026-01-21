@@ -103,7 +103,6 @@ class DriverRegisterOneViewModel with ChangeNotifier {
           return status == 0 || status == 3;
         }
 
-        // 🔥 STATUS-BASED NAVIGATION (SEQUENCE)
         if (isPendingOrRejected(profile.personalInformationStatus)) {
           Navigator.push(context, CupertinoPageRoute(builder: (context)=>PersonalInformation(vehicleId: "", vehicleName: "", mobileNumber: "", profileId: 1)));
         } else if (isPendingOrRejected(profile.driverLicenceStatus)) {
@@ -116,7 +115,6 @@ class DriverRegisterOneViewModel with ChangeNotifier {
           Navigator.push(context, CupertinoPageRoute(builder: (context)=>VehicleInformation()));
         } else if (isPendingOrRejected(profile.vehicleDocumentsStatus)) {
           Navigator.push(context, CupertinoPageRoute(builder: (context)=>VehicleDocument()));
-
         } else {
           Navigator.push(context, CupertinoPageRoute(builder: (context)=>DocumentVerified()));
         }
