@@ -25,8 +25,11 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
 
   @override
   @override
-  Future<void> initState() async {
+  void initState() {
     super.initState();
+    _initSocket();  // async method call
+  }
+  Future<void> _initSocket() async {
     UserViewModel userViewModel = UserViewModel();
     String? userId = await userViewModel.getUser();
 
@@ -35,7 +38,6 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
 
       onPendingOrders: (orders) {
         if (!mounted) return;
-
         setState(() {
           pending = orders.map((e) => mapOrder(e)).toList();
         });
@@ -43,16 +45,14 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
 
       onNewOrder: (order) {
         if (!mounted) return;
-
         setState(() {
-          pending.insert(0, mapOrder(order)); // new order top pe
+          pending.insert(0, mapOrder(order));
         });
         RingtoneService().playRingtone();
       },
 
       onOrderRemoved: (orderId) {
         if (!mounted) return;
-
         setState(() {
           pending.removeWhere((e) => e["order_id"] == orderId);
         });

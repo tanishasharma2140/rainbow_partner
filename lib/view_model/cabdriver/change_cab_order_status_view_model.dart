@@ -14,7 +14,7 @@ class ChangeCabOrderStatusViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> changeCabOrderApi(
+  Future<bool> changeCabOrderApi(
       dynamic orderId,
       dynamic orderStatus,
       dynamic orderOtp,
@@ -41,19 +41,22 @@ class ChangeCabOrderStatusViewModel with ChangeNotifier {
       final int statusCode = response['statusCode'] ?? 0;
       final Map<String, dynamic> body = response['body'] ?? {};
 
-      if ((statusCode == 200 || statusCode == 201)) {
+      if (statusCode == 200 || statusCode == 201) {
         if (context.mounted) {
           Utils.showSuccessMessage(context, body["message"]);
         }
+        return true;         // 🔥 SUCCESS
       } else {
         if (context.mounted) {
           Utils.showErrorMessage(context, body["message"]);
         }
+        return false;        // ❌ FAILED
       }
     } catch (e) {
       if (context.mounted) {
         Utils.showErrorMessage(context, e.toString());
       }
+      return false;          // ❌ EXCEPTION
     } finally {
       setLoading(false);
     }

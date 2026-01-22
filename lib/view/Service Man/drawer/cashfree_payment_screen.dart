@@ -38,7 +38,9 @@ class _CashFreePaymentScreenState extends State<CashFreePaymentScreen> {
         );
         await callBackVm.callBackApi(
             orderId,1,
-            context
+            2,
+            context,
+
         );
       },
           (error, orderId) {

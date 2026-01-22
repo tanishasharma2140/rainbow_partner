@@ -100,7 +100,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                   );
 
                 } else{
-                  payment.paymentApi(amountController.text, 5, "", context);
+                  payment.paymentApi(amountController.text, 5, "","", context);
                 }
 
                 Navigator.pop(context);

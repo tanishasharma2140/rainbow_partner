@@ -208,9 +208,11 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
                   const SizedBox(height: 17),
 
-                  _activeRideCard(),
+                  if (driverProfileVm.driverProfileModel?.data?.onlineStatus ==
+                      1) ...[
+                    _activeRideCard(),
+                  ],
                   const SizedBox(height: 15),
-
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20),
                     child: Align(
@@ -285,13 +287,14 @@ class _DriverHomePageState extends State<DriverHomePage> {
                           onTap: () {
                             Navigator.push(
                               context,
+
                               CupertinoPageRoute(
                                 builder: (context) => CabRideHistory(),
                               ),
                             );
                           },
                         ),
-                        _actionItem(Icons.settings_rounded, "Settings"),
+                        // _actionItem(Icons.settings_rounded, "Settings"),
                       ],
                     ),
                   ),
@@ -472,15 +475,16 @@ class _DriverHomePageState extends State<DriverHomePage> {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(14),
+                // padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColor.royalBlue.withOpacity(0.12),
                 ),
-                child: Icon(
-                  Icons.location_searching_rounded,
-                  size: 30,
-                  color: AppColor.royalBlue,
+                child: Image.asset(
+                  "assets/ride_ongoing.gif",
+                  height: 40,
+                  width: 40,
+                  fit: BoxFit.contain,
                 ),
               ),
 
@@ -490,13 +494,13 @@ class _DriverHomePageState extends State<DriverHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
                   TextConst(
-                    title: "No active rides",
+                    title: "Ride ongoing",
                     size: 17,
                     fontWeight: FontWeight.w700,
                   ),
                   SizedBox(height: 4),
                   TextConst(
-                    title: "Waiting for new ride requests",
+                    title: "You're on duty — drive safely!",
                     size: 14,
                     color: Colors.black54,
                   ),
@@ -508,7 +512,6 @@ class _DriverHomePageState extends State<DriverHomePage> {
       ),
     );
   }
-
 
   // -------------------------------------------------
   //                QUICK ACTION ITEM

@@ -25,33 +25,43 @@ class HandymanDashboard extends StatefulWidget {
 }
 
 class _HandymanDashboardState extends State<HandymanDashboard> {
-
-
   List<double> animatedValues = List.filled(8, 0.0);
   List<double> finalValues = [10000, 5000, 8000];
-
 
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-
       final position = await LocationUtils.getLocation();
 
       final lat = position.latitude.toString();
       final lng = position.longitude.toString();
 
-      context.read<ServicemanProfileViewModel>()
-          .servicemanProfileApi(lat,lng,context);
-      Provider.of<ReviewViewModel>(context,listen: false).reviewApi(context);
-      Provider.of<ServiceInfoViewModel>(context,listen: false).serviceInfoApi(context);
+      context.read<ServicemanProfileViewModel>().servicemanProfileApi(
+        lat,
+        lng,
+        context,
+      );
+      Provider.of<ReviewViewModel>(context, listen: false).reviewApi(context);
+      Provider.of<ServiceInfoViewModel>(
+        context,
+        listen: false,
+      ).serviceInfoApi(context);
 
-      final vm = context.read<ServicemanProfileViewModel>();
-      if (vm.servicemanProfileModel?.data?.loginStatus == 0) {
-        _showBlockedDialog();
-        return;
-      }
+      Provider.of<ServicemanProfileViewModel>(context, listen: false)
+          .addListener(() {
+        final vm = Provider.of<ServicemanProfileViewModel>(context, listen: false);
+        final data = vm.servicemanProfileModel?.data;
+
+        if (data?.loginStatus == 0) {
+          if (data?.rejectReasion == null || data!.rejectReasion!.isEmpty) {
+            _showPendingDialog();
+          } else {
+            _showRejectedDialog(data.rejectReasion!);
+          }
+        }
+      });
 
       final completeVm = context.read<CompleteBookingViewModel>();
       await completeVm.completeBookingApi([1, 2, 3], context);
@@ -79,13 +89,91 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     });
   }
 
+  void _showPendingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => WillPopScope(
+        onWillPop: () async => false,
+        child: Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.hourglass_bottom, color: Colors.orange, size: 42),
+                const SizedBox(height: 14),
+                const TextConst(
+                  title: "Verification Pending",
+                  size: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+                const SizedBox(height: 10),
+                const TextConst(
+                  title: "Admin is verifying your profile.\nPlease wait for approval.",
+                  textAlign: TextAlign.center,
+                  size: 14,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 15),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showRejectedDialog(String reason) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => WillPopScope(
+        onWillPop: () async => false,
+        child: Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.block, color: Colors.red, size: 42),
+                const SizedBox(height: 14),
+                const TextConst(
+                  title: "Account Inactive",
+                  size: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+                const SizedBox(height: 10),
+                TextConst(
+                  title: "Reason: $reason",
+                  textAlign: TextAlign.center,
+                  size: 14,
+                  color: Colors.red,
+                ),
+                const SizedBox(height: 15),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
   Future<void> _onRefresh() async {
     final position = await LocationUtils.getLocation();
     final lat = position.latitude.toString();
     final lng = position.longitude.toString();
 
     await Future.wait([
-      context.read<ServicemanProfileViewModel>().servicemanProfileApi(lat, lng, context),
+      context.read<ServicemanProfileViewModel>().servicemanProfileApi(
+        lat,
+        lng,
+        context,
+      ),
       context.read<ReviewViewModel>().reviewApi(context),
       context.read<ServiceInfoViewModel>().serviceInfoApi(context),
     ]);
@@ -106,7 +194,6 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-
                 /// ICON
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -114,11 +201,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                     color: Colors.red.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.block,
-                    color: Colors.red,
-                    size: 36,
-                  ),
+                  child: const Icon(Icons.block, color: Colors.red, size: 36),
                 ),
 
                 const SizedBox(height: 16),
@@ -135,7 +218,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                 /// MESSAGE
                 const TextConst(
                   title:
-                  "Your account has been blocked by the admin.\nPlease contact admin for further assistance.",
+                      "Your account has been blocked by the admin.\nPlease contact admin for further assistance.",
                   size: 14,
                   color: Colors.grey,
                   textAlign: TextAlign.center,
@@ -191,8 +274,18 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
   String _monthName(int month) {
     const months = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
     return months[month - 1];
   }
@@ -206,12 +299,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     return "$hour:${dt.minute.toString().padLeft(2, '0')} $period";
   }
 
-
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -268,31 +356,35 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-            
                     const SizedBox(height: 20),
-            
+
                     serviceProfileVm.loading ||
-                        serviceProfileVm.servicemanProfileModel == null ||
-                        serviceProfileVm.servicemanProfileModel!.data == null
+                            serviceProfileVm.servicemanProfileModel == null ||
+                            serviceProfileVm.servicemanProfileModel!.data ==
+                                null
                         ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        ShimmerLoader(width: 180, height: 18),
-                        SizedBox(height: 6),
-                        ShimmerLoader(width: 120, height: 14),
-                      ],
-                    )
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              ShimmerLoader(width: 180, height: 18),
+                              SizedBox(height: 6),
+                              ShimmerLoader(width: 120, height: 14),
+                            ],
+                          )
                         : TextConst(
-                      title:
-                      "Hello, ${serviceProfileVm.servicemanProfileModel!.data!.firstName} ${serviceProfileVm.servicemanProfileModel!.data!.lastName}",
-                      size: 18,
-                      fontWeight: FontWeight.w600,
+                            title:
+                                "Hello, ${serviceProfileVm.servicemanProfileModel!.data!.firstName} ${serviceProfileVm.servicemanProfileModel!.data!.lastName}",
+                            size: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+
+                    TextConst(
+                      title: "Welcome back!",
+                      size: 13,
+                      color: Colors.grey,
                     ),
-            
-                    TextConst(title: "Welcome back!", size: 13, color: Colors.grey),
-            
+
                     const SizedBox(height: 25),
-            
+
                     Container(
                       padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
@@ -304,34 +396,44 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                           CircleAvatar(
                             radius: 22,
                             backgroundColor: AppColor.royalBlue,
-                            child: const Icon(Icons.account_balance_wallet,
-                                color: Colors.white, size: 22),
+                            child: const Icon(
+                              Icons.account_balance_wallet,
+                              color: Colors.white,
+                              size: 22,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           const Expanded(
-                              child: TextConst(title: "Total Cash in Hand", size: 16)),
-                          serviceProfileVm.loading ||
-                              serviceProfileVm.servicemanProfileModel == null ||
-                              serviceProfileVm.servicemanProfileModel!.data == null
-                              ? const ShimmerLoader(
-                            width: 80,
-                            height: 18,
-                            borderRadius: 6,
-                          )
-                              : TextConst(
-                            title:
-                            "₹${serviceProfileVm.servicemanProfileModel!.data!.wallet ?? "0.00"}",
-                            size: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColor.royalBlue,
+                            child: TextConst(
+                              title: "Total Cash in Hand",
+                              size: 16,
+                            ),
                           ),
-            
+                          serviceProfileVm.loading ||
+                                  serviceProfileVm.servicemanProfileModel ==
+                                      null ||
+                                  serviceProfileVm
+                                          .servicemanProfileModel!
+                                          .data ==
+                                      null
+                              ? const ShimmerLoader(
+                                  width: 80,
+                                  height: 18,
+                                  borderRadius: 6,
+                                )
+                              : TextConst(
+                                  title:
+                                      "₹${serviceProfileVm.servicemanProfileModel!.data!.wallet ?? "0.00"}",
+                                  size: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColor.royalBlue,
+                                ),
                         ],
                       ),
                     ),
-            
+
                     const SizedBox(height: 25),
-            
+
                     Row(
                       children: [
                         Expanded(
@@ -348,58 +450,86 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                             },
                           ),
                         ),
-            
-            
+
                         const SizedBox(width: 15),
                         Expanded(
                           child: statBox(
-                            value: serviceVm.serviceInfoModel?.data?.acceptedBooking.toString()??"0",
+                            value:
+                                serviceVm
+                                    .serviceInfoModel
+                                    ?.data
+                                    ?.acceptedBooking
+                                    .toString() ??
+                                "0",
                             title: "Accepted Bookings",
                             icon: Icons.design_services,
                             onTap: () {
-                              Navigator.push(context,
-                                  CupertinoPageRoute(builder: (_) => AcceptedBooking()));
+                              Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (_) => AcceptedBooking(),
+                                ),
+                              );
                             },
                           ),
                         ),
                       ],
                     ),
-            
+
                     const SizedBox(height: 15),
-            
+
                     Row(
                       children: [
                         Expanded(
                           child: statBox(
-                            value: serviceVm.serviceInfoModel?.data?.completedBooking.toString()??"",
+                            value:
+                                serviceVm
+                                    .serviceInfoModel
+                                    ?.data
+                                    ?.completedBooking
+                                    .toString() ??
+                                "",
                             title: "Booking History",
-                            icon:  Icons.list_alt_outlined,
+                            icon: Icons.list_alt_outlined,
                             onTap: () {
-                              Navigator.push(context,
-                                  CupertinoPageRoute(builder: (_) => CompleteBooking()));
+                              Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (_) => CompleteBooking(),
+                                ),
+                              );
                             },
                           ),
                         ),
                         const SizedBox(width: 15),
                         Expanded(
                           child: statBox(
-                            value: "₹${serviceVm.serviceInfoModel?.data?.totalEarning??""}",
+                            value:
+                                "₹${serviceVm.serviceInfoModel?.data?.totalEarning ?? ""}",
                             title: "Total Revenue",
                             icon: Icons.monetization_on_outlined,
                             onTap: () {
-                              Navigator.push(context,
-                                  CupertinoPageRoute(builder: (_) => ServiceTotalRevenueEarning()));
+                              Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (_) => ServiceTotalRevenueEarning(),
+                                ),
+                              );
                             },
                           ),
                         ),
                       ],
                     ),
-            
+
                     const SizedBox(height: 20),
-            
-                    TextConst(title: "Monthly Revenue USD", size: 18, fontWeight: FontWeight.w600),
+
+                    TextConst(
+                      title: "Monthly Revenue USD",
+                      size: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                     const SizedBox(height: 15),
-            
+
                     // ------------------------------------------------------------------
                     //                          BAR CHART 8 MONTHS
                     // ------------------------------------------------------------------
@@ -416,15 +546,17 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                           maxY: 15000,
                           minY: 0,
                           barTouchData: BarTouchData(enabled: false),
-            
+
                           gridData: FlGridData(
                             show: true,
                             drawVerticalLine: false,
                             horizontalInterval: 5000,
-                            getDrawingHorizontalLine: (value) =>
-                                FlLine(color: Colors.grey.shade300, strokeWidth: 1),
+                            getDrawingHorizontalLine: (value) => FlLine(
+                              color: Colors.grey.shade300,
+                              strokeWidth: 1,
+                            ),
                           ),
-            
+
                           titlesData: FlTitlesData(
                             leftTitles: AxisTitles(
                               sideTitles: SideTitles(
@@ -433,7 +565,10 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                                 reservedSize: 40,
                                 getTitlesWidget: (v, meta) => Text(
                                   v.toInt().toString(),
-                                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                  ),
                                 ),
                               ),
                             ),
@@ -443,22 +578,36 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                                 reservedSize: 30,
                                 getTitlesWidget: (value, meta) {
                                   const months = [
-                                    "Jan", "Feb", "Mar", "Apr",
-                                    "May", "Jun", "Jul", "Aug"
+                                    "Jan",
+                                    "Feb",
+                                    "Mar",
+                                    "Apr",
+                                    "May",
+                                    "Jun",
+                                    "Jul",
+                                    "Aug",
                                   ];
                                   return Padding(
                                     padding: const EdgeInsets.only(top: 8),
-                                    child: Text(months[value.toInt()],
-                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                                    child: Text(
+                                      months[value.toInt()],
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade700,
+                                      ),
                                     ),
                                   );
                                 },
                               ),
                             ),
-                            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            topTitles: AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            rightTitles: AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
                           ),
-            
+
                           // ⭐ ANIMATED ONLY FIRST 3 MONTHS ⭐
                           barGroups: List.generate(8, (i) {
                             return BarChartGroupData(
@@ -479,18 +628,24 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                             );
                           }),
                         ),
-            
-                        swapAnimationDuration: const Duration(milliseconds: 900),
+
+                        swapAnimationDuration: const Duration(
+                          milliseconds: 900,
+                        ),
                         swapAnimationCurve: Curves.easeOutBack,
                       ),
                     ),
-            
+
                     const SizedBox(height: 25),
-            
-                    TextConst(title: "Reviews", size: 20, fontWeight: FontWeight.w600),
+
+                    TextConst(
+                      title: "Reviews",
+                      size: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
                     const SizedBox(height: 15),
-            
-                    reviewList(reviewVm)
+
+                    reviewList(reviewVm),
                   ],
                 ),
               ),
@@ -500,6 +655,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       ),
     );
   }
+
   Widget reviewList(ReviewViewModel reviewVm) {
     // 🔹 SHIMMER STATE
     if (reviewVm.loading) {
@@ -521,10 +677,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     // 🔹 EMPTY STATE
     if (reviews == null || reviews.isEmpty) {
       return const Center(
-        child: Text(
-          "No reviews found",
-          style: TextStyle(color: Colors.grey),
-        ),
+        child: Text("No reviews found", style: TextStyle(color: Colors.grey)),
       );
     }
 
@@ -549,7 +702,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       },
     );
   }
-  
+
   Widget reviewCard({
     required String name,
     required String date,
@@ -562,7 +715,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColor.royalBlue,width: 0.4),
+        border: Border.all(color: AppColor.royalBlue, width: 0.4),
         boxShadow: [
           BoxShadow(
             color: AppColor.royalBlue.withAlpha(40),
@@ -576,8 +729,9 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundImage:
-            image != null && image.isNotEmpty ? NetworkImage(image) : null,
+            backgroundImage: image != null && image.isNotEmpty
+                ? NetworkImage(image)
+                : null,
             child: image == null || image.isEmpty
                 ? const Icon(Icons.person, size: 28)
                 : null,
@@ -599,21 +753,19 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                     ),
 
                     Container(
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.yellow.shade100,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.star,
-                              color: Colors.amber, size: 18),
+                          const Icon(Icons.star, color: Colors.amber, size: 18),
                           const SizedBox(width: 4),
-                          TextConst(
-                            title: rating,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          TextConst(title: rating, fontWeight: FontWeight.w600),
                         ],
                       ),
                     ),
@@ -635,14 +787,12 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     );
   }
 
-
   Widget dashboardShimmer() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 17),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           const SizedBox(height: 20),
           ShimmerLoader(width: 180, height: 18),
           const SizedBox(height: 6),
@@ -686,7 +836,6 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     );
   }
 
-
   Widget statBox({
     String? value,
     required String title,
@@ -721,70 +870,63 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
         /// 🔥 IMAGE ONLY CARD
         child: isImageOnlyCard
             ? Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              imagePath,
-              height: 55,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(height: 10),
-            TextConst(
-              title: title,
-              size: 15,
-              fontWeight: FontWeight.w600,
-              color: AppColor.royalBlue,
-            ),
-          ],
-        )
-
-        /// 🔵 NORMAL STAT CARD
-            : Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextConst(
-                  title: value ?? "",
-                  size: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColor.royalBlue.withOpacity(0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: imagePath != null
-                      ? Image.asset(
-                    imagePath,
-                    height: 20,
-                    width: 20,
-                    fit: BoxFit.contain,
-                  )
-                      : Icon(
-                    icon ?? Icons.image,
-                    size: 20,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(imagePath, height: 55, fit: BoxFit.contain),
+                  const SizedBox(height: 10),
+                  TextConst(
+                    title: title,
+                    size: 15,
+                    fontWeight: FontWeight.w600,
                     color: AppColor.royalBlue,
                   ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            TextConst(
-              title: title,
-              size: 15,
-              color: Colors.grey.shade600,
-            ),
-          ],
-        ),
+                ],
+              )
+            /// 🔵 NORMAL STAT CARD
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextConst(
+                        title: value ?? "",
+                        size: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColor.royalBlue.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: imagePath != null
+                            ? Image.asset(
+                                imagePath,
+                                height: 20,
+                                width: 20,
+                                fit: BoxFit.contain,
+                              )
+                            : Icon(
+                                icon ?? Icons.image,
+                                size: 20,
+                                color: AppColor.royalBlue,
+                              ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  TextConst(
+                    title: title,
+                    size: 15,
+                    color: Colors.grey.shade600,
+                  ),
+                ],
+              ),
       ),
     );
   }
-
-
 }
 
 class ReviewShimmerCard extends StatelessWidget {
@@ -808,11 +950,7 @@ class ReviewShimmerCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const ShimmerLoader(
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-          ),
+          const ShimmerLoader(width: 56, height: 56, borderRadius: 28),
           const SizedBox(width: 12),
 
           Expanded(

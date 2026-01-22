@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/repo/serviceman/call_back_repo.dart';
 import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/home/driver_home_page.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
 
 class CallBackViewModel with ChangeNotifier {
@@ -18,7 +19,7 @@ class CallBackViewModel with ChangeNotifier {
   Future<void> callBackApi(
       dynamic orderID,
       dynamic status,
-      // dynamic paymentType,
+      dynamic moduleType,
       BuildContext context,
       ) async {
     setLoading(true);
@@ -36,12 +37,22 @@ class CallBackViewModel with ChangeNotifier {
 
       if (statusCode == 200 || statusCode == 201) {
         Utils.showSuccessMessage(context, body["message"]);
+        print("moduleType");
+        print(moduleType);
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => HandymanDashboard()),
-              (route) => false,
-        );
+        if (moduleType == 2) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => DriverHomePage()),
+                (route) => false,
+          );
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => HandymanDashboard()),
+                (route) => false,
+          );
+        }
       }
       else {
         Utils.showErrorMessage(context, body["message"]);

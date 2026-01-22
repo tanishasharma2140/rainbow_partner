@@ -29,6 +29,7 @@ class PaymentViewModel with ChangeNotifier {
       dynamic amount,
       dynamic paymentType,
       dynamic serviceOrderId,
+      dynamic moduleType,
       context,
       ) async {
     setLoading(true);
@@ -40,7 +41,10 @@ class PaymentViewModel with ChangeNotifier {
       "payment_type": paymentType,
       "service_order_id": serviceOrderId,
       "gateway_type": 1,
+      "module_type" : moduleType,
     };
+    print("kjhujhujhy");
+    print(data);
     try {
       final response = await _paymentRepo.paymentApi(data);
 

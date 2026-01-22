@@ -8,11 +8,13 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/driver_withdraw_history.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_transaction_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_withdraw_request_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/payment_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_get_bank_detail_view_model.dart';
 
 class WalletSettlement extends StatefulWidget {
@@ -367,6 +369,11 @@ class _WalletSettlementState extends State<WalletSettlement> {
                               _buildTransactionText('Platform Fee', payment?.platformFee, Colors.orange),
                             ],
 
+                            if (sectionStatus == 5) ...[
+                              _buildTransactionText('Amount', payment?.amount, Colors.purple),
+                              _buildTransactionText('Type', "Due Wallet", Colors.purple),
+                            ],
+
                             const SizedBox(height: 6),
                             Text(
                               'Txn ID: ${payment?.id ?? 'N/A'}',
@@ -518,13 +525,16 @@ class _WalletSettlementState extends State<WalletSettlement> {
       case 1:
         return 'Online Payment';
       case 2:
-        return 'Offline Payment';
+        return 'Cash Payment';
       case 3:
         return 'Wallet Payment';
+      case 5:
+        return 'Paid';
       default:
-        return 'Unknown';
+        return '-';
     }
   }
+
 
 
   String _getStatusText(int sectionStatus) {
@@ -535,10 +545,13 @@ class _WalletSettlementState extends State<WalletSettlement> {
         return 'Offline';
       case 3:
         return 'Wallet';
+      case 5:
+        return 'Due Cleared';
       default:
         return 'Unknown';
     }
   }
+
 
 
   Color _getStatusColor(int sectionStatus) {
@@ -549,10 +562,13 @@ class _WalletSettlementState extends State<WalletSettlement> {
         return Colors.green;
       case 3:
         return Colors.orange;
+      case 5:
+        return Colors.purple; // due cleared color
       default:
         return Colors.grey;
     }
   }
+
 
 
   IconData _getStatusIcon(int sectionStatus) {
@@ -563,10 +579,13 @@ class _WalletSettlementState extends State<WalletSettlement> {
         return Icons.money;
       case 3:
         return Icons.account_balance_wallet;
+      case 5:
+        return Icons.task_alt; // tick for cleared
       default:
         return Icons.help;
     }
   }
+
 
 
   String _getDisplayAmount(Payment? payment, int sectionStatus) {
@@ -579,10 +598,13 @@ class _WalletSettlementState extends State<WalletSettlement> {
         return payment.amount?.toString() ?? '0';
       case 3:
         return payment.amount?.toString() ?? '0';
+      case 5:
+        return payment.finalAmount?.toString() ?? payment.amount?.toString() ?? '0';
       default:
         return '0';
     }
   }
+
 
 
   Color _getAmountColor(int sectionStatus) {
@@ -603,13 +625,16 @@ class _WalletSettlementState extends State<WalletSettlement> {
       case 1:
         return 'After Fee';
       case 2:
-        return 'Total';
+        return 'Cash In';
       case 3:
         return 'Wallet';
+      case 5:
+        return 'Due Paid';
       default:
         return 'Amount';
     }
   }
+
 
 
   String _formatDate(String dateString) {
@@ -849,137 +874,84 @@ class _WalletSettlementState extends State<WalletSettlement> {
   // }
 
   void _showDueWalletDialog() {
-    final profileVm = Provider.of<DriverProfileViewModel>(context,listen: false);
-    final TextEditingController dueAmountController = TextEditingController();
+    final profileVm = Provider.of<DriverProfileViewModel>(context, listen: false);
+    final payment = Provider.of<PaymentViewModel>(context, listen: false);
+
+    final double dueAmount = double.tryParse(
+      profileVm.driverProfileModel?.data?.dueWallet?.toString() ?? "0",
+    ) ?? 0;
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (ctx) {
+        bool isLoading = false;
+
         return StatefulBuilder(
           builder: (context, setState) {
-            bool isLoading = false;
-
             return AlertDialog(
-              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
               title: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: AppColor.royalBlue.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      Icons.wallet,
-                      color: AppColor.royalBlue,
-                      size: 30,
-                    ),
+                    child: Icon(Icons.wallet, color: AppColor.royalBlue, size: 30),
                   ),
-                  SizedBox(height: 8),
-                  Text(
+                  const SizedBox(height: 8),
+                  const Text(
                     'Due Wallet Payment',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColor.royalBlue.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColor.royalBlue.withOpacity(0.2),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.pending, color: AppColor.royalBlue, size: 20),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Due Wallet Balance',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColor.royalBlue.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColor.royalBlue.withOpacity(0.2)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.pending, color: AppColor.royalBlue),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Due Wallet Balance',
+                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                              Text(
+                                "₹$dueAmount",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColor.royalBlue,
                                 ),
-                                Text(
-                                  '₹${profileVm.driverProfileModel?.data?.dueWallet??"0"}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColor.royalBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    TextFormField(
-                      controller: dueAmountController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Due Amount',
-                        hintText:
-                        'Maximum: ₹${profileVm.driverProfileModel?.data?.dueWallet ?? "0"}',
-                        prefixIcon:
-                        const Icon(Icons.currency_rupee, color: AppColor.royalBlue),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter amount';
-                        }
-
-                        final enteredAmount = double.tryParse(value);
-                        if (enteredAmount == null) {
-                          return 'Enter valid amount';
-                        }
-
-                        final maxDue = double.tryParse(
-                          profileVm.driverProfileModel?.data?.dueWallet?.toString() ?? "0",
-                        ) ??
-                            0;
-
-                        if (enteredAmount > maxDue) {
-                          return 'Amount cannot exceed due balance';
-                        }
-
-                        if (enteredAmount <= 0) {
-                          return 'Amount must be greater than zero';
-                        }
-
-                        return null;
-                      },
+                      ],
                     ),
-
-                    SizedBox(height: 10),
-                    Text(
-                      'Enter the amount you want to pay from your due wallet.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "You need to pay the full due wallet amount.",
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
               actions: [
                 Row(
@@ -987,88 +959,53 @@ class _WalletSettlementState extends State<WalletSettlement> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+                        child: const Text("Close"),
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: isLoading
-                            ? null
-                            : () async {
-                          if (dueAmountController.text.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Please enter amount')),
-                            );
-                            return;
-                          }
+                      child: Consumer<PaymentViewModel>(
+                        builder: (context, payVm, _) {
+                          final isLoading = payVm.loading;
 
-                          final amount = double.tryParse(dueAmountController.text);
-                          if (amount == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Enter valid amount')),
-                            );
-                            return;
-                          }
-
-                          // if (amount > dueBalance) {
-                          //   ScaffoldMessenger.of(context).showSnackBar(
-                          //     SnackBar(content: Text('Amount exceeds due balance')),
-                          //   );
-                          //   return;
-                          // }
-
-                          setState(() => isLoading = true);
-                          await Future.delayed(Duration(seconds: 2));
-                          setState(() => isLoading = false);
-
-                          dueAmountController.clear();
-                          Navigator.pop(context);
-
-                          // Show success dialog
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
+                          return ElevatedButton(
+                            onPressed: (dueAmount == 0 || isLoading)
+                                ? null
+                                : () {
+                              payment.paymentApi(
+                                dueAmount.toString(),   // full due
+                                5,                      // payment mode
+                                "",                     // serviceOrderId
+                                2,                      // driver module
+                                context,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColor.royalBlue,
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.check_circle,
-                                      color: Colors.green, size: 60),
-                                  SizedBox(height: 16),
-                                  Text('Payment Successful!',
-                                      style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold)),
-                                  SizedBox(height: 8),
-                                  Text('₹$amount paid from due wallet.',
-                                      textAlign: TextAlign.center),
-                                  SizedBox(height: 20),
-                                  ElevatedButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: Text('OK'),
-                                  ),
-                                ],
+                                borderRadius: BorderRadius.circular(12),
                               ),
+                            ),
+                            child: isLoading
+                                ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                                : Text(
+                              "Pay ₹$dueAmount Now",
+                              style: const TextStyle(color: Colors.white, fontSize: 13),
                             ),
                           );
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.royalBlue,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: isLoading
-                            ? CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2)
-                            : Text('Pay Now', style: TextStyle(color: Colors.white)),
                       ),
                     ),
+
+
+
                   ],
                 ),
               ],
