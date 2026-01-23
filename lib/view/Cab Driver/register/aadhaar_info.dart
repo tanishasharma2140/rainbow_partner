@@ -29,7 +29,6 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
   File? aadhaarBack;
 
   File? panFront;
-  File? panBack;
 
   TextEditingController aadhaarNumberController = TextEditingController();
   TextEditingController panNumberController = TextEditingController();
@@ -69,12 +68,6 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
       _showError("Please upload PAN card front side");
       return false;
     }
-
-    if (panBack == null) {
-      _showError("Please upload PAN card back side");
-      return false;
-    }
-
     if (panNumberController.text.trim().isEmpty) {
       _showError("Please enter PAN number");
       return false;
@@ -174,9 +167,7 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                       } else if (label.contains("PAN") &&
                           label.contains("Front")) {
                         panFront = null;
-                      } else if (label.contains("PAN") &&
-                          label.contains("Back")) {
-                        panBack = null;
+
                       }
                       setState(() {});
                     },
@@ -341,12 +332,6 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                         label: "PAN Card\nFront Side",
                         onTap: () => showPicker((file) => panFront = file),
                       ),
-                      const SizedBox(width: 35),
-                      _imageBox(
-                        image: panBack,
-                        label: "PAN Card\nBack Side",
-                        onTap: () => showPicker((file) => panBack = file),
-                      ),
                     ],
                   ),
 
@@ -405,7 +390,6 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                               aadhaarFront: aadhaarFront!,
                               aadhaarBack: aadhaarBack!,
                               panCardFront: panFront!,
-                              panCardBack: panBack!,
                               aadhaarPanStatus: "1",
                               aadhaarNumber: aadhaarNumberController.text
                                   .trim(),

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
@@ -5,6 +6,7 @@ import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view/Service%20Man/drawer/service_add_bank.dart';
 import 'package:rainbow_partner/view_model/service_man/service_get_bank_detail_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/withdraw_request_view_model.dart';
@@ -163,6 +165,12 @@ class _ServiceWithdrawRequestState extends State<ServiceWithdrawRequest> {
                         ],
                       ),
                     ),
+                    SizedBox(height: 10,),
+                    CustomButton(
+                        bgColor: AppColor.royalBlue,
+                        title: "Add Bank", onTap: (){
+                      Navigator.pushReplacement(context, CupertinoPageRoute(builder: (context)=> ServiceAddBank()));
+                    }),
                   ],
 
                   if (bankData != null) ...[

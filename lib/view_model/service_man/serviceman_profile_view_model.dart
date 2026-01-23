@@ -40,7 +40,7 @@ class ServicemanProfileViewModel with ChangeNotifier {
       if (statusCode == 200 || statusCode == 201) {
         final model = ServicemanProfileModel.fromJson(body);
         setProfileModelData(model);
-        Utils.showSuccessMessage(context, body["message"]);
+        debugPrint(body["message"]);
       } else {
         if (kDebugMode) print("❌ Error Status: $statusCode → $body");
         Utils.showErrorMessage(context, body["message"]);

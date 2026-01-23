@@ -86,10 +86,6 @@ class _OtpScreenState extends State<OtpScreen> {
         enteredOtp,
         context,
       );
-      print("widget.phoneNumber");
-      print(widget.phoneNumber);
-      print(enteredOtp);
-      print("enteredOtp");
     } else {
       Utils.showErrorMessage(context, "Please enter a valid 4-digit OTP.");
     }
@@ -226,9 +222,12 @@ class _OtpScreenState extends State<OtpScreen> {
 
               SizedBox(height: Sizes.screenHeight * 0.03),
             ],
+
           ),
+
         ),
       ),
+
     );
   }
 }

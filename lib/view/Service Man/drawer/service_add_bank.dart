@@ -85,6 +85,8 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                       controller: accountNumber,
                       hint: "Enter Account Number",
                       keyboard: TextInputType.number,
+                      maxLength: 12,
+
                       validator: (v) =>
                       v!.isEmpty ? "Please enter account number" : null,
                     ),
@@ -93,6 +95,7 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                     _inputBox(
                       controller: reAccountNumber,
                       hint: "Re-enter account number",
+                      maxLength: 12,
                       keyboard: TextInputType.number,
                       validator: (v) {
                         if (v!.isEmpty) return "Please re-enter account number";
@@ -107,6 +110,7 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                     _inputBox(
                       controller: holderName,
                       hint: "Enter AccountHolder Name",
+                      maxLength: 35,
                       validator: (v) =>
                       v!.isEmpty ? "Please enter account holder name" : null,
                     ),
@@ -209,6 +213,7 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
     TextInputType keyboard = TextInputType.text,
     String? Function(String?)? validator,
     TextCapitalization textCap = TextCapitalization.none,
+    int? maxLength,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -221,13 +226,19 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
         keyboardType: keyboard,
         validator: validator,
         textCapitalization: textCap,
+        maxLength: maxLength,
         decoration: InputDecoration(
+          counterText: "", // 👈 counter hide
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           border: InputBorder.none,
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade400,fontFamily: AppFonts.kanitReg),
+          hintStyle: TextStyle(
+            color: Colors.grey.shade400,
+            fontFamily: AppFonts.kanitReg,
+          ),
         ),
       ),
     );
   }
+
 }

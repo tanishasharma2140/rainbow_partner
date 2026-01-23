@@ -28,7 +28,6 @@ class ServiceCustomDrawer extends StatefulWidget {
 
 class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
-  bool isOnline = false;
 
   @override
   void initState() {
@@ -42,39 +41,10 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
       final lat = position.latitude.toString();
       final lng = position.longitude.toString();
 
-      vm.servicemanProfileApi(lat,lng,context).then((_) {
-        setState(() {
-          isOnline = vm.servicemanProfileModel!.data!.onlineStatus == 1;
-        });
-      });
     });
   }
 
-  Future<Position> _getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw Exception("Location services are disabled");
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        throw Exception("Location permission denied");
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      throw Exception("Location permission permanently denied");
-    }
-
-    return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-  }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
@@ -188,135 +158,6 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
 
 
-  void showAvailableStatusPopup(BuildContext context) {
-    final serviceOnlineVm = Provider.of<ServiceOnlineStatusViewModel>(context, listen: false);
-    final profileVm = Provider.of<ServicemanProfileViewModel>(context, listen: false);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) {
-        return StatefulBuilder(
-          builder: (context, setSheet) {
-            return Container(
-              padding: const EdgeInsets.all(20),
-              margin: const EdgeInsets.only(bottom: 20, left: 10, right: 10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  Text("Available Status",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-                    decoration: BoxDecoration(
-                      color: const Color(0xffe9f6ee),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-
-                    child: Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Available Status",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-
-                            const SizedBox(height: 6),
-
-                            Text(
-                              isOnline ? "You are Online" : "You are Offline",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: isOnline ? Colors.green : Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        Spacer(),
-
-                        Transform.scale(
-                          scale: 1.1,
-                          child: CupertinoSwitch(
-                            value: isOnline,
-                            activeColor: Colors.green,
-                            onChanged: (value) async {
-                              setSheet(() => isOnline = value);
-                              setState(() {});
-
-                              int statusVal = value ? 1 : 0;
-
-                              try {
-                                final position = await _getCurrentLocation();
-
-                                final lat = position.latitude.toString();
-                                final lng = position.longitude.toString();
-                                print(lng);
-                                print(lat);
-
-                                await serviceOnlineVm.serviceOnlineStatusApi(
-                                  statusVal,
-                                  lat,
-                                  lng,
-                                  context,
-                                );
-
-                                await profileVm.servicemanProfileApi(lat,lng,context);
-
-                                setState(() {
-                                  isOnline =
-                                      profileVm.servicemanProfileModel!.data!.onlineStatus == 1;
-                                });
-
-                                setSheet(() {
-                                  isOnline =
-                                      profileVm.servicemanProfileModel!.data!.onlineStatus == 1;
-                                });
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(e.toString())),
-                                );
-
-                                setSheet(() => isOnline = !value);
-                                setState(() => isOnline = !value);
-                              }
-                            },
-                          ),
-                        ),
-
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -378,40 +219,35 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
             // ---------------- AVAILABLE STATUS ----------------
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              child: InkWell(
-                onTap: () => showAvailableStatusPopup(context),
-                child: Row(
-                  children: [
-                    Icon(Icons.event_available, size: 24, color: Colors.grey),
+              child: Row(
+                children: [
+                  Icon(Icons.event_available, size: 24, color: Colors.grey),
 
-                    SizedBox(width: 18),
+                  SizedBox(width: 18),
 
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Available Status", style: TextStyle(fontSize: 16)),
-                        SizedBox(height: 3),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Available Status", style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 3),
 
-                        Text(
-                          profileVm.servicemanProfileModel!.data!.onlineStatus == 1
-                              ? "Online"
-                              : "Offline",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: profileVm.servicemanProfileModel!.data!.onlineStatus == 1
-                                ? Colors.green
-                                : Colors.red,
-                          ),
+                      Text(
+                        profileVm.servicemanProfileModel!.data!.onlineStatus == 1
+                            ? "Online"
+                            : "Offline",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: profileVm.servicemanProfileModel!.data!.onlineStatus == 1
+                              ? Colors.green
+                              : Colors.red,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
 
-                    Spacer(),
-
-                    Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-                  ],
-                ),
+                  Spacer(),
+                ],
               ),
             ),
 

@@ -30,7 +30,6 @@ class DriverRegisterThreeViewModel with ChangeNotifier {
     required File aadhaarFront,
     required File aadhaarBack,
     required File panCardFront,
-    required File panCardBack,
     required String aadhaarPanStatus,
     required String aadhaarNumber,
     required String panCardNumber,
@@ -51,7 +50,6 @@ class DriverRegisterThreeViewModel with ChangeNotifier {
       "aadhaar_front": aadhaarFront,
       "aadhaar_back": aadhaarBack,
       "pan_card_front": panCardFront,
-      "pan_card_back": panCardBack,
     };
 
     try {

@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
@@ -12,7 +12,6 @@ import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/utils/utils.dart';
-import 'package:rainbow_partner/view/Cab%20Driver/register/aadhaar_info.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_two_view_model.dart';
 
 class DrivingLicense extends StatefulWidget {
@@ -25,6 +24,7 @@ class DrivingLicense extends StatefulWidget {
 class _DrivingLicenseState extends State<DrivingLicense> {
   File? licenseFront;
   File? licenseBack;
+  String? driverLicenseError;
 
   TextEditingController licenseNumberController = TextEditingController();
   TextEditingController validityDateController = TextEditingController();
@@ -43,6 +43,9 @@ class _DrivingLicenseState extends State<DrivingLicense> {
       setState(() {});
     }
   }
+
+  final RegExp driverLicenseRegex =
+  RegExp(r'^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,15}$');
 
   /// BOTTOM SHEET
   void showPicker(Function(File) onSelected) {
@@ -224,20 +227,27 @@ class _DrivingLicenseState extends State<DrivingLicense> {
               onClose: () => Navigator.pop(context),
             ),
 
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: topPadding),
+          body: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: IntrinsicHeight(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 22),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
 
-                  TextConst(
-                    title: "Driver license",
-                    size: 25,
-                    fontWeight: FontWeight.w700,
-                  ),
+                              SizedBox(height: topPadding),
 
-                  const SizedBox(height: 25),
+                              TextConst(
+                                title: "Driver license",
+                                size: 25,
+                                fontWeight: FontWeight.w700,
+                              ),
+
+                              const SizedBox(height: 25),
 
                   /// 2 IMAGE PICKERS ONLY
                   Row(
@@ -260,11 +270,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
                   ),
 
                   /// Text Fields
-                  _textField(
-                    hint: "Driver license number",
-                    controller: licenseNumberController,
-
-                  ),
+                  licenseInputField(),
 
                   _textField(
                     hint: "Validity date",
@@ -313,47 +319,58 @@ class _DrivingLicenseState extends State<DrivingLicense> {
                           bgColor: AppColor.royalBlue,
                           textColor: AppColor.white,
                           title: "Next",
-                          onTap: () {
-                            if (licenseFront == null) {
-                              Utils.showErrorMessage(context, "Please upload license front image");
-                              return;
+                            onTap: () {
+                              if (licenseFront == null) {
+                                Utils.showErrorMessage(context, "Please upload license front image");
+                                return;
+                              }
+
+                              if (licenseBack == null) {
+                                Utils.showErrorMessage(context, "Please upload license back image");
+                                return;
+                              }
+
+                              final lic = licenseNumberController.text.trim();
+
+                              if (lic.isEmpty) {
+                                Utils.showErrorMessage(context, "Please enter license number");
+                                return;
+                              }
+
+                              if (driverLicenseError != null) {
+                                Utils.showErrorMessage(context, "Please enter a valid license number");
+                                return;
+                              }
+
+                              if (validityDateController.text.trim().isEmpty) {
+                                Utils.showErrorMessage(context, "Please select validity date");
+                                return;
+                              }
+
+                              driverRegisterTwoVm.driverRegisterTwoApi(
+                                drivingLicenceFront: licenseFront!,
+                                drivingLicenceBack: licenseBack!,
+                                driverLicenceStatus: "1",
+                                driverLicenceNumber: lic,
+                                licenceValidityDate: validityDateController.text,
+                                context: context,
+                              );
                             }
 
-                            if (licenseBack == null) {
-                              Utils.showErrorMessage(context, "Please upload license back image");
-                              return;
-                            }
-
-                            if (licenseNumberController.text.trim().isEmpty) {
-                              Utils.showErrorMessage(context, "Please enter license number");
-                              return;
-                            }
-
-                            if (validityDateController.text.trim().isEmpty) {
-                              Utils.showErrorMessage(context, "Please select validity date");
-                              return;
-                            }
-
-                            driverRegisterTwoVm.driverRegisterTwoApi(
-                              drivingLicenceFront: licenseFront!,
-                              drivingLicenceBack: licenseBack!,
-                              driverLicenceStatus: "1",
-                              driverLicenceNumber: licenseNumberController.text,
-                              licenceValidityDate: validityDateController.text,
-                              context: context,
-                            );
-                            // Navigator.push(context, CupertinoPageRoute(builder: (context)=>AadhaarInfo()));
-                          },
                         ),
                       ),
                     ],
                   ),
 
                   const SizedBox(height: 15),
-                ],
-              ),
-            ),
-          ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ),
+                );
+              },
+          )),
           if (driverRegisterTwoVm.loading)
             Container(
               color: Colors.black54,
@@ -385,5 +402,67 @@ class _DrivingLicenseState extends State<DrivingLicense> {
         ],
       ),
     );
+  }
+  Widget licenseInputField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 60,
+          alignment: Alignment.center,
+          margin: const EdgeInsets.only(top: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(15),
+            border: driverLicenseError != null
+                ? Border.all(color: Colors.red)
+                : null,
+          ),
+          child: TextField(
+            controller: licenseNumberController,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+              LengthLimitingTextInputFormatter(16),
+              UpperCaseTextFormatter(),
+            ],
+            decoration: InputDecoration(
+              hintText: "Driver license number",
+              border: InputBorder.none,
+              hintStyle: TextStyle(fontFamily: AppFonts.kanitReg),
+            ),
+            onChanged: (value) {
+              final clean = value.replaceAll(RegExp(r'[^A-Z0-9]'), '');
+              if (value.isEmpty) {
+                setState(() => driverLicenseError = null);
+              } else if (!driverLicenseRegex.hasMatch(clean)) {
+                setState(() => driverLicenseError =
+                "Invalid license (example: MH12AB1234567)");
+              } else {
+                setState(() => driverLicenseError = null);
+              }
+            },
+          ),
+        ),
+        if (driverLicenseError != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 5),
+            child: Text(
+              driverLicenseError!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+              ),
+            ),
+          )
+      ],
+    );
+  }
+
+}
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    return newValue.copyWith(text: newValue.text.toUpperCase());
   }
 }
