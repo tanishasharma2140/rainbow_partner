@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
+import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/service_custom_drawer.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -27,8 +28,8 @@ class HandymanDashboard extends StatefulWidget {
 }
 
 class _HandymanDashboardState extends State<HandymanDashboard> {
-  List<double> animatedValues = List.filled(8, 0.0);
-  List<double> finalValues = [10000, 5000, 8000];
+  // List<double> animatedValues = List.filled(8, 0.0);
+  // List<double> finalValues = [10000, 5000, 8000];
   bool isStatusChanging = false;
 
   @override
@@ -77,11 +78,6 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
       if (!mounted) return;
 
-      setState(() {
-        animatedValues[0] = finalValues[0];
-        animatedValues[1] = finalValues[1];
-        animatedValues[2] = finalValues[2];
-      });
 
       if (completeVm.completeBookingModel?.data?.isNotEmpty == true) {
         await Future.delayed(const Duration(milliseconds: 500));
@@ -307,6 +303,105 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     }
   }
 
+  Future<bool> _onWillPop() async {
+    return await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: 260,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextConst(
+                    title:
+                    "Exit App",
+                    size: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  const SizedBox(height: 10),
+                  TextConst(
+                    title:
+                    "Are you sure you want to exit?",
+                    textAlign: TextAlign.center,
+                    size: 14,
+                    color: Colors.black54,
+                  ),
+                  const SizedBox(height: 22),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => Navigator.pop(context, false),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              "Cancel",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => SystemNavigator.pop(),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColor.royalBlue,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              "Exit",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontFamily: AppFonts.kanitReg,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    ) ?? false;
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final serviceProfileVm = Provider.of<ServicemanProfileViewModel>(context);
@@ -316,10 +411,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     final isOnline = serviceProfileVm.servicemanProfileModel?.data?.onlineStatus == 1;
 
     return WillPopScope(
-      onWillPop: () async {
-        SystemNavigator.pop();
-        return false;
-      },
+      onWillPop: _onWillPop,
       child: Stack(
         children: [
           SafeArea(
@@ -361,6 +453,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                 color: AppColor.royalBlue,
                 onRefresh: _onRefresh,
                 child: SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 17),
                     child: Column(
@@ -603,104 +696,104 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                           ],
                         ),
 
-                        const SizedBox(height: 20),
-
-                        TextConst(
-                          title: "Monthly Revenue USD",
-                          size: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        const SizedBox(height: 15),
-
-                        Container(
-                          height: 190,
-                          padding: const EdgeInsets.fromLTRB(12, 15, 12, 12),
-                          decoration: BoxDecoration(
-                            color: AppColor.whiteDark,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: BarChart(
-                            BarChartData(
-                              alignment: BarChartAlignment.spaceAround,
-                              maxY: 15000,
-                              minY: 0,
-                              barTouchData: BarTouchData(enabled: false),
-                              gridData: FlGridData(
-                                show: true,
-                                drawVerticalLine: false,
-                                horizontalInterval: 5000,
-                                getDrawingHorizontalLine: (value) => FlLine(
-                                  color: Colors.grey.shade300,
-                                  strokeWidth: 1,
-                                ),
-                              ),
-                              titlesData: FlTitlesData(
-                                leftTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    interval: 5000,
-                                    reservedSize: 40,
-                                    getTitlesWidget: (v, meta) => Text(
-                                      v.toInt().toString(),
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                bottomTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    reservedSize: 30,
-                                    getTitlesWidget: (value, meta) {
-                                      const months = [
-                                        "Jan", "Feb", "Mar", "Apr",
-                                        "May", "Jun", "Jul", "Aug",
-                                      ];
-                                      return Padding(
-                                        padding: const EdgeInsets.only(top: 8),
-                                        child: Text(
-                                          months[value.toInt()],
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade700,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                                topTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                rightTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                              ),
-                              barGroups: List.generate(8, (i) {
-                                return BarChartGroupData(
-                                  x: i,
-                                  barRods: [
-                                    BarChartRodData(
-                                      toY: animatedValues[i],
-                                      width: 18,
-                                      color: i < 3
-                                          ? AppColor.royalBlue
-                                          : const Color(0xFF2E5F4D),
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(6),
-                                        topRight: Radius.circular(6),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }),
-                            ),
-                            swapAnimationDuration: const Duration(milliseconds: 900),
-                            swapAnimationCurve: Curves.easeOutBack,
-                          ),
-                        ),
+                        // const SizedBox(height: 20),
+                        //
+                        // TextConst(
+                        //   title: "Monthly Revenue USD",
+                        //   size: 18,
+                        //   fontWeight: FontWeight.w600,
+                        // ),
+                        // const SizedBox(height: 15),
+                        //
+                        // Container(
+                        //   height: 190,
+                        //   padding: const EdgeInsets.fromLTRB(12, 15, 12, 12),
+                        //   decoration: BoxDecoration(
+                        //     color: AppColor.whiteDark,
+                        //     borderRadius: BorderRadius.circular(12),
+                        //   ),
+                        //   child: BarChart(
+                        //     BarChartData(
+                        //       alignment: BarChartAlignment.spaceAround,
+                        //       maxY: 15000,
+                        //       minY: 0,
+                        //       barTouchData: BarTouchData(enabled: false),
+                        //       gridData: FlGridData(
+                        //         show: true,
+                        //         drawVerticalLine: false,
+                        //         horizontalInterval: 5000,
+                        //         getDrawingHorizontalLine: (value) => FlLine(
+                        //           color: Colors.grey.shade300,
+                        //           strokeWidth: 1,
+                        //         ),
+                        //       ),
+                        //       titlesData: FlTitlesData(
+                        //         leftTitles: AxisTitles(
+                        //           sideTitles: SideTitles(
+                        //             showTitles: true,
+                        //             interval: 5000,
+                        //             reservedSize: 40,
+                        //             getTitlesWidget: (v, meta) => Text(
+                        //               v.toInt().toString(),
+                        //               style: TextStyle(
+                        //                 fontSize: 11,
+                        //                 color: Colors.grey,
+                        //               ),
+                        //             ),
+                        //           ),
+                        //         ),
+                        //         bottomTitles: AxisTitles(
+                        //           sideTitles: SideTitles(
+                        //             showTitles: true,
+                        //             reservedSize: 30,
+                        //             getTitlesWidget: (value, meta) {
+                        //               const months = [
+                        //                 "Jan", "Feb", "Mar", "Apr",
+                        //                 "May", "Jun", "Jul", "Aug",
+                        //               ];
+                        //               return Padding(
+                        //                 padding: const EdgeInsets.only(top: 8),
+                        //                 child: Text(
+                        //                   months[value.toInt()],
+                        //                   style: TextStyle(
+                        //                     fontSize: 12,
+                        //                     color: Colors.grey.shade700,
+                        //                   ),
+                        //                 ),
+                        //               );
+                        //             },
+                        //           ),
+                        //         ),
+                        //         topTitles: AxisTitles(
+                        //           sideTitles: SideTitles(showTitles: false),
+                        //         ),
+                        //         rightTitles: AxisTitles(
+                        //           sideTitles: SideTitles(showTitles: false),
+                        //         ),
+                        //       ),
+                        //       barGroups: List.generate(8, (i) {
+                        //         return BarChartGroupData(
+                        //           x: i,
+                        //           barRods: [
+                        //             BarChartRodData(
+                        //               toY: animatedValues[i],
+                        //               width: 18,
+                        //               color: i < 3
+                        //                   ? AppColor.royalBlue
+                        //                   : const Color(0xFF2E5F4D),
+                        //               borderRadius: const BorderRadius.only(
+                        //                 topLeft: Radius.circular(6),
+                        //                 topRight: Radius.circular(6),
+                        //               ),
+                        //             ),
+                        //           ],
+                        //         );
+                        //       }),
+                        //     ),
+                        //     swapAnimationDuration: const Duration(milliseconds: 900),
+                        //     swapAnimationCurve: Curves.easeOutBack,
+                        //   ),
+                        // ),
 
                         const SizedBox(height: 25),
 

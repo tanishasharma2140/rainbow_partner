@@ -27,8 +27,9 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
   @override
   void initState() {
     super.initState();
-    _initSocket();  // async method call
+    _initSocket(); // async method call
   }
+
   Future<void> _initSocket() async {
     UserViewModel userViewModel = UserViewModel();
     String? userId = await userViewModel.getUser();
@@ -60,9 +61,9 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
     );
   }
 
-
   @override
   void dispose() {
+    RingtoneService().stopRingtone();
     SocketService().dispose();
     super.dispose();
   }
@@ -74,12 +75,14 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
       "status": "Pending",
       "title": o["service_name"] ?? "",
       "price": "₹${o["final_amount"]}",
-      "image": "assets/ac_maintenance.png",
+      "image": o["service_image"] ?? "",
       "address": o["service_address"] ?? "No address",
       "datetime": o["formatted_date"] ?? "",
       "customer": o["customer_name"] ?? "",
       "distance":
           "${double.tryParse(o["distance"].toString())?.toStringAsFixed(1)} km",
+      "Quantity": o["quantity"] ?? "",
+      "Description": o["description"] ?? "",
     };
   }
 
@@ -98,7 +101,10 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
           title: Row(
             children: [
               IconButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  RingtoneService().stopRingtone();
+                  Navigator.pop(context);
+                },
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
               const TextConst(
@@ -165,12 +171,28 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    b["image"],
-                    height: 80,
-                    width: 80,
-                    fit: BoxFit.cover,
-                  ),
+                  child:
+                      (b["image"] != null && b["image"].toString().isNotEmpty)
+                      ? Image.network(
+                          b["image"],
+                          height: 80,
+                          width: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              "assets/prooo.jpg",
+                              height: 80,
+                              width: 80,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          "assets/prooo.jpg",
+                          height: 80,
+                          width: 80,
+                          fit: BoxFit.cover,
+                        ),
                 ),
                 const SizedBox(width: 12),
 
@@ -243,6 +265,10 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
             infoRow("Date:", b["datetime"]),
             infoRow("Customer:", b["customer"]),
             infoRow("Distance:", b["distance"]),
+            infoRow("Qty:", b["Quantity"].toString()),
+            if (b["Description"] != null &&
+                b["Description"].toString().trim().isNotEmpty)
+              infoRow("Desc:", b["Description"].toString(), marquee: true),
 
             const SizedBox(height: 14),
 
@@ -279,17 +305,16 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                     },
 
                     child: acceptOrderVm.isLoading(orderId)
-                        ?  SizedBox(
+                        ? SizedBox(
                             height: 22,
                             width: 22,
-                            child: CustomLoader(color: AppColor.royalBlue,),
+                            child: CustomLoader(color: AppColor.royalBlue),
                           )
-                        :  TextConst(
-                               title:
-                            "Accept",
-                      fontWeight: FontWeight.w600,
-                      size: 15,
-                      color: AppColor.royalBlue,
+                        : TextConst(
+                            title: "Accept",
+                            fontWeight: FontWeight.w600,
+                            size: 15,
+                            color: AppColor.royalBlue,
                           ),
                   ),
                 ),

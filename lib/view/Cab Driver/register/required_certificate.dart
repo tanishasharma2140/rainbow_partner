@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:provider/provider.dart';
@@ -26,15 +27,15 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
 
   /// ---------------- CERTIFICATE MAP ----------------
   final Map<String, File?> certificateFiles = {
-    "Fitness\nCertificate": null,
+    "Fitness\nCertificate\n(Optional)": null,
     "Pollution (PUC)\nCertificate": null,
     "Insurance\nCertificate": null,
-    "Police Verification\nCertificate": null,
+    "Police Verification\nCertificate\n(Optional)": null,
   };
 
   /// ---------------- GETTERS FOR API ----------------
   File? get fitnessCertificate =>
-      certificateFiles["Fitness\nCertificate"];
+      certificateFiles["Fitness\nCertificate\n(Optional)"];
 
   File? get pollutionCertificate =>
       certificateFiles["Pollution (PUC)\nCertificate"];
@@ -216,7 +217,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
             backgroundColor: Colors.white,
             appBar: ConstantAppbar(
               onBack: () => Navigator.pop(context),
-              onClose: () => Navigator.pop(context),
+              onClose: () =>  SystemNavigator.pop(),
             ),
             body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -249,7 +250,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                       bgColor: AppColor.royalBlue,
                       textColor: Colors.white,
                       onTap: () {
-                        if (fitnessCertificate == null ||
+                        if (
                             pollutionCertificate == null ||
                             insuranceCertificate == null ) {
                           Utils.showErrorMessage(context, "Please upload all required certificates");
@@ -258,7 +259,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                         }
 
                         driverRegisterFour.driverRegisterFourApi(
-                          fitnessCertificate: fitnessCertificate!,
+                          fitnessCertificate: fitnessCertificate,
                           pollutionCertificate: pollutionCertificate!,
                           insuranceCertificate: insuranceCertificate!,
                           policeCertificate: policeCertificate,

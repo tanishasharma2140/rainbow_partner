@@ -165,7 +165,7 @@ class _ServiceWithdrawRequestState extends State<ServiceWithdrawRequest> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 10,),
+                    SizedBox(height: 15,),
                     CustomButton(
                         bgColor: AppColor.royalBlue,
                         title: "Add Bank", onTap: (){

@@ -693,7 +693,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
       case '6':
         return 'Cancelled by User';
       case '7':
-        return 'Cancelled by Driver';
+        return 'Cancelled by Me';
       default:
         return 'Unknown';
     }

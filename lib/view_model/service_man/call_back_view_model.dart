@@ -19,13 +19,13 @@ class CallBackViewModel with ChangeNotifier {
   Future<void> callBackApi(
       dynamic orderID,
       dynamic status,
-      dynamic moduleType,
+      // dynamic moduleType, // <-- even if passed, we will ignore
       BuildContext context,
       ) async {
     setLoading(true);
 
     Map data = {
-      "order_id": orderID, // gateway order_id
+      "order_id": orderID,
       "status": status,
     };
 
@@ -37,24 +37,32 @@ class CallBackViewModel with ChangeNotifier {
 
       if (statusCode == 200 || statusCode == 201) {
         Utils.showSuccessMessage(context, body["message"]);
-        print("moduleType");
-        print(moduleType);
 
-        if (moduleType == 2) {
+        /// **READ module_type FROM RESPONSE**
+        final int serverModuleType = int.tryParse(
+          body["module_type"]?.toString() ?? "0",
+        ) ?? 0;
+
+        debugPrint("📦 Server Module Type = $serverModuleType");
+
+        /// === NAVIGATION BASED ON SERVER module_type ===
+        if (serverModuleType == 2) {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => DriverHomePage()),
+            MaterialPageRoute(builder: (_) => const DriverHomePage()),
+                (route) => false,
+          );
+        } else if (serverModuleType == 1) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const HandymanDashboard()),
                 (route) => false,
           );
         } else {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => HandymanDashboard()),
-                (route) => false,
-          );
+          Utils.showErrorMessage(context, "Unknown module type: $serverModuleType");
         }
-      }
-      else {
+
+      } else {
         Utils.showErrorMessage(context, body["message"]);
       }
     } catch (e) {
@@ -63,4 +71,5 @@ class CallBackViewModel with ChangeNotifier {
       setLoading(false);
     }
   }
+
 }

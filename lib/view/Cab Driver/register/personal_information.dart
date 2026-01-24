@@ -103,7 +103,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
 
         appBar: ConstantAppbar(
           onBack: () => Navigator.pop(context),
-          onClose: () => Navigator.pop(context),
+          onClose: () =>  SystemNavigator.pop(),
         ),
 
         body: Stack(

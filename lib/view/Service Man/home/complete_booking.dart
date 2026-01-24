@@ -52,7 +52,7 @@ class _CompleteBookingState extends State<CompleteBooking> {
       case "5":
         return "Cancelled by User";
       case "6":
-        return "Rejected by Serviceman";
+        return "Rejected by Me";
       default:
         return "Completed";
     }

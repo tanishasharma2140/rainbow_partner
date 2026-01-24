@@ -16,6 +16,36 @@ class DriverProfile extends StatefulWidget {
 }
 
 class _DriverProfileState extends State<DriverProfile> {
+
+  void _openFullImage(String imageUrl) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.white),
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              panEnabled: true,
+              minScale: 0.8,
+              maxScale: 4.0,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,6 +171,7 @@ class _DriverProfileState extends State<DriverProfile> {
                         viewImageBox("Back Side", data.aadhaarBack)),
                   ],
                 ),
+                SizedBox(height: 12,),
                 infoTile(
                     "Aadhaar Number", data.aadhaarNumber?.toString() ?? "--"),
 
@@ -154,19 +185,17 @@ class _DriverProfileState extends State<DriverProfile> {
                         child:
                         viewImageBox("Front Side", data.panCardFront)),
                     const SizedBox(width: 14),
-                    Expanded(
-                        child:
-                        viewImageBox("Back Side", data.panCardBack)),
+
                   ],
                 ),
+                SizedBox(height: 12,),
                 infoTile("PAN Number",
                     data.panCardNumber?.toString() ?? "--"),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
 
                 // ---------------- VEHICLE DETAILS ----------------
                 sectionTitle("Vehicle Details"),
-                infoTile("Vehicle Type", data.vehicleType?.toString() ?? "--"),
                 infoTile("Brand", data.brandName?.toString() ?? "--"),
                 infoTile("Model", data.modelName?.toString() ?? "--"),
                 infoTile("Color", data.vehicleColor?.toString() ?? "--"),
@@ -181,46 +210,53 @@ class _DriverProfileState extends State<DriverProfile> {
                 const SizedBox(height: 30),
 
                 // ---------------- VEHICLE DOCUMENTS ----------------
-                sectionTitle("Vehicle Documents"),
-                Row(
-                  children: [
-                    Expanded(
-                        child: viewImageBox(
-                            "RC Front", data.vehicleRegistrationFront)),
-                    const SizedBox(width: 14),
-                    Expanded(
-                        child: viewImageBox(
-                            "RC Back", data.vehicleRegistrationBack)),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                        child: viewImageBox(
-                            "Permit Part A", data.vehiclePermitPartA)),
-                    const SizedBox(width: 14),
-                    Expanded(
-                        child: viewImageBox(
-                            "Permit Part B", data.vehiclePermitPartB)),
-                  ],
-                ),
+                if (data.vehicleCategory != 2) ...[
+                  sectionTitle("Vehicle Documents"),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: viewImageBox(
+                              "RC Front", data.vehicleRegistrationFront)),
+                      const SizedBox(width: 14),
+                      Expanded(
+                          child: viewImageBox(
+                              "RC Back", data.vehicleRegistrationBack)),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: viewImageBox(
+                              "Permit Part A", data.vehiclePermitPartA)),
+                      const SizedBox(width: 14),
+                      Expanded(
+                          child: viewImageBox(
+                              "Permit Part B", data.vehiclePermitPartB)),
+                    ],
+                  ),
+                ],
 
                 const SizedBox(height: 30),
 
                 // ---------------- CERTIFICATES ----------------
                 sectionTitle("Certificates"),
-                viewImageBox(
-                    "Fitness Certificate", data.fitnessCertificate),
+
+                if (data.fitnessCertificate != null && data.fitnessCertificate.toString().isNotEmpty) ...[
+                  viewImageBox("Fitness Certificate", data.fitnessCertificate),
+                  const SizedBox(height: 12),
+                ],
+
+                viewImageBox("Insurance Certificate", data.insuranceCertificate),
                 const SizedBox(height: 12),
-                viewImageBox(
-                    "Insurance Certificate", data.insuranceCertificate),
+
+                viewImageBox("Pollution Certificate", data.pollutionCertificate),
                 const SizedBox(height: 12),
-                viewImageBox(
-                    "Pollution Certificate", data.pollutionCertificate),
-                const SizedBox(height: 12),
-                viewImageBox(
-                    "Police Verification", data.policeCertificate),
+
+                if (data.policeCertificate != null && data.policeCertificate.toString().isNotEmpty) ...[
+                  viewImageBox("Police Verification", data.policeCertificate),
+                  const SizedBox(height: 12),
+                ],
 
                 const SizedBox(height: 40),
               ],
@@ -277,29 +313,34 @@ class _DriverProfileState extends State<DriverProfile> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          height: 120,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            image: imageUrl != null && imageUrl.isNotEmpty
-                ? DecorationImage(
-                image: NetworkImage(imageUrl), fit: BoxFit.cover)
-                : null,
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 6,
-                offset: Offset(0, 3),
-              )
-            ],
-          ),
-          child: imageUrl == null || imageUrl.isEmpty
-              ? const Center(
-            child: Icon(Icons.image_not_supported,
-                size: 35, color: Colors.grey),
-          )
+        GestureDetector(
+          onTap: imageUrl != null && imageUrl.isNotEmpty
+              ? () => _openFullImage(imageUrl)
               : null,
+          child: Container(
+            height: 120,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              image: imageUrl != null && imageUrl.isNotEmpty
+                  ? DecorationImage(
+                  image: NetworkImage(imageUrl), fit: BoxFit.cover)
+                  : null,
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                )
+              ],
+            ),
+            child: imageUrl == null || imageUrl.isEmpty
+                ? const Center(
+              child: Icon(Icons.image_not_supported,
+                  size: 35, color: Colors.grey),
+            )
+                : null,
+          ),
         ),
         const SizedBox(height: 6),
         TextConst(title: label, size: 13),

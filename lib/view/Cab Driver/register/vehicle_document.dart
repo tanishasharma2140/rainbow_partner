@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:provider/provider.dart';
@@ -267,7 +268,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
             backgroundColor: Colors.white,
             appBar: ConstantAppbar(
               onBack: () => Navigator.pop(context),
-              onClose: () => Navigator.pop(context),
+              onClose: () =>  SystemNavigator.pop(),
             ),
 
             body: Padding(

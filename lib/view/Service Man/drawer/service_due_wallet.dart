@@ -38,8 +38,12 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
   }
 
   void _showClearDuePopup(BuildContext context) {
-    final payment = Provider.of<PaymentViewModel>(context,listen: false);
-    final TextEditingController amountController = TextEditingController();
+    final payment = Provider.of<PaymentViewModel>(context, listen: false);
+    final profile = Provider.of<ServicemanProfileViewModel>(context,listen: false);
+
+    final double dueAmount = double.tryParse(
+        profile.servicemanProfileModel?.data?.dueWallet?.toString() ?? "0"
+    ) ?? 0;
 
     showDialog(
       context: context,
@@ -55,33 +59,37 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
             size: 16,
             fontWeight: FontWeight.w600,
           ),
+
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: amountController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  hintText: "Enter amount",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.red),
-                  ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.account_balance_wallet, color: Colors.red),
+                    const SizedBox(width: 8),
+                    TextConst(
+                      title: "Due Amount: ₹$dueAmount",
+                      size: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.red,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 14),
             ],
           ),
+
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const TextConst(
-                title: "Cancel",
-                color: Colors.grey,
-              ),
+              child: const TextConst(title: "Cancel", color: Colors.grey),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -91,22 +99,22 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                 ),
               ),
               onPressed: () {
-                final amount = amountController.text.trim();
-
-                if (amount.isEmpty) {
-                  // simple validation
+                if (dueAmount <= 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please enter amount")),
+                    const SnackBar(content: Text("No due amount available")),
                   );
-
-                } else{
-                  payment.paymentApi(amountController.text, 5, "","", context);
+                  return;
                 }
 
-                Navigator.pop(context);
+                payment.paymentApi(
+                    dueAmount.toInt().toString(), // full due amount
+                  5, // due wallet mode
+                  "", // order
+                  "", // module
+                  context,
+                );
 
-                // 🔥 API / Logic call here
-                print("Clear Due Amount: $amount");
+                // Navigator.pop(context);
               },
               child: const TextConst(
                 title: "Submit",
@@ -119,7 +127,6 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +166,6 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   AnimatedGradientBorder(
                     borderSize: 3, // 🔹 thinner border
                     glowSize: 0,
@@ -197,7 +203,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children:  [
+                                  children: [
                                     TextConst(
                                       title: "Wallet Balance",
                                       size: 15,
@@ -205,8 +211,9 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                                     ),
                                     SizedBox(height: 4),
                                     TextConst(
-                                      title: "₹ ${profile.servicemanProfileModel?.data?.wallet??"0"}",
-                                      size: 24,
+                                      title:
+                                          "₹ ${profile.servicemanProfileModel?.data?.wallet ?? "0"}",
+                                      size: 22,
                                       color: AppColor.royalBlue,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -241,8 +248,9 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                                         color: Colors.red.withOpacity(0.08),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child:  TextConst(
-                                        title: "₹${profile.servicemanProfileModel?.data?.dueWallet??"0"}",
+                                      child: TextConst(
+                                        title:
+                                            "₹${profile.servicemanProfileModel?.data?.dueWallet ?? "0"}",
                                         size: 22,
                                         color: Colors.red,
                                         fontWeight: FontWeight.bold,
@@ -287,9 +295,6 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                     ),
                   ),
 
-
-
-
                   const SizedBox(height: 24),
 
                   SizedBox(
@@ -297,12 +302,10 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: filters.length,
-                      separatorBuilder: (_, __) =>
-                      const SizedBox(width: 10),
+                      separatorBuilder: (_, __) => const SizedBox(width: 10),
                       itemBuilder: (_, index) {
                         final item = filters[index];
-                        final bool selected =
-                            selectedType == item["type"];
+                        final bool selected = selectedType == item["type"];
 
                         return GestureDetector(
                           onTap: () {
@@ -311,23 +314,22 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                             });
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 18),
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: selected
                                   ? AppColor.royalBlue
                                   : AppColor.white,
-                              borderRadius:
-                              BorderRadius.circular(10),
-                              border: Border.all(color: AppColor.blackLight,width: 0.5)
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: AppColor.blackLight,
+                                width: 0.5,
+                              ),
                             ),
                             child: Text(
                               item["title"],
                               style: TextStyle(
-                                color: selected
-                                    ? Colors.white
-                                    : Colors.black54,
+                                color: selected ? Colors.white : Colors.black54,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -345,8 +347,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                   else
                     ListView.builder(
                       shrinkWrap: true,
-                      physics:
-                      const NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: list.length,
                       itemBuilder: (_, index) {
                         final payment = list[index].payment;
@@ -419,9 +420,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 5),
-        ],
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5)],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -437,8 +436,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
               const SizedBox(height: 4),
               Text(
                 payment.paymentDate ?? "",
-                style: const TextStyle(
-                    fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),

@@ -230,6 +230,7 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
     );
   }
 
+  bool _navigated = false;
   @override
   void initState() {
     super.initState();
@@ -460,7 +461,18 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
                       kToolbarHeight -
                       MediaQuery.of(context).padding.top,
                   child: () {
-                    if (status == "verified") return verifiedWidget();
+                    if (status == "verified") {
+                      if (!_navigated && mounted) {
+                        _navigated = true;
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          Navigator.pushReplacement(
+                            context,
+                            CupertinoPageRoute(builder: (_) => const DriverHomePage()),
+                          );
+                        });
+                      }
+                      return const SizedBox.shrink();
+                    }
                     if (status == "rejected") return rejectedWidget(vm);
                     return pendingWidget();
                   }(),

@@ -27,7 +27,7 @@ class DriverRegisterFourViewModel with ChangeNotifier {
   }
 
   Future<void> driverRegisterFourApi({
-    required File fitnessCertificate,
+    required File? fitnessCertificate,
     required File pollutionCertificate,
     required File insuranceCertificate,
     required File? policeCertificate,

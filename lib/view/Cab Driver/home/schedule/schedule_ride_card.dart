@@ -428,7 +428,7 @@ class ScheduledRideCard extends StatelessWidget {
             "CANCELLED", Icons.person_off, "Cancelled by user");
       case RideStatus.cancelledByDriver:
         return _RideStatusMap(
-            "CANCELLED", Icons.cancel, "Cancelled by driver");
+            "CANCELLED", Icons.cancel, "Cancelled by Me");
     }
   }
 }

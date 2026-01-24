@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
+import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -61,6 +62,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
     cabEarning.cabEarningApi("1", context);
   }
 
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +73,105 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
   bool isOnline = false;
 
+  Future<bool> _onWillPop() async {
+    return await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: 260,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                   TextConst(
+                     title:
+                    "Exit App",
+                     size: 17,
+                     fontWeight: FontWeight.w700,
+                  ),
+                  const SizedBox(height: 10),
+                   TextConst(
+                     title:
+                    "Are you sure you want to exit?",
+                    textAlign: TextAlign.center,
+                     size: 14,
+                     color: Colors.black54,
+                  ),
+                  const SizedBox(height: 22),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => Navigator.pop(context, false),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              "Cancel",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => SystemNavigator.pop(),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColor.royalBlue,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              "Exit",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontFamily: AppFonts.kanitReg,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    ) ?? false;
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final driverProfileVm = Provider.of<DriverProfileViewModel>(context);
@@ -78,260 +179,269 @@ class _DriverHomePageState extends State<DriverHomePage> {
     final driverOnlineVm = Provider.of<DriverOnlineStatusViewModel>(context);
     final cabEarningVm = Provider.of<CabEarningViewModel>(context);
 
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: Scaffold(
-        backgroundColor: AppColor.whiteDark,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: SafeArea(
+        top: false,
+        bottom: true,
+        child: Scaffold(
+          backgroundColor: AppColor.whiteDark,
 
-        body: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
+          body: Stack(
+            children: [
+              RefreshIndicator(
+                color: AppColor.royalBlue,
+                onRefresh: () async {
+                  await hitProfileApi();
+                },
+                child: SingleChildScrollView(
+                  child: Column(
                     children: [
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.only(
-                          left: 20,
-                          right: 20,
-                          top: topPadding + 15,
-                          bottom: 40,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColor.royalBlue,
-                              AppColor.royalBlue.withOpacity(0.8),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(28),
-                            bottomRight: Radius.circular(28),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 40,
-                              backgroundColor: Colors.grey.shade300,
-                              backgroundImage:
-                                  (data?.profilePhoto != null &&
-                                      data!.profilePhoto.toString().isNotEmpty)
-                                  ? NetworkImage(data.profilePhoto.toString())
-                                  : null,
-                              child:
-                                  (data?.profilePhoto == null ||
-                                      data!.profilePhoto.toString().isEmpty)
-                                  ? const Icon(
-                                      Icons.person,
-                                      size: 70,
-                                      color: Colors.white,
-                                    )
-                                  : null,
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.only(
+                              left: 20,
+                              right: 20,
+                              top: topPadding + 15,
+                              bottom: 40,
                             ),
-
-                            const SizedBox(width: 18),
-
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColor.royalBlue,
+                                  AppColor.royalBlue.withOpacity(0.8),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(28),
+                                bottomRight: Radius.circular(28),
+                              ),
+                            ),
+                            child: Row(
                               children: [
-                                TextConst(
-                                  title: "Welcome back 👋",
-                                  size: 15,
-                                  color: Colors.white70,
+                                CircleAvatar(
+                                  radius: 40,
+                                  backgroundColor: Colors.grey.shade300,
+                                  backgroundImage:
+                                      (data?.profilePhoto != null &&
+                                          data!.profilePhoto.toString().isNotEmpty)
+                                      ? NetworkImage(data.profilePhoto.toString())
+                                      : null,
+                                  child:
+                                      (data?.profilePhoto == null ||
+                                          data!.profilePhoto.toString().isEmpty)
+                                      ? const Icon(
+                                          Icons.person,
+                                          size: 70,
+                                          color: Colors.white,
+                                        )
+                                      : null,
                                 ),
-                                SizedBox(height: 5),
-                                TextConst(
-                                  title:
-                                      "${driverProfileVm.driverProfileModel?.data?.firstName ?? ""} "
-                                      "${driverProfileVm.driverProfileModel?.data?.lastName ?? ""}",
-                                  size: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+
+                                const SizedBox(width: 18),
+
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    TextConst(
+                                      title: "Welcome back 👋",
+                                      size: 15,
+                                      color: Colors.white70,
+                                    ),
+                                    SizedBox(height: 5),
+                                    TextConst(
+                                      title:
+                                          "${driverProfileVm.driverProfileModel?.data?.firstName ?? ""} "
+                                          "${driverProfileVm.driverProfileModel?.data?.lastName ?? ""}",
+                                      size: 22,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ],
                                 ),
                               ],
+                            ),
+                          ),
+                          Positioned(
+                            right: 20,
+                            bottom: -25,
+                            child: _onlineSwitch(),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 45),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        child: Row(
+                          children: [
+                            _statsBox(
+                              "Rides",
+                              cabEarningVm.cabEarningModel?.data?.totalCompletedRide
+                                      .toString() ??
+                                  "0",
+                              Icons.local_taxi_rounded,
+                            ),
+
+                            const SizedBox(width: 12),
+                            _statsBox(
+                              "Earnings",
+                              "₹${cabEarningVm.cabEarningModel?.data?.totalEarning ?? "0"}",
+                              Icons.payments_rounded,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (context) =>
+                                        DailyWeeklyEarningReport(),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(width: 12),
+                            _statsBox(
+                              "Distance",
+                              "${cabEarningVm.cabEarningModel?.data?.totalDistance ?? "0"}km",
+                              Icons.route_rounded,
                             ),
                           ],
                         ),
                       ),
-                      Positioned(
-                        right: 20,
-                        bottom: -25,
-                        child: _onlineSwitch(),
+
+                      const SizedBox(height: 17),
+
+                      if (driverProfileVm.driverProfileModel?.data?.onlineStatus ==
+                          1) ...[
+                        _activeRideCard(),
+                      ],
+                      const SizedBox(height: 15),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextConst(
+                            title: "Quick Actions",
+                            size: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: GridView.count(
+                          crossAxisCount: 3,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          childAspectRatio: 0.82,
+                          children: [
+                            _actionItem(
+                              Icons.person,
+                              "Profile",
+                              onTap: () {
+                                print("tapped");
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (context) => DriverProfile(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _actionItem(
+                              Icons.account_balance_wallet,
+                              "Wallet Settlemant",
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (context) => WalletSettlement(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _actionItem(
+                              Icons.account_balance,
+                              "Add Bank",
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (context) => AddBank(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _actionItem(
+                              Icons.account_balance_outlined,
+                              "Bank Update Status",
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (context) => CabBanUpdateStatus(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _actionItem(
+                              Icons.local_taxi,
+                              "Ride History",
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+
+                                  CupertinoPageRoute(
+                                    builder: (context) => CabRideHistory(),
+                                  ),
+                                );
+                              },
+                            ),
+                            // _actionItem(Icons.settings_rounded, "Settings"),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
                     ],
                   ),
-
-                  const SizedBox(height: 45),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    child: Row(
-                      children: [
-                        _statsBox(
-                          "Rides",
-                          cabEarningVm.cabEarningModel?.data?.totalCompletedRide
-                                  .toString() ??
-                              "0",
-                          Icons.local_taxi_rounded,
-                        ),
-
-                        const SizedBox(width: 12),
-                        _statsBox(
-                          "Earnings",
-                          "₹${cabEarningVm.cabEarningModel?.data?.totalEarning ?? "0"}",
-                          Icons.payments_rounded,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              CupertinoPageRoute(
-                                builder: (context) =>
-                                    DailyWeeklyEarningReport(),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 12),
-                        _statsBox(
-                          "Distance",
-                          "${cabEarningVm.cabEarningModel?.data?.totalDistance ?? "0"}km",
-                          Icons.route_rounded,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 17),
-
-                  if (driverProfileVm.driverProfileModel?.data?.onlineStatus ==
-                      1) ...[
-                    _activeRideCard(),
-                  ],
-                  const SizedBox(height: 15),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextConst(
-                        title: "Quick Actions",
-                        size: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: GridView.count(
-                      crossAxisCount: 3,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      childAspectRatio: 0.82,
-                      children: [
-                        _actionItem(
-                          Icons.person,
-                          "Profile",
-                          onTap: () {
-                            print("tapped");
-                            Navigator.push(
-                              context,
-                              CupertinoPageRoute(
-                                builder: (context) => DriverProfile(),
-                              ),
-                            );
-                          },
-                        ),
-                        _actionItem(
-                          Icons.account_balance_wallet,
-                          "Wallet Settlemant",
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              CupertinoPageRoute(
-                                builder: (context) => WalletSettlement(),
-                              ),
-                            );
-                          },
-                        ),
-                        _actionItem(
-                          Icons.account_balance,
-                          "Add Bank",
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              CupertinoPageRoute(
-                                builder: (context) => AddBank(),
-                              ),
-                            );
-                          },
-                        ),
-                        _actionItem(
-                          Icons.account_balance_outlined,
-                          "Bank Update Status",
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              CupertinoPageRoute(
-                                builder: (context) => CabBanUpdateStatus(),
-                              ),
-                            );
-                          },
-                        ),
-                        _actionItem(
-                          Icons.local_taxi,
-                          "Ride History",
-                          onTap: () {
-                            Navigator.push(
-                              context,
-
-                              CupertinoPageRoute(
-                                builder: (context) => CabRideHistory(),
-                              ),
-                            );
-                          },
-                        ),
-                        // _actionItem(Icons.settings_rounded, "Settings"),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-                ],
+                ),
               ),
-            ),
-            if (driverOnlineVm.loading)
-              Container(
-                color: Colors.black54,
-                child: Center(
-                  child: Container(
-                    height: Sizes.screenHeight * 0.13,
-                    width: Sizes.screenWidth * 0.28,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          spreadRadius: 2,
+              if (driverOnlineVm.loading)
+                Container(
+                  color: Colors.black54,
+                  child: Center(
+                    child: Container(
+                      height: Sizes.screenHeight * 0.13,
+                      width: Sizes.screenWidth * 0.28,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: GradientCirPro(
+                          strokeWidth: 6,
+                          size: 70,
+                          gradient: AppColor.circularIndicator,
                         ),
-                      ],
-                    ),
-                    child: Center(
-                      child: GradientCirPro(
-                        strokeWidth: 6,
-                        size: 70,
-                        gradient: AppColor.circularIndicator,
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -224,7 +224,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
             backgroundColor: AppColor.white,
             appBar: ConstantAppbar(
               onBack: () => Navigator.pop(context),
-              onClose: () => Navigator.pop(context),
+              onClose: () =>  SystemNavigator.pop(),
             ),
 
           body: LayoutBuilder(

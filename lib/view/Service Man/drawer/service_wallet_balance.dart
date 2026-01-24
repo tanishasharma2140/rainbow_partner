@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Service Man/drawer/service_withdraw_request.dart';
 import 'package:rainbow_partner/view_model/service_man/service_withdraw_history_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
@@ -65,6 +66,18 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
         "${minute.toString().padLeft(2, '0')} $amPm";
   }
 
+  Future<void> _refreshData() async {
+    final historyVm = Provider.of<ServiceWithdrawHistoryViewModel>(context, listen: false);
+
+    await historyVm.serviceWithdrawHistoryApi("", context);
+    final vm = Provider.of<ServicemanProfileViewModel>(context, listen: false);
+
+    final position = await LocationUtils.getLocation();
+    final lat = position.latitude.toString();
+    final lng = position.longitude.toString();
+    vm.servicemanProfileApi(lat, lng, context);
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -103,19 +116,24 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
           ),
         ),
 
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              buildBalanceCard(profile),
-              const SizedBox(height: 25),
-              buildTabs(),
-              const SizedBox(height: 20),
-              filteredHistory.isEmpty
-                  ? buildEmptyHistory()
-                  : buildHistoryList(filteredHistory),
-            ],
+        body: RefreshIndicator(
+          color: AppColor.royalBlue,
+          onRefresh: _refreshData,
+          backgroundColor: AppColor.royalBlue,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildBalanceCard(profile),
+                const SizedBox(height: 25),
+                buildTabs(),
+                const SizedBox(height: 20),
+                filteredHistory.isEmpty
+                    ? buildEmptyHistory()
+                    : buildHistoryList(filteredHistory),
+              ],
+            ),
           ),
         ),
       ),

@@ -5,7 +5,6 @@ import 'package:rainbow_partner/res/custom_loader.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/service/splash_service.dart';
-import 'package:rainbow_partner/utils/routes/routes_name.dart';
 
 import '../res/app_fonts.dart';
 

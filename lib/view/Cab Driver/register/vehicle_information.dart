@@ -68,8 +68,9 @@ class _VehicleInformationState extends State<VehicleInformation> {
     });
   }
 
-  final RegExp vehicleNumberRegex =
-  RegExp(r'^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$');
+  final RegExp vehicleNumberRegex = RegExp(
+      r'^([A-Z]{2}\s[0-9]{2}\s[A-Z]{2}\s[0-9]{4})$|^([A-Z]{2}\s[0-9]{2}\s[0-9]{4})$'
+  );
   String? vehicleNumberError;
 
   bool _validateVehicleInfo() {
@@ -470,7 +471,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
 
             appBar: ConstantAppbar(
               onBack: () => Navigator.pop(context),
-              onClose: () => Navigator.pop(context),
+              onClose: () =>  SystemNavigator.pop(),
             ),
 
             body: Padding(
@@ -684,11 +685,9 @@ class _VehicleInformationState extends State<VehicleInformation> {
         /// ⌨️ INPUT FORMAT ONLY FOR VEHICLE NUMBER
         inputFormatters: isVehicleNumber
             ? [
-          FilteringTextInputFormatter.allow(
-            RegExp(r'[A-Za-z0-9]'),
-          ),
+          FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
           LengthLimitingTextInputFormatter(10),
-          UpperCaseTextFormatter(),
+          VehicleNumberFormatter(),
         ]
             : null,
 
@@ -747,4 +746,42 @@ class _VehicleInformationState extends State<VehicleInformation> {
 
 
 
+}
+class VehicleNumberFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue,
+      TextEditingValue newValue,
+      ) {
+    String text = newValue.text.toUpperCase().replaceAll(' ', '');
+
+    // max: AA00AA0000 (10 chars)
+    if (text.length > 10) {
+      text = text.substring(0, 10);
+    }
+
+    // NEW FORMAT → AA 00 AA 0000
+    if (text.length >= 7 &&
+        RegExp(r'^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]').hasMatch(text)) {
+      String p1 = text.substring(0, 2);
+      String p2 = text.substring(2, 4);
+      String p3 = text.substring(4, 6);
+      String p4 = text.substring(6);
+      text = "$p1 $p2 $p3 $p4";
+    }
+
+    // OLD FORMAT → AA 00 0000
+    else if (text.length >= 6 &&
+        RegExp(r'^[A-Z]{2}[0-9]{2}[0-9]{4}$').hasMatch(text)) {
+      String p1 = text.substring(0, 2);
+      String p2 = text.substring(2, 4);
+      String p3 = text.substring(4, 8);
+      text = "$p1 $p2 $p3";
+    }
+
+    return newValue.copyWith(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
 }

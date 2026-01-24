@@ -1,21 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/auth/splash.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
-import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/bank_update_request.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/edit_serviceman_profile.dart';
-import 'package:rainbow_partner/view/Service%20Man/drawer/help_desk.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_add_bank.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_due_wallet.dart';
-import 'package:rainbow_partner/view/Service%20Man/drawer/service_help_support.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_privacy_policy.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_wallet_balance.dart';
-import 'package:rainbow_partner/view_model/service_man/service_online_status_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
@@ -28,21 +23,6 @@ class ServiceCustomDrawer extends StatefulWidget {
 
 class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final vm = Provider.of<ServicemanProfileViewModel>(context, listen: false);
-      final position = await LocationUtils.getLocation(
-      );
-
-      final lat = position.latitude.toString();
-      final lng = position.longitude.toString();
-
-    });
-  }
 
 
 
@@ -288,23 +268,23 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               },
             ),
 
-            _drawerItem(
-              icon: Icons.support_agent,
-              title: "Help Desk",
-              onTap: () {
-                Navigator.push(context,
-                    CupertinoPageRoute(builder: (_) => HelpDesk()));
-              },
-            ),
+            // _drawerItem(
+            //   icon: Icons.support_agent,
+            //   title: "Help Desk",
+            //   onTap: () {
+            //     Navigator.push(context,
+            //         CupertinoPageRoute(builder: (_) => HelpDesk()));
+            //   },
+            // ),
 
-            _drawerItem(
-              icon: Icons.help,
-              title: "Help & Support",
-              onTap: () {
-                Navigator.push(context,
-                    CupertinoPageRoute(builder: (_) => ServiceHelpSupport()));
-              },
-            ),
+            // _drawerItem(
+            //   icon: Icons.help,
+            //   title: "Help & Support",
+            //   onTap: () {
+            //     Navigator.push(context,
+            //         CupertinoPageRoute(builder: (_) => ServiceHelpSupport()));
+            //   },
+            // ),
 
             _drawerItem(
               icon: Icons.privacy_tip_outlined,

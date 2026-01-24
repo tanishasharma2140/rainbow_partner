@@ -275,7 +275,7 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
 
             appBar: ConstantAppbar(
               onBack: () => Navigator.pop(context),
-              onClose: () => Navigator.pop(context),
+              onClose: () =>  SystemNavigator.pop(),
             ),
 
             body: Padding(

@@ -5,6 +5,7 @@ import 'package:rainbow_partner/model/driver_transaction_model.dart';
 import 'package:rainbow_partner/res/animated_gradient_border.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
+import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -16,6 +17,8 @@ import 'package:rainbow_partner/view_model/cabdriver/driver_transaction_view_mod
 import 'package:rainbow_partner/view_model/cabdriver/driver_withdraw_request_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/payment_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_get_bank_detail_view_model.dart';
+
+import 'add_bank.dart' show AddBank;
 
 class WalletSettlement extends StatefulWidget {
   const WalletSettlement({super.key});
@@ -40,6 +43,22 @@ class _WalletSettlementState extends State<WalletSettlement> {
 
     });
   }
+
+  Future<void> _refreshWalletData() async {
+    final profileVm = Provider.of<DriverProfileViewModel>(context, listen: false);
+    final transactionVm = Provider.of<DriverTransactionViewModel>(context, listen: false);
+    final bankVm = Provider.of<ServiceGetBankDetailViewModel>(context, listen: false);
+
+    await profileVm.driverProfileApi(
+      (await LocationUtils.getLocation()).latitude.toString(),
+      (await LocationUtils.getLocation()).longitude.toString(),
+      context,
+    );
+
+    await transactionVm.driverTransactionApi(context);
+    await bankVm.serviceBankDetailApi(2, context);
+  }
+
 
 
   // Static transaction data
@@ -76,18 +95,23 @@ class _WalletSettlementState extends State<WalletSettlement> {
             onPressed: () => Navigator.pop(context),
           ),
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(
-                height: Sizes.screenHeight * 0.02,
-              ),
-              _buildBalanceCard(),
-              SizedBox(height: Sizes.screenHeight * 0.02),
-              _buildQuickActions(),
-              SizedBox(height: 20),
-              _buildTransactionHistory(),
-            ],
+        body: RefreshIndicator(
+          color: AppColor.royalBlue,
+          backgroundColor: AppColor.white,
+          onRefresh: _refreshWalletData,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(
+                  height: Sizes.screenHeight * 0.02,
+                ),
+                _buildBalanceCard(),
+                SizedBox(height: Sizes.screenHeight * 0.02),
+                _buildQuickActions(),
+                SizedBox(height: 20),
+                _buildTransactionHistory(),
+              ],
+            ),
           ),
         ),
       ),
@@ -741,7 +765,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                       keyboardType: TextInputType.number,
                     ),
                     SizedBox(height: 16),
-                    if (!hasBank)
+                    if (!hasBank) ...[
                       Padding(
                         padding: const EdgeInsets.all(12),
                         child: Text(
@@ -749,7 +773,22 @@ class _WalletSettlementState extends State<WalletSettlement> {
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.red, fontSize: 13),
                         ),
-                      )
+                      ),
+                      SizedBox(height: 10),
+                      CustomButton(
+                        bgColor: AppColor.royalBlue,
+                        title: "Add Bank",
+                        onTap: () {
+                          Navigator.pop(context);  // Close dialog first
+                          Future.delayed(const Duration(milliseconds: 150), () {
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(builder: (context) => AddBank()),
+                            );
+                          });
+                        },
+                      ),
+                    ]
                     else
                       Container(
                         padding: const EdgeInsets.all(12),
