@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/res/global_ride.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
@@ -64,11 +65,21 @@ import 'firebase_options.dart';
 String? fcmToken;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   // SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   // 🔹 Get FCM Token
+
+  FirebaseMessaging.onBackgroundMessage(
+    firebaseMessagingBackgroundHandler,
+  );
+
+
+
+
   fcmToken = await FirebaseMessaging.instance.getToken();
   if (kDebugMode) {
     print("✅ FCM Token: $fcmToken");
@@ -83,7 +94,13 @@ Future<void> main() async {
   //
 
   runApp(const MyApp());
+
 }
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  debugPrint("📦 Background isolate received: ${message.data}");
+}
+
 
 double topPadding = 0.0;
 double bottomPadding = 0.0;
@@ -97,6 +114,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final notificationService = NotificationService(navigatorKey: navigatorKey);
+
 
   @override
   void initState() {

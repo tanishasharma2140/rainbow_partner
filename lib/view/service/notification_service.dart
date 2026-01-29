@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:rainbow_partner/res/global_ride.dart' show GlobalRideRinger;
 import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
 
 class NotificationService {
@@ -94,20 +95,31 @@ class NotificationService {
 
   // firebase init
   void firebaseInit(BuildContext context) {
-    FirebaseMessaging.onMessage.listen((massage) {
-      RemoteNotification? notification = massage.notification;
-      AndroidNotification? android = massage.notification!.android;
-      if (kDebugMode) {
-        print("Notification title:${notification!.title}");
-        print("Notification body:${notification.body}");
+    FirebaseMessaging.onMessage.listen((message) {
+      final data = message.data;
+      final type = data['type']?.toString().toUpperCase();
+      final orderId = data['order_id']?.toString() ?? '';
+
+      print("📩 FCM DATA => $data");
+      print("📌 TYPE => $type");
+      print("📌 ORDER ID => $orderId");
+
+      // ✅ FOREGROUND + BACKGROUND (APP MINIMIZED)
+      if (type == 'NEW_RIDE' || type == 'ACTIVE_RIDE') {
+        GlobalRideRinger().play(orderId: orderId);
+        print("🔊 RINGER PLAYING (APP ALIVE)");
       }
-      if (Platform.isAndroid) {
-        initLocalNotification(context, massage);
-        // handleMassage(context, massage);
-        showNotification(massage);
+
+      // Notification (silent)
+      if (Platform.isAndroid && message.notification != null) {
+        initLocalNotification(context, message);
+        showNotification(message);
       }
     });
   }
+
+
+
 
   // function to show notification
   Future<void> showNotification(RemoteMessage massage) async {
