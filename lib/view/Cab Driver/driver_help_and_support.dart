@@ -6,14 +6,14 @@ import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view_model/help_support_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ServiceHelpSupport extends StatefulWidget {
-  const ServiceHelpSupport({super.key});
+class DriverHelpAndSupport extends StatefulWidget {
+  const DriverHelpAndSupport({super.key});
 
   @override
-  State<ServiceHelpSupport> createState() => _ServiceHelpSupportState();
+  State<DriverHelpAndSupport> createState() => _DriverHelpAndSupportState();
 }
 
-class _ServiceHelpSupportState extends State<ServiceHelpSupport> {
+class _DriverHelpAndSupportState extends State<DriverHelpAndSupport> {
   @override
   void initState() {
     super.initState();

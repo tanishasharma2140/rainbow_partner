@@ -9,8 +9,11 @@ import 'package:rainbow_partner/view/Service%20Man/drawer/bank_update_request.da
 import 'package:rainbow_partner/view/Service%20Man/drawer/edit_serviceman_profile.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_add_bank.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_due_wallet.dart';
+import 'package:rainbow_partner/view/Service%20Man/drawer/service_help_support.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_privacy_policy.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_wallet_balance.dart';
+import 'package:rainbow_partner/view/Service%20Man/partner_notification.dart';
+import 'package:rainbow_partner/view/Service%20Man/service_terms_and_condition.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
@@ -22,8 +25,6 @@ class ServiceCustomDrawer extends StatefulWidget {
 }
 
 class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
-
-
 
 
   void _showLogoutDialog(BuildContext context) {
@@ -260,7 +261,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
             ),
 
             _drawerItem(
-              icon: Icons.food_bank,
+              icon: Icons.account_box_outlined,
               title: "Bank Update Request",
               onTap: () {
                 Navigator.push(context,
@@ -268,23 +269,23 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               },
             ),
 
-            // _drawerItem(
-            //   icon: Icons.support_agent,
-            //   title: "Help Desk",
-            //   onTap: () {
-            //     Navigator.push(context,
-            //         CupertinoPageRoute(builder: (_) => HelpDesk()));
-            //   },
-            // ),
+            _drawerItem(
+              icon: Icons.notification_important,
+              title: "Notification",
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => PartnerNotification()));
+              },
+            ),
 
-            // _drawerItem(
-            //   icon: Icons.help,
-            //   title: "Help & Support",
-            //   onTap: () {
-            //     Navigator.push(context,
-            //         CupertinoPageRoute(builder: (_) => ServiceHelpSupport()));
-            //   },
-            // ),
+            _drawerItem(
+              icon: Icons.support_agent,
+              title: "Help & Support",
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceHelpSupport()));
+              },
+            ),
 
             _drawerItem(
               icon: Icons.privacy_tip_outlined,
@@ -292,6 +293,14 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServicePrivacyPolicy()));
+              },
+            ),
+            _drawerItem(
+              icon: Icons.privacy_tip_outlined,
+              title: "Term & Condition",
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceTermsAndCondition()));
               },
             ),
             _drawerItem(

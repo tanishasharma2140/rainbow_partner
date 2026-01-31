@@ -311,7 +311,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const TextConst(
-          title: "Designation Certificates / Affidavits",
+          title: "Designation Certificates / Affidavits / CV",
           size: 15,
           fontWeight: FontWeight.w600,
         ),

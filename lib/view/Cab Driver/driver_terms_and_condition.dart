@@ -6,20 +6,20 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/no_data_found.dart';
 import 'package:rainbow_partner/view_model/policy_view_model.dart';
 
-class ServicePrivacyPolicy extends StatefulWidget {
-  const ServicePrivacyPolicy({super.key});
+class DriverTermsCondition extends StatefulWidget {
+  const DriverTermsCondition({super.key});
 
   @override
-  State<ServicePrivacyPolicy> createState() => _ServicePrivacyPolicyState();
+  State<DriverTermsCondition> createState() => _DriverTermsConditionState();
 }
 
-class _ServicePrivacyPolicyState extends State<ServicePrivacyPolicy> {
+class _DriverTermsConditionState extends State<DriverTermsCondition> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<PolicyViewModel>(context, listen: false)
-          .policyApi("1");
+          .policyApi("2");
     });
   }
 
@@ -37,7 +37,7 @@ class _ServicePrivacyPolicyState extends State<ServicePrivacyPolicy> {
           elevation: 0,
           centerTitle: true,
           title: const Text(
-            "Privacy Policy",
+            "Terms and Condition",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,

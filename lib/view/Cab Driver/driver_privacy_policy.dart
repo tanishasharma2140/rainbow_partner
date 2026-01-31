@@ -6,14 +6,14 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/no_data_found.dart';
 import 'package:rainbow_partner/view_model/policy_view_model.dart';
 
-class ServicePrivacyPolicy extends StatefulWidget {
-  const ServicePrivacyPolicy({super.key});
+class DriverPrivacyPolicy extends StatefulWidget {
+  const DriverPrivacyPolicy({super.key});
 
   @override
-  State<ServicePrivacyPolicy> createState() => _ServicePrivacyPolicyState();
+  State<DriverPrivacyPolicy> createState() => _DriverPrivacyPolicyState();
 }
 
-class _ServicePrivacyPolicyState extends State<ServicePrivacyPolicy> {
+class _DriverPrivacyPolicyState extends State<DriverPrivacyPolicy> {
   @override
   void initState() {
     super.initState();

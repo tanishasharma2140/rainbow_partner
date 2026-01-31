@@ -31,10 +31,13 @@ import 'package:rainbow_partner/view_model/cabdriver/driver_register_two_view_mo
 import 'package:rainbow_partner/view_model/cabdriver/driver_transaction_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_withdraw_history_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_withdraw_request_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/partner_notification_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_colors_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_model_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_view_model.dart';
 import 'package:rainbow_partner/view_model/device_view_model.dart';
+import 'package:rainbow_partner/view_model/help_support_view_model.dart';
+import 'package:rainbow_partner/view_model/policy_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/accept_order_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/add_bank_detail_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/call_back_view_model.dart';
@@ -193,6 +196,10 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> DriverWithdrawRequestViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverWithdrawHistoryViewModel()),
           ChangeNotifierProvider(create: (context)=> AcceptLaterRideViewModel()),
+          ChangeNotifierProvider(create: (context)=> PartnerNotificationViewModel()),
+          ChangeNotifierProvider(create: (context)=> PolicyViewModel()),
+          ChangeNotifierProvider(create: (context)=> HelpSupportViewModel()),
+
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

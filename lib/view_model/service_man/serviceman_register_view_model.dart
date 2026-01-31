@@ -21,6 +21,7 @@ class ServicemanRegisterViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+
   Future<void> servicemanRegisterApi({
     required String firstName,
     required String lastName,

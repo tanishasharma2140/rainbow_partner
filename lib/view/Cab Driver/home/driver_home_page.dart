@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,7 @@ import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/action/driver_profile.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/driver_setting.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/driver_accepted_scree.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/ride%20history/cab_ride_history.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/wallet/add_bank.dart';
@@ -402,7 +404,11 @@ class _DriverHomePageState extends State<DriverHomePage> {
                                 );
                               },
                             ),
-                            // _actionItem(Icons.settings_rounded, "Settings"),
+                            _actionItem(Icons.settings_rounded, "Settings",
+                            onTap: (){
+                              Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverSetting()));
+                            }
+                            ),
                           ],
                         ),
                       ),
