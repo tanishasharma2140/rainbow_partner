@@ -15,6 +15,7 @@ class Assets {
   static const String assetsHomeSanitizing = 'assets/home_sanitizing.png';
   static const String assetsIndia = 'assets/india.png';
   static const String assetsLocationOin = 'assets/location_oin.png';
+  static const String assetsLostnetwork = 'assets/lostnetwork.gif';
   static const String assetsMotorCycle = 'assets/motor_cycle.png';
   static const String assetsNoNotification = 'assets/no_notification.png';
   static const String assetsNodatafound = 'assets/nodatafound.gif';

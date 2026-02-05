@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/global_ride.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
+import 'package:rainbow_partner/service/internet_checker_service.dart';
 import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
@@ -116,6 +117,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final InternetCheckerService _internetCheckerService =
+  InternetCheckerService();
   final notificationService = NotificationService(navigatorKey: navigatorKey);
 
 
@@ -125,6 +128,9 @@ class _MyAppState extends State<MyApp> {
     notificationService.requestedNotificationPermission();
     notificationService.firebaseInit(context);
     notificationService.setupInteractMassage(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _internetCheckerService.startMonitoring(navigatorKey.currentContext!);
+    });
   }
 
 
@@ -202,6 +208,7 @@ class _MyAppState extends State<MyApp> {
 
         ],
         child: MaterialApp(
+          navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
           initialRoute: RoutesName.splashScreen,
           onGenerateRoute: (settings){
