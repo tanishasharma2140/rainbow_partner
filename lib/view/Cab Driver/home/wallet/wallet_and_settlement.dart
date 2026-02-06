@@ -387,6 +387,8 @@ class _WalletSettlementState extends State<WalletSettlement> {
 
                             if (sectionStatus == 2)
                               _buildTransactionText('Amount', payment?.amount, Colors.green),
+                              SizedBox(height: 5,),
+                              _buildTransactionText('Platform Fee', payment?.platformFee, Colors.orange),
 
                             if (sectionStatus == 3) ...[
                               _buildTransactionText('Amount', payment?.amount, Colors.green),

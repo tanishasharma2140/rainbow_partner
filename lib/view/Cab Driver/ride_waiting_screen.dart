@@ -53,7 +53,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
       /// FIRST CALL
       deleteOrder.deleteExpiredOrderApi().then((success) {
         if (success) {
-          _stopRinger();
+          // _stopRinger();
         }
       });
 
@@ -61,7 +61,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
       _deleteOrderTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
         deleteOrder.deleteExpiredOrderApi().then((success) {
           if (success) {
-            _stopRinger();
+            // _stopRinger();
           }
         });
       });
@@ -74,31 +74,31 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
   }
 
   // 🔊 PLAY RINGER (LOOP CONTINUOUSLY)
-  Future<void> _playRinger() async {
-    if (_isRingerPlaying) return;
-
-    _isRingerPlaying = true;
-
-    try {
-      // Play in loop mode
-      await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-      await _audioPlayer.play(AssetSource('driver_ring.mp3'));
-
-      debugPrint("🔊 Ringer Started (Loop Mode)");
-    } catch (e) {
-      debugPrint("🔊 Ringer Error: $e");
-      _isRingerPlaying = false;
-    }
-  }
+  // Future<void> _playRinger() async {
+  //   if (_isRingerPlaying) return;
+  //
+  //   _isRingerPlaying = true;
+  //
+  //   try {
+  //     // Play in loop mode
+  //     await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+  //     await _audioPlayer.play(AssetSource('driver_ring.mp3'));
+  //
+  //     debugPrint("🔊 Ringer Started (Loop Mode)");
+  //   } catch (e) {
+  //     debugPrint("🔊 Ringer Error: $e");
+  //     _isRingerPlaying = false;
+  //   }
+  // }
 
   // 🔇 STOP RINGER
-  Future<void> _stopRinger() async {
-    if (!_isRingerPlaying) return;
-
-    await _audioPlayer.stop();
-    _isRingerPlaying = false;
-    debugPrint("🔇 Ringer Stopped");
-  }
+  // Future<void> _stopRinger() async {
+  //   if (!_isRingerPlaying) return;
+  //
+  //   await _audioPlayer.stop();
+  //   _isRingerPlaying = false;
+  //   debugPrint("🔇 Ringer Stopped");
+  // }
 
   Future<BitmapDescriptor> _resizeMarker(String assetPath, int width) async {
     final ByteData data = await rootBundle.load(assetPath);
@@ -176,7 +176,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
     if (_currentLatLng == null) return;
 
     // 🔇 STOP RINGER WHEN NAVIGATING TO ACCEPTED RIDE
-    _stopRinger();
+    // _stopRinger();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Navigator.pushReplacement(
@@ -286,7 +286,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                       if (!_playedOrderIds.contains(orderId)) {
                         debugPrint("✅ NEW ORDER DETECTED! Playing ringer...");
                         _playedOrderIds.add(orderId);
-                        _playRinger();
+                        // _playRinger();
                         break; // Only play once for first new order
                       } else {
                         debugPrint("⏭️ Order already played: $orderId");
@@ -303,7 +303,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                       "🔇 No rides, stopping ringer & clearing played IDs",
                     );
                     // 🔇 STOP RINGER IF NO RIDES
-                    _stopRinger();
+                    // _stopRinger();
                     _playedOrderIds.clear();
                     return _waitingUI();
                   }
@@ -585,7 +585,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
               InkWell(
                 onTap: () {
                   // 🔇 STOP RINGER WHEN IGNORING
-                  _stopRinger();
+                  // _stopRinger();
                   driverIgnoreVm.driverIgnoreOrderApi(orderId, context);
                 },
                 child: Container(
@@ -674,7 +674,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                   bgColor: AppColor.royalBlue,
                   onTap: () {
                     // 🔇 STOP RINGER WHEN ACCEPTING
-                    _stopRinger();
+                    // _stopRinger();
 
                     acceptLaterRideVm.acceptLaterRideApi(orderId, data['user_id'],  _currentLatLng!.latitude,
                         _currentLatLng!.longitude, context);
@@ -744,7 +744,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
               InkWell(
                 onTap: () {
                   // 🔇 STOP RINGER WHEN IGNORING
-                  _stopRinger();
+                  // _stopRinger();
                   driverIgnoreVm.driverIgnoreOrderApi(orderId, context);
                 },
                 child: Container(
@@ -923,7 +923,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                     }
 
                     // 🔇 STOP RINGER WHEN ACCEPTING
-                    _stopRinger();
+                    // _stopRinger();
 
                     driverOfferVm.driverOfferApi(
                       userIdOrder,

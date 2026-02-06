@@ -1,5 +1,5 @@
 package com.foundercodes.rainbow_partner
-
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.media.AudioAttributes
@@ -14,11 +14,30 @@ class MainActivity : FlutterActivity() {
         super.onCreate(savedInstanceState)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createBookingChannel()
+            createServiceChannel()   // 🔹 Background service
+            recreateBookingChannel() // 🔔 Incoming ride
         }
     }
 
-    private fun createBookingChannel() {
+    // 🔹 FOREGROUND SERVICE CHANNEL (LOW importance)
+    private fun createServiceChannel() {
+        val channel = NotificationChannel(
+            "SERVICE_CHANNEL",
+            "Background Service",
+            NotificationManager.IMPORTANCE_LOW
+        )
+
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(channel)
+    }
+
+    // 🔔 RIDE / CALL CHANNEL (HIGH importance, sticky)
+    private fun recreateBookingChannel() {
+        val manager = getSystemService(NotificationManager::class.java)
+
+        // 🔥 IMPORTANT: delete old channel so rules refresh
+        manager.deleteNotificationChannel("BOOKING_CHANNEL")
+
         val soundUri = Uri.parse(
             "android.resource://$packageName/raw/booking_ring"
         )
@@ -28,6 +47,10 @@ class MainActivity : FlutterActivity() {
             "Booking Alerts",
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
+            description = "Incoming ride requests"
+            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            setShowBadge(true)
+
             setSound(
                 soundUri,
                 AudioAttributes.Builder()
@@ -36,7 +59,6 @@ class MainActivity : FlutterActivity() {
             )
         }
 
-        val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(channel)
     }
 }

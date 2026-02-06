@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/global_ride.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
+import 'package:rainbow_partner/service/background_service.dart';
 import 'package:rainbow_partner/service/internet_checker_service.dart';
 import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
@@ -77,11 +78,6 @@ Future<void> main() async {
   // SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   // 🔹 Get FCM Token
 
-  FirebaseMessaging.onBackgroundMessage(
-    firebaseMessagingBackgroundHandler,
-  );
-
-
 
 
   fcmToken = await FirebaseMessaging.instance.getToken();
@@ -100,10 +96,6 @@ Future<void> main() async {
   runApp(const MyApp());
 
 }
-@pragma('vm:entry-point')
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint("📦 Background isolate received: ${message.data}");
-}
 
 
 double topPadding = 0.0;
@@ -121,6 +113,23 @@ class _MyAppState extends State<MyApp> {
   InternetCheckerService();
   final notificationService = NotificationService(navigatorKey: navigatorKey);
 
+  Future<void> _startSocket() async {
+    final userViewModel = UserViewModel();
+
+    String? driverId = await userViewModel.getUser();
+
+    if (driverId == null || driverId == 0) {
+      debugPrint("❌ Driver ID not found, socket not started");
+      return;
+    }
+
+    debugPrint("✅ Starting socket with driverId: $driverId");
+
+    // Background service start
+    initializeBackgroundService();
+
+  }
+
 
   @override
   void initState() {
@@ -130,6 +139,7 @@ class _MyAppState extends State<MyApp> {
     notificationService.setupInteractMassage(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _internetCheckerService.startMonitoring(navigatorKey.currentContext!);
+      _startSocket();
     });
   }
 
