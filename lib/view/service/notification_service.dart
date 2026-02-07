@@ -279,6 +279,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/driver_notification.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/ride_waiting_screen.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
 
 class NotificationService {
@@ -369,18 +371,26 @@ class NotificationService {
   void firebaseInit(BuildContext context) {
     FirebaseMessaging.onMessage.listen((massage) {
       RemoteNotification? notification = massage.notification;
-      AndroidNotification? android = massage.notification!.android;
+
       if (kDebugMode) {
-        print("Notification title:${notification!.title}");
-        print("Notification body:${notification.body}");
+        print("🔔 Notification title: ${notification?.title}");
+        print("🔔 Notification body: ${notification?.body}");
+
+        // 🔥 THIS IS IMPORTANT
+        FirebaseMessaging.onMessage.listen((massage) {
+          print("📦 DATA PAYLOAD: ${massage.data}");
+          print("👉 TYPE: ${massage.data['type']}");
+          print("👉 ROLE: ${massage.data['role']}");
+        });
       }
+
       if (Platform.isAndroid) {
         initLocalNotification(context, massage);
-        // handleMassage(context, massage);
         showNotification(massage);
       }
     });
   }
+
 
   // function to show notification
   Future<void> showNotification(RemoteMessage massage) async {
@@ -447,11 +457,64 @@ class NotificationService {
     });
   }
 
-  Future<void> handleMassage(RemoteMessage massage) async {
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(
-        builder: (context) => HandymanDashboard(),
-      ),
-    );
+  Future<void> handleMassage(RemoteMessage message) async {
+    final data = message.data;
+
+    final String type = data['type'] ?? '';
+    final String role = data['role'] ?? '';
+
+    debugPrint("🧭 HANDLE NAVIGATION");
+    debugPrint("👉 TYPE = $type");
+    debugPrint("👉 ROLE = $role");
+
+    // 🔐 Safety check
+    if (navigatorKey.currentState == null) return;
+
+    /* ================= DRIVER ================= */
+    if (role == 'driver') {
+      if (type == 'NEW_RIDE') {
+        navigatorKey.currentState!.push(
+          MaterialPageRoute(
+            builder: (_) => RideWaitingScreen(),
+          ),
+        );
+        return;
+      }
+      if (type == 'general') {
+        navigatorKey.currentState!.push(
+          MaterialPageRoute(
+            builder: (_) => DriverNotification(),
+          ),
+        );
+        return;
+      }
+
+      // // general / notice / wallet etc
+      // navigatorKey.currentState!.push(
+      //   MaterialPageRoute(
+      //     builder: (_) => DriverDashboard(), // if you have
+      //   ),
+      // );
+      // return;
+    }
+
+    /* ================= SERVICEMAN ================= */
+    if (role == 'serviceman') {
+      navigatorKey.currentState!.push(
+        MaterialPageRoute(
+          builder: (_) => HandymanDashboard(),
+        ),
+      );
+      return;
+    }
+
+
+    /* ================= FALLBACK ================= */
+    // navigatorKey.currentState!.push(
+    //   MaterialPageRoute(
+    //     builder: (_) => HandymanDashboard(),
+    //   ),
+    // );
   }
-}
+
+  }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -5,12 +6,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:rainbow_partner/res/global_ride.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/service/background_service.dart';
 import 'package:rainbow_partner/service/internet_checker_service.dart';
+import 'package:rainbow_partner/service/ride_notification_helper.dart';
 import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/ride_waiting_screen.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/accept_later_ride_view_model.dart';
@@ -69,16 +71,38 @@ import 'firebase_options.dart';
 
 String? fcmToken;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+const MethodChannel nativeChannel =
+MethodChannel('rainbow_partner/native_callback');
+
+
+@pragma('vm:entry-point')
+Future<void> handleNativeCallback(MethodCall call) async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  switch (call.method) {
+    case 'onRideEvent':
+      final Map<String, dynamic> data =
+      Map<String, dynamic>.from(call.arguments);
+
+      debugPrint("🚖 Ride Event from Native: $data");
+
+      await RideNotificationHelper.showIncomingRide(data);
+      break;
+
+    default:
+      debugPrint("⚠️ Unknown native callback");
+  }
+}
+
 
 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  // 🔹 Get FCM Token
 
-
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   fcmToken = await FirebaseMessaging.instance.getToken();
   if (kDebugMode) {
@@ -90,12 +114,11 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  //
+  nativeChannel.setMethodCallHandler(handleNativeCallback);
 
   runApp(const MyApp());
-
 }
+
 
 
 double topPadding = 0.0;
@@ -129,11 +152,57 @@ class _MyAppState extends State<MyApp> {
     initializeBackgroundService();
 
   }
-
+  late final StreamSubscription rideActionSub;
 
   @override
   void initState() {
     super.initState();
+
+    RideNotificationHelper.init();
+    rideActionSub = RideNotificationHelper.actionStream.listen((action) async {
+      if (action.type == ActionType.accept) {
+        print("🚕 ACCEPT tapped");
+        print("📦 Booking data: ${action.bookingData}");
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (context) => RideWaitingScreen()),
+        );
+
+        // TODO later:
+        // acceptRideApi(...)
+      }
+
+      if (action.type == ActionType.reject) {
+        print("❌ REJECT tapped");
+        print("📦 Booking data: ${action.bookingData}");
+
+        final orderId = action.bookingData['order_id'];
+
+        if (orderId == null) {
+          print("❌ Order ID missing");
+          return;
+        }
+
+        // 🔥 CALL IGNORE API
+        final context = navigatorKey.currentContext;
+
+        if (context == null) {
+          print("❌ Context not available");
+          return;
+        }
+
+        final ignoreVm =
+        Provider.of<DriverIgnoreOrderViewModel>(context, listen: false);
+
+        await ignoreVm.driverIgnoreOrderApi(
+          orderId,
+          context,
+        );
+
+        print("✅ IGNORE API CALLED FOR ORDER: $orderId");
+      }
+    });
+
+
     notificationService.requestedNotificationPermission();
     notificationService.firebaseInit(context);
     notificationService.setupInteractMassage(context);
@@ -141,6 +210,12 @@ class _MyAppState extends State<MyApp> {
       _internetCheckerService.startMonitoring(navigatorKey.currentContext!);
       _startSocket();
     });
+  }
+
+  @override
+  void dispose() {
+    rideActionSub.cancel();
+    super.dispose();
   }
 
 
