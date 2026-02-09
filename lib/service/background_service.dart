@@ -1,7 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:rainbow_partner/service/driver_socket_service.dart';
 import 'package:rainbow_partner/service/ride_notification_helper.dart';
 import 'package:rainbow_partner/service/ringtone_helper.dart';
+import 'package:rainbow_partner/service/serviceman_notification_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'socket_service.dart';
 
@@ -70,11 +72,101 @@ void backgroundServiceOnStart(ServiceInstance service) async {
   );
 }
 
-/// 🔥 Service initializer
-void initializeBackgroundService() {
+@pragma('vm:entry-point')
+void servicemanBackgroundOnStart(ServiceInstance service) async {
+  print("🚀🚀🚀 Serviceman BACKGROUND SERVICE STARTED");
+
+  await ServicemanNotificationHelper.init();
+  print("✅ ServicemanNotificationHelper initialized");
+
+  service.on('STOP_RINGTONE').listen((_) {
+    print("🛑 BG: STOP_RINGTONE received");
+    RingtoneHelper().stop();
+  });
+
+  final prefs = await SharedPreferences.getInstance();
+  final int servicemanId =
+      int.tryParse(prefs.getString('serviceman_id') ?? '') ?? 0;
+
+  print("🆔 BG: servicemanId from prefs = $servicemanId");
+
+  if (servicemanId == 0) {
+    print("❌ BG: Serviceman ID missing → stopping service");
+    service.stopSelf();
+    return;
+  }
+
+  ServicemanSocketService().connect(
+    baseUrl: "https://admin.rainbowsenterprises.com",
+    servicemanId: servicemanId,
+
+    onNewOrder: (orderData) async {
+      print("🎯 BG CALLBACK: onNewOrder");
+      print("📦 BG ORDER DATA = $orderData");
+
+      if (!RingtoneHelper().isPlaying) {
+        print("🔊 BG: Starting ringtone");
+        RingtoneHelper().start();
+      }
+
+      print("📢 BG: Showing ServicemanNotification");
+      await ServicemanNotificationHelper
+          .showIncomingServiceOrder(orderData);
+    },
+
+    onOrderRemoved: () async {
+      print("🗑 BG CALLBACK: onOrderRemoved");
+      RingtoneHelper().stop();
+      await ServicemanNotificationHelper.clear(fromBackground: true);
+    },
+  );
+}
+
+
+
+
+
+Future<void> stopBackgroundService() async {
   final service = FlutterBackgroundService();
 
-  service.configure(
+  final isRunning = await service.isRunning();
+  if (!isRunning) {
+    debugPrint("⚪ Background service already stopped");
+    return;
+  }
+
+  debugPrint("🛑 Sending stopService command");
+
+  // 🔥 send command to background isolate
+  service.invoke("stopService");
+}
+
+Future<void> stopServicemanBackgroundService() async {
+  final service = FlutterBackgroundService();
+
+  if (!await service.isRunning()) return;
+
+  service.invoke("STOP_RINGTONE");
+  service.invoke("stopService");
+}
+
+
+
+
+
+/// 🔥 Service initializer
+void initializeBackgroundService() async {
+  final service = FlutterBackgroundService();
+
+  final isRunning = await service.isRunning();
+  if (isRunning) {
+    debugPrint("🟢 Background service already running");
+    return;
+  }
+
+
+
+  await service.configure(
     androidConfiguration: AndroidConfiguration(
       autoStart: true,
       isForegroundMode: true,
@@ -93,3 +185,33 @@ void initializeBackgroundService() {
 
   service.startService();
 }
+
+Future<void> startServicemanBackgroundService() async {
+  final service = FlutterBackgroundService();
+
+  if (await service.isRunning()) {
+    debugPrint("🟢 BG service already running");
+    return;
+  }
+
+  await service.configure(
+    androidConfiguration: AndroidConfiguration(
+      autoStart: true,
+      isForegroundMode: true,
+      onStart: servicemanBackgroundOnStart,
+      notificationChannelId: 'SERVICE_CHANNEL',
+      initialNotificationTitle: 'Service Online',
+      initialNotificationContent: 'Waiting for service requests',
+      foregroundServiceNotificationId: 777,
+    ),
+    iosConfiguration: IosConfiguration(
+      autoStart: true,
+      onForeground: servicemanBackgroundOnStart,
+    ),
+  );
+
+  service.startService();
+}
+
+
+

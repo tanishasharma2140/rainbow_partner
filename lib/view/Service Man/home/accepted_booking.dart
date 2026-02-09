@@ -160,6 +160,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
       context: context,
       barrierDismissible: false,
       builder: (_) => Dialog(
+        backgroundColor: AppColor.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         child: Padding(
           padding: const EdgeInsets.all(20),

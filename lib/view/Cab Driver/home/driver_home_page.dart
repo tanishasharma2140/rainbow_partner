@@ -9,6 +9,7 @@ import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
+import 'package:rainbow_partner/service/background_service.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/action/driver_profile.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/driver_setting.dart';
@@ -22,6 +23,7 @@ import 'package:rainbow_partner/view_model/cabdriver/active_ride_view_model.dart
 import 'package:rainbow_partner/view_model/cabdriver/cab_earning_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/driver_online_status_view_model.dart';
+import 'package:rainbow_partner/view_model/user_view_model.dart';
 import 'earning report/daily_weekly_earning_report.dart';
 
 class DriverHomePage extends StatefulWidget {
@@ -171,6 +173,23 @@ class _DriverHomePageState extends State<DriverHomePage> {
         );
       },
     ) ?? false;
+  }
+
+  Future<void> _startSocket() async {
+    final userViewModel = UserViewModel();
+
+    String? driverId = await userViewModel.getUser();
+
+    if (driverId == null || driverId == 0) {
+      debugPrint("❌ Driver ID not found, socket not started");
+      return;
+    }
+
+    debugPrint("✅ Starting socket with driverId: $driverId");
+
+    // Background service start
+    initializeBackgroundService();
+
   }
 
 
@@ -498,6 +517,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
               final position = await LocationUtils.getLocation();
 
+              /// 🔥 1️⃣ ONLINE/OFFLINE API
               await driverOnlineVm.driverOnlineStatusApi(
                 status,
                 position.latitude,
@@ -505,14 +525,24 @@ class _DriverHomePageState extends State<DriverHomePage> {
                 context,
               );
 
-              /// 🔁 API SUCCESS KE BAAD PROFILE REFRESH
+              /// 🔁 2️⃣ PROFILE REFRESH
               await driverProfileVm.driverProfileApi(
                 position.latitude.toString(),
                 position.longitude.toString(),
                 context,
               );
+
+              /// 🔥 3️⃣ SOCKET CONTROL
+              if (status == 1) {
+                // ✅ ONLINE → START SOCKET
+                await _startSocket();
+              } else {
+                // ❌ OFFLINE → STOP SOCKET
+                await stopBackgroundService ();
+              }
             },
           ),
+
         ],
       ),
     );

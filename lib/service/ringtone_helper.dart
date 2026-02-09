@@ -22,26 +22,36 @@ class RingtoneHelper {
 
     try {
       final session = await AudioSession.instance;
+
       await session.configure(
         const AudioSessionConfiguration(
           androidAudioAttributes: AndroidAudioAttributes(
             usage: AndroidAudioUsage.notificationRingtone,
             contentType: AndroidAudioContentType.sonification,
           ),
+          androidAudioFocusGainType: AndroidAudioFocusGainType.gainTransient,
+          androidWillPauseWhenDucked: false,
         ),
       );
 
-      await _player.setAsset('assets/rainbow_driver.mp3');
+      // 🔥 THIS IS MANDATORY
+      await session.setActive(true);
+
+      // 🔥 Asset load check
+      await _player.setAsset('assets/driver_rainbow.mp3');
+
       _player.setLoopMode(LoopMode.one);
       await _player.play();
 
       _isPlaying = true;
+      debugPrint("🔊 RINGTONE STARTED");
     } catch (e) {
-      debugPrint("Ringtone error: $e");
+      debugPrint("❌ Ringtone error: $e");
     } finally {
       _isStarting = false;
     }
   }
+
 
   Future<void> stop() async {
     try {

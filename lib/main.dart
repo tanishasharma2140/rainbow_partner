@@ -5,14 +5,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
-import 'package:rainbow_partner/service/background_service.dart';
 import 'package:rainbow_partner/service/internet_checker_service.dart';
 import 'package:rainbow_partner/service/ride_notification_helper.dart';
+import 'package:rainbow_partner/service/serviceman_notification_helper.dart';
 import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/ride_waiting_screen.dart';
+import 'package:rainbow_partner/view/Service%20Man/home/accepted_booking.dart';
+import 'package:rainbow_partner/view/Service%20Man/home/service_total_booking.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/accept_later_ride_view_model.dart';
@@ -50,6 +54,7 @@ import 'package:rainbow_partner/view_model/service_man/change_order_status_view_
 import 'package:rainbow_partner/view_model/service_man/city_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/complete_booking_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/driver_online_status_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/ignore_service_order_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/job_request_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/payment_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/review_view_model.dart';
@@ -73,6 +78,11 @@ String? fcmToken;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 const MethodChannel nativeChannel =
 MethodChannel('rainbow_partner/native_callback');
+
+@pragma('vm:entry-point')
+void servicemanNotificationBackgroundTap(NotificationResponse response) {
+  ServicemanNotificationHelper.handleAction(response);
+}
 
 
 @pragma('vm:entry-point')
@@ -136,27 +146,44 @@ class _MyAppState extends State<MyApp> {
   InternetCheckerService();
   final notificationService = NotificationService(navigatorKey: navigatorKey);
 
-  Future<void> _startSocket() async {
-    final userViewModel = UserViewModel();
 
-    String? driverId = await userViewModel.getUser();
-
-    if (driverId == null || driverId == 0) {
-      debugPrint("❌ Driver ID not found, socket not started");
-      return;
-    }
-
-    debugPrint("✅ Starting socket with driverId: $driverId");
-
-    // Background service start
-    initializeBackgroundService();
-
-  }
   late final StreamSubscription rideActionSub;
+  late final StreamSubscription servicemanActionSub;
 
   @override
   void initState() {
     super.initState();
+
+    servicemanActionSub =
+        ServicemanNotificationHelper.actionStream.listen((action) async {
+          final orderData = action.orderData;
+          final orderId = orderData['order_id'];
+
+          final context = navigatorKey.currentContext;
+          if (context == null) return;
+
+          switch (action.type) {
+            case ServiceActionType.accept:
+              FlutterBackgroundService().invoke('STOP_RINGTONE');
+
+              navigatorKey.currentState?.push(
+                MaterialPageRoute(
+                  builder: (_) => ServiceTotalBooking(),
+                ),
+              );
+              break;
+
+            case ServiceActionType.reject:
+              final ignoreVm =
+              Provider.of<IgnoreServiceOrderViewModel>(context, listen: false);
+
+              await ignoreVm.ignoreServiceOrderApi(orderId, context);
+              await ServicemanNotificationHelper.clear();
+              break;
+          }
+        });
+
+
 
     RideNotificationHelper.init();
     rideActionSub = RideNotificationHelper.actionStream.listen((action) async {
@@ -208,7 +235,6 @@ class _MyAppState extends State<MyApp> {
     notificationService.setupInteractMassage(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _internetCheckerService.startMonitoring(navigatorKey.currentContext!);
-      _startSocket();
     });
   }
 
@@ -261,6 +287,7 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> ServiceInfoViewModel()),
           ChangeNotifierProvider(create: (context)=> ZoneCitiesViewModel()),
           ChangeNotifierProvider(create: (context)=> CabCancelReasonViewModel()),
+          ChangeNotifierProvider(create: (context)=> IgnoreServiceOrderViewModel()),
 
           /// cab Driver
           ChangeNotifierProvider(create: (context)=> VehicleViewModel()),

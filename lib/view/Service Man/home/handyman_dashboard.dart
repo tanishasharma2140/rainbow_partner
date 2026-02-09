@@ -9,6 +9,8 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/service_custom_drawer.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/service/background_service.dart';
+import 'package:rainbow_partner/service/socket_service.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/accepted_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/complete_booking.dart';
@@ -19,6 +21,8 @@ import 'package:rainbow_partner/view_model/service_man/review_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_info_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_online_status_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
+import 'package:rainbow_partner/view_model/user_view_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HandymanDashboard extends StatefulWidget {
   const HandymanDashboard({super.key});
@@ -263,16 +267,19 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       isStatusChanging = true;
     });
 
-    final serviceOnlineVm = Provider.of<ServiceOnlineStatusViewModel>(context, listen: false);
-    final profileVm = Provider.of<ServicemanProfileViewModel>(context, listen: false);
+    final serviceOnlineVm =
+    Provider.of<ServiceOnlineStatusViewModel>(context, listen: false);
+    final profileVm =
+    Provider.of<ServicemanProfileViewModel>(context, listen: false);
 
-    final newStatus = currentStatus == true ? 0 : 1; // Toggle
+    final newStatus = currentStatus == true ? 0 : 1;
 
     try {
       final position = await _getCurrentLocation();
       final lat = position.latitude.toString();
       final lng = position.longitude.toString();
 
+      /// 🔥 UPDATE ONLINE STATUS API
       await serviceOnlineVm.serviceOnlineStatusApi(
         newStatus,
         lat,
@@ -280,7 +287,29 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
         context,
       );
 
+      /// 🔥 REFRESH PROFILE
       await profileVm.servicemanProfileApi(lat, lng, context);
+
+      /// 🔥 GET servicemanId (ASYNC)
+      UserViewModel userViewModel = UserViewModel();
+      String? userId = await userViewModel.getUser();
+
+      if (userId == null || userId.isEmpty) {
+        throw Exception("Serviceman ID not found");
+      }
+
+      /// 🔥 SAVE serviceman_id FOR BACKGROUND
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('serviceman_id', userId);
+
+      /// 🔥 ONLINE → START BG SERVICE
+      if (newStatus == 1) {
+        print("🟢 UI: Serviceman ONLINE → starting BG service");
+        await startServicemanBackgroundService();
+      } else {
+        print("🔴 UI: Serviceman OFFLINE → stopping BG service");
+        await stopServicemanBackgroundService();
+      }
 
       if (mounted) {
         setState(() {
@@ -400,6 +429,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       },
     ) ?? false;
   }
+
 
 
   @override
@@ -661,6 +691,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                         const SizedBox(height: 15),
 
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
                               child: statBox(
@@ -1003,7 +1034,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
             const SizedBox(height: 10),
             TextConst(
               title: title,
-              size: 15,
+              size: 13,
               fontWeight: FontWeight.w600,
               color: AppColor.royalBlue,
             ),
@@ -1017,7 +1048,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
               children: [
                 TextConst(
                   title: value ?? "",
-                  size: 22,
+                  size: 20,
                   fontWeight: FontWeight.w700,
                 ),
                 Container(

@@ -280,8 +280,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/driver_notification.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/home/driver_home_page.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/ride_waiting_screen.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
+import 'package:rainbow_partner/view/Service%20Man/home/service_total_booking.dart';
+import 'package:rainbow_partner/view/Service%20Man/partner_notification.dart';
 
 class NotificationService {
   final GlobalKey<NavigatorState> navigatorKey;
@@ -489,17 +492,35 @@ class NotificationService {
         return;
       }
 
-      // // general / notice / wallet etc
-      // navigatorKey.currentState!.push(
-      //   MaterialPageRoute(
-      //     builder: (_) => DriverDashboard(), // if you have
-      //   ),
-      // );
-      // return;
+      // general / notice / wallet etc
+      navigatorKey.currentState!.push(
+        MaterialPageRoute(
+          builder: (_) => DriverHomePage(), // if you have
+        ),
+      );
+      return;
     }
 
     /* ================= SERVICEMAN ================= */
     if (role == 'serviceman') {
+      if (type == 'general') {
+        navigatorKey.currentState!.push(
+          MaterialPageRoute(
+            builder: (_) => PartnerNotification(),
+          ),
+        );
+        return;
+      }
+      if (type == 'new_service') {
+        navigatorKey.currentState!.push(
+          MaterialPageRoute(
+            builder: (_) => ServiceTotalBooking(),
+          ),
+        );
+        return;
+      }
+
+      // 👇 DEFAULT FOR SERVICEMAN
       navigatorKey.currentState!.push(
         MaterialPageRoute(
           builder: (_) => HandymanDashboard(),

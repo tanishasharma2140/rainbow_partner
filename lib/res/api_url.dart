@@ -24,6 +24,7 @@ class ApiUrl {
   static const String servicemanEarningUrl ="${baseUrl}serviceman-earnings";
   static const String serviceInfoUrl ="${baseUrl}serviceman-service-info";
   static const String zoneCitiesUrl ="${baseUrl}zone_cities";
+  static const String ignoreServiceOrderUrl ="${baseUrl}ignore-service-order";
 
   /// CabDriver
 

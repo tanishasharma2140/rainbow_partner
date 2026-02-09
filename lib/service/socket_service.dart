@@ -1,3 +1,4 @@
+/*
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketService {
@@ -62,3 +63,84 @@ class SocketService {
     socket = null;
   }
 }
+*/
+
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+
+class ServicemanSocketService {
+  static final ServicemanSocketService _instance =
+  ServicemanSocketService._internal();
+
+  factory ServicemanSocketService() => _instance;
+  ServicemanSocketService._internal();
+
+  IO.Socket? socket;
+
+  void connect({
+    required String baseUrl,
+    required int servicemanId,
+    required Function(Map<String, dynamic>) onNewOrder,
+    required Function() onOrderRemoved,
+  }) {
+    print("🟡 [BG SOCKET] connect() called");
+    print("🆔 [BG SOCKET] servicemanId = $servicemanId");
+
+    socket?.disconnect();
+    socket?.dispose();
+
+    socket = IO.io(
+      baseUrl,
+      IO.OptionBuilder()
+          .setPath("/socket/live")
+          .setTransports(['websocket'])
+          .enableForceNew() // 🔥 VERY IMPORTANT
+          .build(),
+    );
+
+    print("🟡 [BG SOCKET] Connecting...");
+    socket!.connect();
+
+    socket!.onConnect((_) {
+      print("🟢 [BG SOCKET] CONNECTED");
+      socket!.emit("register_serviceman", servicemanId);
+      print("📤 [BG SOCKET] register_serviceman emitted");
+    });
+
+    socket!.onConnectError((err) {
+      print("❌ [BG SOCKET] CONNECT ERROR → $err");
+    });
+
+    socket!.onError((err) {
+      print("❌ [BG SOCKET] ERROR → $err");
+    });
+
+    socket!.on("new_order", (data) {
+      print("🔥🔥🔥 [BG SOCKET] new_order RECEIVED");
+      print("📦 [BG SOCKET] DATA = $data");
+
+      if (data != null) {
+        onNewOrder(Map<String, dynamic>.from(data));
+      }
+    });
+
+    socket!.on("order_removed", (data) {
+      print("🗑 [BG SOCKET] order_removed RECEIVED");
+      print("📦 [BG SOCKET] DATA = $data");
+      onOrderRemoved();
+    });
+
+    socket!.onDisconnect((_) {
+      print("🔴 [BG SOCKET] DISCONNECTED");
+    });
+  }
+
+  void dispose() {
+    print("🛑 [BG SOCKET] dispose()");
+    socket?.disconnect();
+    socket?.dispose();
+    socket = null;
+  }
+}
+
+
+

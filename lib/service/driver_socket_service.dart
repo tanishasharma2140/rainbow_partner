@@ -74,7 +74,11 @@ class DriverSocketService {
   }
 
   void disconnect() {
-    socket?.disconnect();
-    socket = null;
+    if (socket != null) {
+      print("🛑 Disconnecting socket...");
+      socket!.disconnect();
+      socket!.dispose();
+      socket = null;
+    }
   }
 }

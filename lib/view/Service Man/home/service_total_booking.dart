@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
@@ -6,12 +8,13 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
-import 'package:rainbow_partner/service/socket_service.dart';
 import 'package:rainbow_partner/view/Service Man/home/service_booking_detail.dart';
 import 'package:rainbow_partner/view/service/ringtone_service.dart';
 import 'package:rainbow_partner/view_model/service_man/accept_order_view_model.dart';
-import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
-import 'package:rainbow_partner/view_model/user_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/ignore_service_order_view_model.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+
+import '../../../view_model/user_view_model.dart';
 
 class ServiceTotalBooking extends StatefulWidget {
   const ServiceTotalBooking({super.key});
@@ -33,6 +36,13 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
   Future<void> _initSocket() async {
     UserViewModel userViewModel = UserViewModel();
     String? userId = await userViewModel.getUser();
+
+
+    if (userId == null || userId.isEmpty) {
+      print("❌ servicemanId NULL hai, socket connect nahi hoga");
+      return;
+    }
+
 
     SocketService().connect(
       servicemanId: userId,
@@ -64,7 +74,6 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
   @override
   void dispose() {
     RingtoneService().stopRingtone();
-    SocketService().dispose();
     super.dispose();
   }
 
@@ -141,6 +150,7 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
   // ---------------- BOOKING CARD ----------------
   Widget bookingCard(Map<String, dynamic> b) {
     final acceptOrderVm = Provider.of<AcceptOrderViewModel>(context);
+    final ignoreOrderVm = Provider.of<IgnoreServiceOrderViewModel>(context);
     final int orderId = b["order_id"];
     return GestureDetector(
       onTap: () {
@@ -287,6 +297,48 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                   child: Image.asset("assets/clock.gif", fit: BoxFit.contain),
                 ),
                 const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.red),
+                      backgroundColor: Colors.red.withOpacity(0.08),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () async {
+                      final int orderId = b["order_id"];
+
+                      /// 🔥 stop ringtone
+                      await RingtoneService().stopRingtone();
+
+                      /// 🔥 CALL IGNORE API
+                      ignoreOrderVm.ignoreServiceOrderApi(orderId, context);
+
+                      /// 🔥 OPTIONAL: UI se hata do
+                      setState(() {
+                        pending.removeWhere((e) => e["order_id"] == orderId);
+                      });
+                    },
+                    child:
+                    ignoreOrderVm.loading(orderId)
+                        ? const SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                        : const Text(
+                      "Ignore",
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
 
                 Expanded(
                   child: OutlinedButton(
@@ -356,5 +408,75 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
         ],
       ),
     );
+  }
+}
+
+
+class SocketService {
+  static final SocketService _instance = SocketService._internal();
+  factory SocketService() => _instance;
+  SocketService._internal();
+
+  IO.Socket? socket;
+
+  void connect({
+    required String servicemanId,
+    required Function(List<dynamic>) onPendingOrders,
+    required Function(Map<String, dynamic>) onNewOrder,
+    required Function(int orderId) onOrderRemoved,
+  }) {
+    print("🟡 [UI SOCKET] connect() called");
+    print("🆔 [UI SOCKET] servicemanId = $servicemanId");
+
+    socket?.disconnect();
+    socket?.dispose();
+
+    socket = IO.io(
+      "https://admin.rainbowsenterprises.com",
+      IO.OptionBuilder()
+          .setPath("/socket/live")
+          .setTransports(['websocket'])
+          .enableForceNew()
+          .build(),
+    );
+
+    socket!.connect();
+
+    socket!.onConnect((_) {
+      print("🟢 [UI SOCKET] CONNECTED");
+      socket!.emit("register_serviceman", servicemanId);
+    });
+
+    socket!.on("pending_orders", (data) {
+      print("📦 [UI SOCKET] pending_orders = $data");
+      if (data != null) {
+        onPendingOrders(List.from(data));
+      }
+    });
+
+    socket!.on("new_order", (data) {
+      print("🔥 [UI SOCKET] new_order = $data");
+      if (data != null) {
+        onNewOrder(Map<String, dynamic>.from(data));
+      }
+    });
+
+    socket!.on("order_removed", (data) {
+      print("🗑 [UI SOCKET] order_removed = $data");
+      if (data != null) {
+        onOrderRemoved(data["order_id"]);
+      }
+    });
+
+    socket!.onDisconnect((_) {
+      print("🔴 [UI SOCKET] DISCONNECTED");
+    });
+  }
+
+  void dispose() {
+    print("🛑 [UI SOCKET] dispose()");
+    socket?.disconnect();
+    socket?.dispose();
+    socket = null;
   }
 }

@@ -24,9 +24,11 @@ class Assets {
   static const String assetsPainting = 'assets/painting.png';
   static const String assetsPlumbing = 'assets/plumbing.png';
   static const String assetsProoo = 'assets/prooo.jpg';
-  static const String assetsRainbow  = 'assets/rainbow_driver.mp3';
+  static const String assetsRainbow = 'assets/rainbow.mp3';
+  static const String assetsRainbowDriver = 'assets/rainbow_driver.mp3';
   static const String assetsRainbowLogo = 'assets/rainbow_logo.png';
   static const String assetsRainbowPartText = 'assets/rainbow_part_text.png';
+  static const String assetsRainbowVoice = 'assets/rainbow_voice.mp3';
   static const String assetsRejectDocument = 'assets/reject_document.png';
   static const String assetsRideOngoing = 'assets/ride_ongoing.gif';
   static const String assetsRingtone030437513 = 'assets/ringtone-030-437513.mp3';

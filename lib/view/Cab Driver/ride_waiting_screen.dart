@@ -204,7 +204,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
       child: Scaffold(
         backgroundColor: AppColor.whiteDark,
 
-        /// APP BAR
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
