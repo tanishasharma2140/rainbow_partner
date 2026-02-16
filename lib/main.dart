@@ -74,7 +74,6 @@ import 'package:rainbow_partner/view_model/service_man/zone_cities_view_model.da
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 import 'firebase_options.dart';
 
-String? fcmToken;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 const MethodChannel nativeChannel =
 MethodChannel('rainbow_partner/native_callback');
@@ -114,10 +113,6 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  fcmToken = await FirebaseMessaging.instance.getToken();
-  if (kDebugMode) {
-    print("✅ FCM Token: $fcmToken");
-  }
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

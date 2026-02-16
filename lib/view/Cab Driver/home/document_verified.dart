@@ -220,8 +220,14 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
 
   // ================= API HIT =================
   Future<void> hitProfileApi() async {
+
+    if (!mounted) return;
+
     final vm = Provider.of<DriverProfileViewModel>(context, listen: false);
+
     final position = await LocationUtils.getLocation();
+
+    if (!mounted) return;  // 🔥 VERY IMPORTANT
 
     await vm.driverProfileApi(
       position.latitude.toString(),
@@ -229,6 +235,7 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
       context,
     );
   }
+
 
   bool _navigated = false;
   @override

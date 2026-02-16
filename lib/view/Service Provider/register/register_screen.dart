@@ -748,7 +748,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       address: addressController.text,
       serviceCategory: selectedCategoryIds.map((e) => int.parse(e)).toList(),
       deviceId: deviceId,
-      fcmTokenI: fcmToken??"",
       skillStatus: skillStatusValue,
       currentLatitude: currentLat,
       currentLongitude: currentLng,

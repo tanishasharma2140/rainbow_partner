@@ -231,18 +231,17 @@
 // }
 
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/auth/onboarding_screen.dart';
 import 'package:rainbow_partner/auth/otp_screen.dart';
-import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/repo/auth_repo.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/document_verified.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
-
 import '../model/auth_model.dart' show AuthModel;
 
 class AuthViewModel with ChangeNotifier {
@@ -354,6 +353,8 @@ class AuthViewModel with ChangeNotifier {
 
   Future<void> loginApi(BuildContext context) async {
     setLoginLoading(true);
+
+  final fcmToken = await FirebaseMessaging.instance.getToken();
 
     final data = {
       "phone": phoneController.text.trim(),

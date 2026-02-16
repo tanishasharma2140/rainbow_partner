@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -38,10 +39,11 @@ class DriverRegisterOneViewModel with ChangeNotifier {
     required String lastName,
     required String dob,
     required String deviceId,
-    required String fcm,
+    // required String fcm,
     required BuildContext context,
   }) async {
     setLoading(true);
+    final fcmToken = await FirebaseMessaging.instance.getToken();
 
     final Map<String, String> fields = {
       "personal_information_status": personalInfoStatus,
@@ -54,7 +56,7 @@ class DriverRegisterOneViewModel with ChangeNotifier {
       "vehicle_name": vehicleName,
       "id": "",
       "device_id": deviceId,
-      "fcm_token": fcm,
+      "fcm_token": fcmToken.toString(),
     };
 
     final Map<String, dynamic> files = {

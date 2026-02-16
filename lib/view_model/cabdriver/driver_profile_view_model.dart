@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rainbow_partner/model/driver_profile_model.dart';
 import 'package:rainbow_partner/model/vehicle_brand_model.dart';
@@ -26,12 +27,16 @@ class DriverProfileViewModel with ChangeNotifier {
 
   Future<void> driverProfileApi(dynamic currentLatitude,dynamic currentLongitude,context) async {
     setLoading(true);
+
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+
     UserViewModel userViewModel = UserViewModel();
     String? userId = await userViewModel.getUser();
     Map data = {
       "id": userId,
       "current_latitude": currentLatitude,
-      "current_longitude": currentLongitude
+      "current_longitude": currentLongitude,
+      "fcm_token": fcmToken,
     };
     try {
       final response = await _driverProfileRepo.driverProfileApi(data);

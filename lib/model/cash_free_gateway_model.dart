@@ -28,7 +28,7 @@ class Data {
   String? createdAt;
   CustomerDetails? customerDetails;
   String? entity;
-  int? orderAmount;
+  dynamic orderAmount;
   String? orderCurrency;
   String? orderExpiryTime;
   String? orderId;

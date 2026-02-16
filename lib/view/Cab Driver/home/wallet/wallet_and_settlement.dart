@@ -925,11 +925,11 @@ class _WalletSettlementState extends State<WalletSettlement> {
     showDialog(
       context: context,
       builder: (ctx) {
-        bool isLoading = false;
 
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
+              backgroundColor: AppColor.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -944,9 +944,10 @@ class _WalletSettlementState extends State<WalletSettlement> {
                     child: Icon(Icons.wallet, color: AppColor.royalBlue, size: 30),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  const TextConst(
+                    title:
                     'Due Wallet Payment',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                    size: 20, fontWeight: FontWeight.w600,
                   ),
                 ],
               ),
@@ -968,17 +969,17 @@ class _WalletSettlementState extends State<WalletSettlement> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              const TextConst(
+                                title:
                                 'Due Wallet Balance',
-                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                                  size: 12, color: Colors.grey
                               ),
-                              Text(
+                              TextConst(
+                                title:
                                 "₹$dueAmount",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColor.royalBlue,
-                                ),
+                                size: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppColor.royalBlue,
                               ),
                             ],
                           ),
@@ -987,10 +988,11 @@ class _WalletSettlementState extends State<WalletSettlement> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    "You need to pay the full due wallet amount.",
-                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  const TextConst(
                     textAlign: TextAlign.center,
+                    title:
+                    "You need to pay the full due wallet amount.",
+                    size: 13, color: Colors.grey
                   ),
                 ],
               ),
@@ -1000,7 +1002,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text("Close"),
+                        child: const Text("Close",style: TextStyle(color: Colors.black),),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -1038,7 +1040,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                             )
                                 : Text(
                               "Pay ₹$dueAmount Now",
-                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              style: const TextStyle(color: Colors.white, fontSize: 10),
                             ),
                           );
                         },

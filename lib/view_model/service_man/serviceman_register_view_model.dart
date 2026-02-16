@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,8 @@ class ServicemanRegisterViewModel with ChangeNotifier {
   }
 
 
+
+
   Future<void> servicemanRegisterApi({
     required String firstName,
     required String lastName,
@@ -31,7 +34,7 @@ class ServicemanRegisterViewModel with ChangeNotifier {
     required String address,
     required List<int> serviceCategory,
     required String deviceId,
-    required String fcmTokenI,
+    // required String fcmTokenI,
     required String skillStatus,
     required String currentLatitude,
     required String currentLongitude,
@@ -44,6 +47,8 @@ class ServicemanRegisterViewModel with ChangeNotifier {
   }) async {
 
     setLoading(true);
+   final fcmToken = await FirebaseMessaging.instance.getToken();
+
 
     // -------------------- TEXT FIELDS --------------------
     Map<String, String> fields = {
@@ -55,7 +60,7 @@ class ServicemanRegisterViewModel with ChangeNotifier {
       "address": address,
       "service_category":  serviceCategory.toString(),
       "device_id": deviceId,
-      "fcm_token": fcmTokenI,
+      "fcm_token": fcmToken??"",
       "skill_status": skillStatus,
       "current_latitude": currentLatitude,
       "current_longitude": currentLongitude,
