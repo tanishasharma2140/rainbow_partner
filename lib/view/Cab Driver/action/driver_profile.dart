@@ -5,7 +5,10 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/res/app_color.dart';
+import 'package:rainbow_partner/service/background_service.dart';
+import 'package:rainbow_partner/service/driver_socket_service.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/driver_online_status_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
 class DriverProfile extends StatefulWidget {
@@ -389,13 +392,8 @@ class _DriverProfileState extends State<DriverProfile> {
                   width: Sizes.screenWidth * 0.02,
                 ),
                 InkWell(
-                  onTap: () {
-                    UserViewModel().remove();
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const Splash()),
-                            (context) => false);
+                  onTap: () async {
+                    await _handleLogout(context);
                   },
                   child: Container(
                     height: Sizes.screenHeight * 0.058,
@@ -417,4 +415,44 @@ class _DriverProfileState extends State<DriverProfile> {
     );
   }
 
+}
+
+Future<void> _handleLogout(BuildContext context) async {
+  final driverOnlineVm =
+  Provider.of<DriverOnlineStatusViewModel>(context, listen: false);
+
+  final driverProfileVm =
+  Provider.of<DriverProfileViewModel>(context, listen: false);
+
+  try {
+    // 🔥 1️⃣ Make driver offline via API
+    await driverOnlineVm.driverOnlineStatusApi(
+      0, // offline
+      0.0,
+      0.0,
+      context,
+    );
+
+    // 🔁 2️⃣ Refresh profile (optional but good)
+    await driverProfileVm.driverProfileApi("0", "0", context);
+
+  } catch (e) {
+    debugPrint("Offline API error: $e");
+  }
+
+  // 🔌 3️⃣ Disconnect socket immediately
+  DriverSocketService().disconnect();
+
+  // 📴 4️⃣ Stop background service
+  await stopBackgroundService();
+
+  // 🧹 5️⃣ Clear user data
+  await UserViewModel().remove();
+
+  // 🚪 6️⃣ Navigate to Splash
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (_) => const Splash()),
+        (_) => false,
+  );
 }

@@ -120,6 +120,19 @@ void servicemanBackgroundOnStart(ServiceInstance service) async {
       await ServicemanNotificationHelper.clear(fromBackground: true);
     },
   );
+
+  service.on("stopService").listen((event) {
+    print("🛑 BG: stopService received");
+
+    // 🔌 Disconnect socket
+    ServicemanSocketService().disconnect();
+
+    // 🔕 Stop ringtone
+    RingtoneHelper().stop();
+
+    service.stopSelf();
+  });
+
 }
 
 
@@ -147,7 +160,7 @@ Future<void> stopServicemanBackgroundService() async {
   if (!await service.isRunning()) return;
 
   service.invoke("STOP_RINGTONE");
-  service.invoke("stopService");
+  service.invoke("stopService"); // 🔥 this triggers disconnect now
 }
 
 

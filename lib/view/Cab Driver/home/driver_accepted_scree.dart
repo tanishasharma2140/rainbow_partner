@@ -9,6 +9,7 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/driver_home_page.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_cancel_reason_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
@@ -574,6 +575,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
 
 
 
+
   void _showRideCompletedPopup() {
     if (_rideCompletedDialogShown) return;
     _rideCompletedDialogShown = true;
@@ -944,520 +946,621 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
 
     final cabOrderStatusVm = Provider.of<ChangeCabOrderStatusViewModel>(context);
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          /// ================= MAP =================
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: LatLng(widget.driverLat, widget.driverLng),
-              zoom: 15,
-            ),
-            onMapCreated: (controller) {
-              _mapController = controller;
-              _updateMapMarkers();
-            },
-            markers: markers,
-            polylines: polylines,
-            myLocationEnabled: true,
-            zoomControlsEnabled: false,
-            myLocationButtonEnabled: false,
-            zoomGesturesEnabled: true,
-            scrollGesturesEnabled: true,
-            rotateGesturesEnabled: true,
-            mapToolbarEnabled: false,
-            compassEnabled: true,
-          ),
-
-          /// ================= TOP GRADIENT OVERLAY =================
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 140,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.5),
-                    Colors.transparent,
+    return WillPopScope(
+      onWillPop: () async {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) {
+            return Dialog(
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
                   ],
                 ),
-              ),
-            ),
-          ),
-
-          /// ================= HEADER SECTION =================
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 12,
-            left: 16,
-            right: 16,
-            child: Column(
-              children: [
-                /// Back Button + Distance
-                Row(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+
+                    /// ICON
                     Container(
-                      width: 44,
-                      height: 44,
+                      height: 55,
+                      width: 55,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColor.royalBlue.withOpacity(0.12),
                         shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 8,
-                            spreadRadius: 0,
-                          ),
-                        ],
                       ),
-                      child: IconButton(
-                        icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-                        onPressed: () => Navigator.pop(context),
-                        padding: EdgeInsets.zero,
-                        iconSize: 18,
+                      child: Icon(
+                        Icons.lock_outline,
+                        color: AppColor.royalBlue,
+                        size: 28,
                       ),
                     ),
 
-                    SizedBox(width: 12),
+                    const SizedBox(height: 14),
 
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 8,
-                            spreadRadius: 0,
+                    /// MESSAGE
+                     TextConst(
+                       title:
+                      "Ride in progress",
+                       size: 16,
+                       fontWeight: FontWeight.w600,
+                    ),
+
+                    const SizedBox(height: 6),
+
+                     TextConst(
+                       title:
+                      "Please complete the ride before going back.",
+                      textAlign: TextAlign.center,
+                       size: 13,
+                       color: Colors.black54,
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    /// SMALL CONTAINER BUTTON
+                    GestureDetector(
+                      onTap: () => Navigator.pop(ctx),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 28, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColor.royalBlue,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          "OK",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
                           ),
-                        ],
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.location_on_outlined,
-                            color: AppColor.royalBlue,
-                            size: 16,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+
+        return false;
+      },
+
+
+      child: Scaffold(
+        body: Stack(
+          children: [
+            /// ================= MAP =================
+            GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: LatLng(widget.driverLat, widget.driverLng),
+                zoom: 15,
+              ),
+              onMapCreated: (controller) {
+                _mapController = controller;
+                _updateMapMarkers();
+              },
+              markers: markers,
+              polylines: polylines,
+              myLocationEnabled: true,
+              zoomControlsEnabled: false,
+              myLocationButtonEnabled: false,
+              zoomGesturesEnabled: true,
+              scrollGesturesEnabled: true,
+              rotateGesturesEnabled: true,
+              mapToolbarEnabled: false,
+              compassEnabled: true,
+            ),
+
+            /// ================= TOP GRADIENT OVERLAY =================
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 140,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.5),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            /// ================= HEADER SECTION =================
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 16,
+              right: 16,
+              child: Column(
+                children: [
+                  /// Back Button + Distance
+                  Row(
+                    children: [
+                      GestureDetector(
+
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                spreadRadius: 0,
+                              ),
+                            ],
                           ),
-                          SizedBox(width: 6),
-                          Text(
-                            "${orderData?['distance_km'] ?? 0} km",
+                          child: IconButton(
+                            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                            onPressed: () {
+                              // 🔥 Block manual back during ride
+                            Utils.showErrorMessage(context, "Back disabled during active ride");
+                            },
+                            padding: EdgeInsets.zero,
+                            iconSize: 18,
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(width: 12),
+
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.location_on_outlined,
+                              color: AppColor.royalBlue,
+                              size: 16,
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              "${orderData?['distance_km'] ?? 0} km",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 12),
+
+                  /// ✅ STATUS TEXT
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          spreadRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _getStatusText(),
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 12),
-
-                /// ✅ STATUS TEXT
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _getStatusText(),
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          /// ================= BOTTOM SHEET =================
-          DraggableScrollableSheet(
-            initialChildSize: 0.75,
-            minChildSize: 0.34,
-            maxChildSize: 0.75,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(32),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 20,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
-                ),
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  physics: const ClampingScrollPhysics(),
-                  children: [
-                    /// DRAG HANDLE
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-
-                    /// USER INFO
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.grey.shade200,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  AppColor.royalBlue.withOpacity(0.8),
-                                  AppColor.royalBlue.withOpacity(0.4),
-                                ],
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 26,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TextConst(
-                                  title: orderData!['user_name'] ?? 'Customer',
-                                  size: 17,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                const SizedBox(height: 3),
-                                TextConst(
-                                  title: 'Order #${widget.orderId}',
-                                  size: 13,
-                                  color: Colors.grey,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColor.royalBlue,
-                                  AppColor.royalBlue.withOpacity(0.7),
-                                ],
-                              ),
-                            ),
-                            child: IconButton(
-                              icon: const Icon(Icons.phone, size: 18),
-                              color: Colors.white,
-                              padding: EdgeInsets.zero,
-                              onPressed: () => _makePhoneCall(
-                                orderData!['user_mobile'].toString(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    /// RIDE INFO
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _infoItem(
-                                  icon: Icons.location_on_outlined,
-                                  title: 'Distance',
-                                  value: "${orderData!['distance_km'] ?? 0} km",
-                                  color: Colors.blue,
-                                ),
-                              ),
-                              Container(
-                                width: 1,
-                                height: 30,
-                                color: Colors.grey.shade300,
-                              ),
-                              Expanded(
-                                child: _infoItem(
-                                  icon: Icons.currency_rupee,
-                                  title: 'Amount',
-                                  value: "₹${_getPayableAmount(orderData!)}",
-                                  color: Colors.green,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          _locationRow(
-                            icon: Icons.circle,
-                            iconColor: Colors.green,
-                            iconBgColor: Colors.green.withOpacity(0.1),
-                            title: 'Pickup',
-                            address: orderData!['pickup_location'] ?? 'N/A',
-                            showDivider: true,
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          _locationRow(
-                            icon: Icons.location_pin,
-                            iconColor: Colors.red,
-                            iconBgColor: Colors.red.withOpacity(0.1),
-                            title: 'Drop',
-                            address: orderData!['drop_location'] ?? 'N/A',
-                            showDivider: false,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// ACTION SECTION
-                    if (orderData!['order_status'] == 1) ...[
-                      /// Status 1: I'm Here Button
-                      CustomButton(
-                        bgColor: AppColor.royalBlue,
-                        title: "I'm Here",
-                        onTap: () {
-                          cabOrderStatusVm.changeCabOrderApi(
-                            orderData!['order_id'],
-                            2,
-                            "",
-                            "",
-                            context,
-                          );
-                        },
-                      ),
-                    ] else if (orderData!['order_status'] == 2) ...[
-                      /// Status 2: OTP Verify Widget
-                      _otpVerifyWidget(cabOrderStatusVm),
-                    ] else if (orderData!['order_status'] == 3) ...[
-                      /// Status 3: Complete Ride Button
-                      GestureDetector(
-                        onTap: isCompletingRide
-                            ? null
-                            : () => _completeRide(cabOrderStatusVm),
-                        child: Container(
-                          width: double.infinity,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: isCompletingRide
-                                ? Colors.green.withOpacity(0.5)
-                                : Colors.green,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          alignment: Alignment.center,
-                          child: isCompletingRide
-                              ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              SizedBox(
-                                height: 18,
-                                width: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(width: 10),
-                              Text(
-                                "Completing...",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          )
-                              : const Text(
-                            "Reached Destination",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                    if (orderData!['order_status'] == 1 || orderData!['order_status'] == 2) ...[
-                      SizedBox(height: 15,),
-                      GestureDetector(
-                        onTap: () {
-                          _showCancelReasonBottomSheet(context);
-                        },
-                        child: Container(
-                          height: 48,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Colors.red,
-                              width: 1.5,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.white,
-                          ),
-                          child: const Text(
-                            "Cancel Ride",
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                    SizedBox(
-                      height: MediaQuery.of(context).padding.bottom + 10,
-                    ),
-
-
-                  ],
-                ),
-              );
-            },
-          ),
-
-          /// ================= NAVIGATION BUTTON (Conditional) =================
-          if (_shouldShowNavigateButton())
-            Positioned(
-              bottom: MediaQuery.of(context).size.height * 0.40 + 20,
-              right: 16,
-              child: Column(
-                children: [
-                  if (orderData!['order_status'] == 3)
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        "Navigate to Drop",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColor.royalBlue,
-                        ),
-                      ),
-                    ),
-                  if (orderData!['order_status'] == 3) SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColor.royalBlue.withOpacity(0.3),
-                          blurRadius: 15,
-                          spreadRadius: 2,
                         ),
                       ],
-                    ),
-                    child: GestureDetector(
-                      onTap: _openNavigator,
-                      child: Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              AppColor.royalBlue,
-                              AppColor.royalBlue.withOpacity(0.9),
-                            ],
-                          ),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.navigation_rounded,
-                          color: Colors.white,
-                          size: 26,
-                        ),
-                      ),
                     ),
                   ),
                 ],
               ),
             ),
-        ],
+
+            /// ================= BOTTOM SHEET =================
+            DraggableScrollableSheet(
+              initialChildSize: 0.75,
+              minChildSize: 0.34,
+              maxChildSize: 0.75,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(32),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, -4),
+                      ),
+                    ],
+                  ),
+                  child: ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    physics: const ClampingScrollPhysics(),
+                    children: [
+                      /// DRAG HANDLE
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+
+                      /// USER INFO
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.grey.shade200,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    AppColor.royalBlue.withOpacity(0.8),
+                                    AppColor.royalBlue.withOpacity(0.4),
+                                  ],
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 26,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextConst(
+                                    title: orderData!['user_name'] ?? 'Customer',
+                                    size: 17,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  const SizedBox(height: 3),
+                                  TextConst(
+                                    title: 'Order #${widget.orderId}',
+                                    size: 13,
+                                    color: Colors.grey,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColor.royalBlue,
+                                    AppColor.royalBlue.withOpacity(0.7),
+                                  ],
+                                ),
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.phone, size: 18),
+                                color: Colors.white,
+                                padding: EdgeInsets.zero,
+                                onPressed: () => _makePhoneCall(
+                                  orderData!['user_mobile'].toString(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      /// RIDE INFO
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _infoItem(
+                                    icon: Icons.location_on_outlined,
+                                    title: 'Distance',
+                                    value: "${orderData!['distance_km'] ?? 0} km",
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 30,
+                                  color: Colors.grey.shade300,
+                                ),
+                                Expanded(
+                                  child: _infoItem(
+                                    icon: Icons.currency_rupee,
+                                    title: 'Amount',
+                                    value: "₹${_getPayableAmount(orderData!)}",
+                                    color: Colors.green,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            _locationRow(
+                              icon: Icons.circle,
+                              iconColor: Colors.green,
+                              iconBgColor: Colors.green.withOpacity(0.1),
+                              title: 'Pickup',
+                              address: orderData!['pickup_location'] ?? 'N/A',
+                              showDivider: true,
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            _locationRow(
+                              icon: Icons.location_pin,
+                              iconColor: Colors.red,
+                              iconBgColor: Colors.red.withOpacity(0.1),
+                              title: 'Drop',
+                              address: orderData!['drop_location'] ?? 'N/A',
+                              showDivider: false,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      /// ACTION SECTION
+                      if (orderData!['order_status'] == 1) ...[
+                        /// Status 1: I'm Here Button
+                        CustomButton(
+                          bgColor: AppColor.royalBlue,
+                          title: "I'm Here",
+                          onTap: () {
+                            cabOrderStatusVm.changeCabOrderApi(
+                              orderData!['order_id'],
+                              2,
+                              "",
+                              "",
+                              context,
+                            );
+                          },
+                        ),
+                      ] else if (orderData!['order_status'] == 2) ...[
+                        /// Status 2: OTP Verify Widget
+                        _otpVerifyWidget(cabOrderStatusVm),
+                      ] else if (orderData!['order_status'] == 3) ...[
+                        /// Status 3: Complete Ride Button
+                        GestureDetector(
+                          onTap: isCompletingRide
+                              ? null
+                              : () => _completeRide(cabOrderStatusVm),
+                          child: Container(
+                            width: double.infinity,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: isCompletingRide
+                                  ? Colors.green.withOpacity(0.5)
+                                  : Colors.green,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            alignment: Alignment.center,
+                            child: isCompletingRide
+                                ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  "Completing...",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            )
+                                : const Text(
+                              "Reached Destination",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (orderData!['order_status'] == 1 || orderData!['order_status'] == 2) ...[
+                        SizedBox(height: 15,),
+                        GestureDetector(
+                          onTap: () {
+                            _showCancelReasonBottomSheet(context);
+                          },
+                          child: Container(
+                            height: 48,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.red,
+                                width: 1.5,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.white,
+                            ),
+                            child: const Text(
+                              "Cancel Ride",
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      SizedBox(
+                        height: MediaQuery.of(context).padding.bottom + 10,
+                      ),
+
+
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            /// ================= NAVIGATION BUTTON (Conditional) =================
+            if (_shouldShowNavigateButton())
+              Positioned(
+                bottom: MediaQuery.of(context).size.height * 0.40 + 20,
+                right: 16,
+                child: Column(
+                  children: [
+                    if (orderData!['order_status'] == 3)
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          "Navigate to Drop",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColor.royalBlue,
+                          ),
+                        ),
+                      ),
+                    if (orderData!['order_status'] == 3) SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColor.royalBlue.withOpacity(0.3),
+                            blurRadius: 15,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: GestureDetector(
+                        onTap: _openNavigator,
+                        child: Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColor.royalBlue,
+                                AppColor.royalBlue.withOpacity(0.9),
+                              ],
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.navigation_rounded,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

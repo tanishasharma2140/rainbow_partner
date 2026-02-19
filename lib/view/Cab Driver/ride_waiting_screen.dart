@@ -45,26 +45,26 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
       _getCurrentLocation();
       _loadMarkerIcon();
 
-      final deleteOrder = Provider.of<DeleteExpiredOrderViewModel>(
-        context,
-        listen: false,
-      );
+      // final deleteOrder = Provider.of<DeleteExpiredOrderViewModel>(
+      //   context,
+      //   listen: false,
+      // );
 
       /// FIRST CALL
-      deleteOrder.deleteExpiredOrderApi().then((success) {
-        if (success) {
-          // _stopRinger();
-        }
-      });
-
-      /// EVERY 1 MINUTE
-      _deleteOrderTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
-        deleteOrder.deleteExpiredOrderApi().then((success) {
-          if (success) {
-            // _stopRinger();
-          }
-        });
-      });
+      // deleteOrder.deleteExpiredOrderApi().then((success) {
+      //   if (success) {
+      //     // _stopRinger();
+      //   }
+      // });
+      //
+      // /// EVERY 1 MINUTE
+      // _deleteOrderTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      //   deleteOrder.deleteExpiredOrderApi().then((success) {
+      //     if (success) {
+      //       // _stopRinger();
+      //     }
+      //   });
+      // });
     });
 
     // 🔊 Listen to audio player completion

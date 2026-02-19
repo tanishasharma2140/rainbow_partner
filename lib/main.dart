@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -15,7 +13,6 @@ import 'package:rainbow_partner/service/serviceman_notification_helper.dart';
 import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/ride_waiting_screen.dart';
-import 'package:rainbow_partner/view/Service%20Man/home/accepted_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/service_total_booking.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
@@ -25,7 +22,6 @@ import 'package:rainbow_partner/view_model/cabdriver/cab_cancel_reason_view_mode
 import 'package:rainbow_partner/view_model/cabdriver/cab_earning_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_history_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
-import 'package:rainbow_partner/view_model/cabdriver/delete_expired_order_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_ignore_order_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_offer_view_model.dart';
@@ -299,7 +295,7 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> DriverOnlineStatusViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverCanDiscountViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverOfferViewModel()),
-          ChangeNotifierProvider(create: (context)=> DeleteExpiredOrderViewModel()),
+          // ChangeNotifierProvider(create: (context)=> DeleteExpiredOrderViewModel()),
           ChangeNotifierProvider(create: (context)=> ChangeCabOrderStatusViewModel()),
           ChangeNotifierProvider(create: (context)=> CabEarningViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverTransactionViewModel()),

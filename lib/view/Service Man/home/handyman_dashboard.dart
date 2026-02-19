@@ -308,6 +308,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
         await startServicemanBackgroundService();
       } else {
         print("🔴 UI: Serviceman OFFLINE → stopping BG service");
+        ServicemanSocketService().disconnect();
         await stopServicemanBackgroundService();
       }
 
@@ -399,7 +400,10 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => SystemNavigator.pop(),
+                          onTap: () async {
+                            Navigator.pop(context); // close dialog first
+                            await _handleExitApp(); // 🔥 offline + disconnect + stop + exit
+                          },
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
@@ -428,6 +432,36 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
         );
       },
     ) ?? false;
+  }
+
+  Future<void> _handleExitApp() async {
+    try {
+      final serviceOnlineVm =
+      Provider.of<ServiceOnlineStatusViewModel>(context, listen: false);
+
+      final position = await LocationUtils.getLocation();
+      final lat = position.latitude.toString();
+      final lng = position.longitude.toString();
+
+      // 🔴 1️⃣ Make serviceman offline
+      await serviceOnlineVm.serviceOnlineStatusApi(
+        0,
+        lat,
+        lng,
+        context,
+      );
+    } catch (e) {
+      debugPrint("Exit Offline API error: $e");
+    }
+
+    // 🔌 2️⃣ Disconnect socket (UI isolate)
+    ServicemanSocketService().disconnect();
+
+    // 📴 3️⃣ Stop background service
+    await stopServicemanBackgroundService();
+
+    // 🚪 4️⃣ Close app
+    SystemNavigator.pop();
   }
 
 

@@ -5,6 +5,9 @@ import 'package:rainbow_partner/auth/splash.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/service/background_service.dart';
+import 'package:rainbow_partner/service/socket_service.dart';
+import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/bank_update_request.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/edit_serviceman_profile.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_add_bank.dart';
@@ -14,6 +17,7 @@ import 'package:rainbow_partner/view/Service%20Man/drawer/service_privacy_policy
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_wallet_balance.dart';
 import 'package:rainbow_partner/view/Service%20Man/partner_notification.dart';
 import 'package:rainbow_partner/view/Service%20Man/service_terms_and_condition.dart';
+import 'package:rainbow_partner/view_model/service_man/service_online_status_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
@@ -101,13 +105,9 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                     // SIGN OUT BUTTON
                     Expanded(
                       child: InkWell(
-                        onTap: () {
-                          UserViewModel().remove();
-                          Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Splash()),
-                                  (context) => false);
+                        onTap: () async {
+                          Navigator.pop(context); // dialog close first
+                          await _handleServicemanLogout();
                         },
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
@@ -137,8 +137,52 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
     );
   }
 
+  Future<void> _handleServicemanLogout() async {
+    try {
+      final serviceOnlineVm =
+      Provider.of<ServiceOnlineStatusViewModel>(context, listen: false);
 
+      final profileVm =
+      Provider.of<ServicemanProfileViewModel>(context, listen: false);
 
+      // 🔥 Get current location
+      final position = await LocationUtils.getLocation();
+      final lat = position.latitude.toString();
+      final lng = position.longitude.toString();
+
+      // 🔴 1️⃣ Make serviceman offline
+      await serviceOnlineVm.serviceOnlineStatusApi(
+        0,
+        lat,
+        lng,
+        context,
+      );
+
+      // 🔄 2️⃣ Refresh profile (optional but good)
+      await profileVm.servicemanProfileApi(lat, lng, context);
+
+    } catch (e) {
+      debugPrint("Logout Offline API Error: $e");
+    }
+
+    // 🔌 3️⃣ Disconnect socket (UI side)
+    ServicemanSocketService().disconnect();
+
+    // 📴 4️⃣ Stop background service
+    await stopServicemanBackgroundService();
+
+    // 🧹 5️⃣ Clear user data
+    await UserViewModel().remove();
+
+    // 🚪 6️⃣ Navigate to Splash
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => Splash()),
+          (_) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

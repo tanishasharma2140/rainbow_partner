@@ -37,7 +37,7 @@ class ApiUrl {
   static const String driverOnlineUrl ="${baseUrl}driver-online-status";
   static const String driverCanDiscountUrl ="${baseUrl}driver-can-discount";
   static const String driverOfferUrl ="${baseUrl}driver-offer";
-  static const String deleteExpiredUrl ="${baseUrl}delete-expired-orders";
+  // static const String deleteExpiredUrl ="${baseUrl}delete-expired-orders";
   static const String changeCabOrderStatusUrl ="${baseUrl}change-cab-order-status";
   static const String driverTransactionUrl ="${baseUrl}driver_transactions";
   static const String cabEarningUrl ="${baseUrl}cab-earning";

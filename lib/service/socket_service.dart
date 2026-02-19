@@ -133,6 +133,13 @@ class ServicemanSocketService {
       print("🔴 [BG SOCKET] DISCONNECTED");
     });
   }
+  void disconnect() {
+    print("🛑 [BG SOCKET] disconnect()");
+
+    socket?.disconnect();
+    socket?.dispose();
+    socket = null;
+  }
 
   void dispose() {
     print("🛑 [BG SOCKET] dispose()");
@@ -140,6 +147,7 @@ class ServicemanSocketService {
     socket?.dispose();
     socket = null;
   }
+
 }
 
 

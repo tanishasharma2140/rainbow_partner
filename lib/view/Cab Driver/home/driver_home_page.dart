@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +9,7 @@ import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/service/background_service.dart';
+import 'package:rainbow_partner/service/driver_socket_service.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/action/driver_profile.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/driver_setting.dart';
@@ -144,7 +144,10 @@ class _DriverHomePageState extends State<DriverHomePage> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => SystemNavigator.pop(),
+                          onTap: () async {
+                            Navigator.pop(context); // dialog close
+                            await _handleExit();
+                          },
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
@@ -191,6 +194,33 @@ class _DriverHomePageState extends State<DriverHomePage> {
     initializeBackgroundService();
 
   }
+
+  Future<void> _handleExit() async {
+    final driverOnlineVm =
+    Provider.of<DriverOnlineStatusViewModel>(context, listen: false);
+
+    try {
+      // 🔥 Make driver offline
+      await driverOnlineVm.driverOnlineStatusApi(
+        0, // offline
+        0.0,
+        0.0,
+        context,
+      );
+    } catch (e) {
+      debugPrint("Offline API error: $e");
+    }
+
+    // 🔌 Disconnect socket
+    DriverSocketService().disconnect();
+
+    // 📴 Stop background service
+    await stopBackgroundService();
+
+    // 🚪 Close app
+    SystemNavigator.pop();
+  }
+
 
 
   @override
