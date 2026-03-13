@@ -262,7 +262,6 @@ class AuthViewModel with ChangeNotifier {
   bool get loginLoading => _loginLoading;
 
   void setLoginLoading(bool value) {
-
     _loginLoading = value;
     notifyListeners();
   }

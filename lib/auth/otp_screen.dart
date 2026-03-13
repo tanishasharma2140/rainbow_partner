@@ -7,7 +7,6 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
-import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
 

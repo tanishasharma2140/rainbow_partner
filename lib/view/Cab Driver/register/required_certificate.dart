@@ -27,7 +27,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
 
   /// ---------------- CERTIFICATE MAP ----------------
   final Map<String, File?> certificateFiles = {
-    "Fitness\nCertificate\n(Optional)": null,
+    "RC\nCertificate\n(Optional)": null,
     "Pollution (PUC)\nCertificate": null,
     "Insurance\nCertificate": null,
     "Police Verification\nCertificate\n(Optional)": null,
@@ -35,7 +35,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
 
   /// ---------------- GETTERS FOR API ----------------
   File? get fitnessCertificate =>
-      certificateFiles["Fitness\nCertificate\n(Optional)"];
+      certificateFiles["RC\nCertificate\n(Optional)"];
 
   File? get pollutionCertificate =>
       certificateFiles["Pollution (PUC)\nCertificate"];

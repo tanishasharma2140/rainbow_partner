@@ -8,6 +8,7 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/service/background_service.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view_model/cabdriver/accept_later_ride_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/delete_expired_order_view_model.dart';
@@ -15,6 +16,7 @@ import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_mo
 import 'package:rainbow_partner/view_model/cabdriver/driver_ignore_order_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_offer_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
+import 'package:rainbow_partner/view_model/user_view_model.dart';
 import 'home/driver_accepted_scree.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
@@ -44,27 +46,8 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _getCurrentLocation();
       _loadMarkerIcon();
+      _startSocket();
 
-      // final deleteOrder = Provider.of<DeleteExpiredOrderViewModel>(
-      //   context,
-      //   listen: false,
-      // );
-
-      /// FIRST CALL
-      // deleteOrder.deleteExpiredOrderApi().then((success) {
-      //   if (success) {
-      //     // _stopRinger();
-      //   }
-      // });
-      //
-      // /// EVERY 1 MINUTE
-      // _deleteOrderTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
-      //   deleteOrder.deleteExpiredOrderApi().then((success) {
-      //     if (success) {
-      //       // _stopRinger();
-      //     }
-      //   });
-      // });
     });
 
     // 🔊 Listen to audio player completion
@@ -72,33 +55,23 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
       _isRingerPlaying = false;
     });
   }
+  Future<void> _startSocket() async {
+    final userViewModel = UserViewModel();
 
-  // 🔊 PLAY RINGER (LOOP CONTINUOUSLY)
-  // Future<void> _playRinger() async {
-  //   if (_isRingerPlaying) return;
-  //
-  //   _isRingerPlaying = true;
-  //
-  //   try {
-  //     // Play in loop mode
-  //     await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-  //     await _audioPlayer.play(AssetSource('driver_ring.mp3'));
-  //
-  //     debugPrint("🔊 Ringer Started (Loop Mode)");
-  //   } catch (e) {
-  //     debugPrint("🔊 Ringer Error: $e");
-  //     _isRingerPlaying = false;
-  //   }
-  // }
+    String? driverId = await userViewModel.getUser();
 
-  // 🔇 STOP RINGER
-  // Future<void> _stopRinger() async {
-  //   if (!_isRingerPlaying) return;
-  //
-  //   await _audioPlayer.stop();
-  //   _isRingerPlaying = false;
-  //   debugPrint("🔇 Ringer Stopped");
-  // }
+    if (driverId == null || driverId == 0) {
+      debugPrint("❌ Driver ID not found, socket not started");
+      return;
+    }
+
+    debugPrint("✅ Starting socket with driverId: $driverId");
+
+    // Background service start
+    initializeBackgroundService();
+  }
+
+
 
   Future<BitmapDescriptor> _resizeMarker(String assetPath, int width) async {
     final ByteData data = await rootBundle.load(assetPath);

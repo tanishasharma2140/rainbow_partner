@@ -39,7 +39,6 @@ class DriverRegisterOneViewModel with ChangeNotifier {
     required String lastName,
     required String dob,
     required String deviceId,
-    // required String fcm,
     required BuildContext context,
   }) async {
     setLoading(true);

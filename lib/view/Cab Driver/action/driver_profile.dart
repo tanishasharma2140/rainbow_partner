@@ -246,7 +246,7 @@ class _DriverProfileState extends State<DriverProfile> {
                 sectionTitle("Certificates"),
 
                 if (data.fitnessCertificate != null && data.fitnessCertificate.toString().isNotEmpty) ...[
-                  viewImageBox("Fitness Certificate", data.fitnessCertificate),
+                  viewImageBox("RC Certificate", data.fitnessCertificate),
                   const SizedBox(height: 12),
                 ],
 

@@ -192,19 +192,33 @@ class _DrivingLicenseState extends State<DrivingLicense> {
           DateTime? picked = await showDatePicker(
             context: context,
             firstDate: DateTime(1950),
-            lastDate: DateTime.now().add(const Duration(days: 3650)),
+            lastDate: DateTime(2065, 12, 31), // ✅ 2065 tak
             initialDate: DateTime.now(),
+            builder: (context, child) {
+              return Theme(
+                data: Theme.of(context).copyWith(
+                  colorScheme: const ColorScheme.light(
+                    primary: Colors.blue, // header + selected date
+                    onPrimary: Colors.white, // header text
+                    onSurface: Colors.black, // normal text
+                  ),
+                  dialogBackgroundColor: Colors.white, // calendar bg
+                ),
+                child: child!,
+              );
+            },
           );
 
           if (picked != null) {
             final String year = picked.year.toString();
-            final String month = picked.month.toString().padLeft(2, '0');
-            final String day = picked.day.toString().padLeft(2, '0');
+            final String month =
+            picked.month.toString().padLeft(2, '0');
+            final String day =
+            picked.day.toString().padLeft(2, '0');
 
             controller.text = "$year-$month-$day";
           }
         }
-
             : null,
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart' as AppSettings;
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
@@ -192,7 +193,6 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
     // Background service start
     initializeBackgroundService();
-
   }
 
   Future<void> _handleExit() async {
@@ -507,12 +507,9 @@ class _DriverHomePageState extends State<DriverHomePage> {
   // -------------------------------------------------
   Widget _onlineSwitch() {
     final driverProfileVm = Provider.of<DriverProfileViewModel>(context);
-    final driverOnlineVm = Provider.of<DriverOnlineStatusViewModel>(
-      context,
-      listen: false,
-    );
+    final driverOnlineVm =
+    Provider.of<DriverOnlineStatusViewModel>(context, listen: false);
 
-    /// 🔥 ONLINE STATUS DIRECT FROM PROFILE
     final bool isOnline =
         driverProfileVm.driverProfileModel?.data?.onlineStatus == 1;
 
@@ -543,40 +540,164 @@ class _DriverHomePageState extends State<DriverHomePage> {
             value: isOnline,
             activeColor: Colors.green,
             onChanged: (value) async {
-              int status = value ? 1 : 0;
 
-              final position = await LocationUtils.getLocation();
+              /// 🔥 Agar ONLINE karna hai
+              if (value) {
 
-              /// 🔥 1️⃣ ONLINE/OFFLINE API
-              await driverOnlineVm.driverOnlineStatusApi(
-                status,
-                position.latitude,
-                position.longitude,
-                context,
-              );
+                showLocationPermissionDialog(
+                  context,
+                  onAccept: () async {
 
-              /// 🔁 2️⃣ PROFILE REFRESH
-              await driverProfileVm.driverProfileApi(
-                position.latitude.toString(),
-                position.longitude.toString(),
-                context,
-              );
+                    // 🔹 Foreground permission already dialog me request ho raha hai
 
-              /// 🔥 3️⃣ SOCKET CONTROL
-              if (status == 1) {
-                // ✅ ONLINE → START SOCKET
-                await _startSocket();
+                    // 🔹 Location fetch karo
+                    final position = await LocationUtils.getLocation();
+
+                    /// 🔥 1️⃣ ONLINE API CALL
+                    await driverOnlineVm.driverOnlineStatusApi(
+                      1,
+                      position.latitude,
+                      position.longitude,
+                      context,
+                    );
+
+                    /// 🔁 2️⃣ PROFILE REFRESH
+                    await driverProfileVm.driverProfileApi(
+                      position.latitude.toString(),
+                      position.longitude.toString(),
+                      context,
+                    );
+
+                    /// 🔥 3️⃣ START SOCKET
+                    await _startSocket();
+                  },
+                );
+
               } else {
-                // ❌ OFFLINE → STOP SOCKET
-                await stopBackgroundService ();
+
+                /// 🔥 OFFLINE direct kare
+                final position = await LocationUtils.getLocation();
+
+                await driverOnlineVm.driverOnlineStatusApi(
+                  0,
+                  position.latitude,
+                  position.longitude,
+                  context,
+                );
+
+                await driverProfileVm.driverProfileApi(
+                  position.latitude.toString(),
+                  position.longitude.toString(),
+                  context,
+                );
+
+                await stopBackgroundService();
               }
             },
           ),
-
         ],
       ),
     );
   }
+
+  void showLocationPermissionDialog(
+      BuildContext context, {
+        required VoidCallback onAccept,
+      }) {
+    // final loc = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.4),
+      builder: (context) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.85,
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextConst(
+                    title: "Foreground Location Access Permissions Required",
+                    size: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  const SizedBox(height: 12),
+                  TextConst(
+                    title: "This app collects your location even when the app is closed or not in use to enable ride matching, show nearby ride requests, and keep you available while you are online as a driver.",
+                    size: 14,
+                    color: Colors.black87,
+                  ),
+                  const SizedBox(height: 20),
+
+                  /// Buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child:  Text(
+                          "CANCEL",
+                          style: TextStyle(
+                            color: Colors.pink,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      TextButton(
+                        onPressed: () async {
+                          Navigator.pop(context);
+
+                          // 🔥 YAHI WO "WHILE USING THE APP" WALA ALERT HAI
+                          final status = await AppSettings
+                              .Permission
+                              .locationWhenInUse
+                              .request();
+
+                          if (status.isGranted) {
+                            onAccept(); // aage jao
+                          } else if (status.isDenied) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  "Location permission is required",
+                                ),
+                              ),
+                            );
+                          } else if (status.isPermanentlyDenied) {
+                            AppSettings.openAppSettings();
+                          }
+                        },
+                        child:  Text(
+                          "ACCEPT",
+                          style: TextStyle(
+                            color: Colors.pink,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
 
   // -------------------------------------------------
   //                     STATS BOX

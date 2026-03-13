@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:rainbow_partner/check_for_update.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_loader.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
@@ -27,6 +28,10 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkForUpdate();
+    });
 
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1500),
