@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/animated_gradient_border.dart';
 import 'package:rainbow_partner/res/app_color.dart';
-import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view_model/service_man/payment_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/transaction_history_view_model.dart';
+import 'package:rainbow_partner/model/transaction_history_model.dart';
 
 class ServiceDueWallet extends StatefulWidget {
   const ServiceDueWallet({super.key});
@@ -110,7 +110,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                     dueAmount.toInt().toString(), // full due amount
                   5, // due wallet mode
                   "", // order
-                  "", // module
+                  1, // module
                   context,
                 );
 
@@ -126,6 +126,62 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
         );
       },
     );
+  }
+
+  String getPaymentType(int? type) {
+    switch (type) {
+      case 1:
+        return "Online";
+      case 2:
+        return "Offline";
+      case 3:
+        return "Wallet";
+      case 5:
+        return "Due Wallet";
+      default:
+        return "Unknown";
+    }
+  }
+
+  Color getPaymentTypeColor(int? type) {
+    switch (type) {
+      case 1:
+        return Colors.green;
+      case 2:
+        return Colors.orange;
+      case 3:
+        return Colors.blue;
+      case 5:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String getStatus(int? status) {
+    switch (status) {
+      case 0:
+        return "Pending";
+      case 1:
+        return "Success";
+      case 2:
+        return "Failed";
+      default:
+        return "Unknown";
+    }
+  }
+
+  Color getStatusColor(int? status) {
+    switch (status) {
+      case 0:
+        return Colors.orange;
+      case 1:
+        return Colors.green;
+      case 2:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 
   @override
@@ -413,7 +469,11 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
   // }
 
   // ================= TRANSACTION TILE =================
+// ================= TRANSACTION TILE =================
   Widget _transactionTile(payment) {
+    final typeInfo = _getTypeInfo(payment.paymentType);
+    final statusInfo = _getStatusInfo(payment.status);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -422,37 +482,153 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5)],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // Row 1: Title + Amount
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const TextConst(
                 title: "Service Transaction",
                 size: 15,
                 fontWeight: FontWeight.w600,
               ),
-              const SizedBox(height: 4),
               Text(
-                payment.paymentDate ?? "",
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                "₹ ${payment.amount ?? "0"}",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColor.royalBlue,
+                ),
               ),
             ],
           ),
-          Text(
-            "₹ ${payment.amount}",
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColor.royalBlue,
-            ),
+
+          const SizedBox(height: 8),
+
+          // Row 2: Type Badge + Status Badge
+          Row(
+            children: [
+              _badge(typeInfo["label"], typeInfo["color"]),
+              const SizedBox(width: 8),
+              _badge(statusInfo["label"], statusInfo["color"]),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+          const Divider(height: 1, thickness: 0.5),
+          const SizedBox(height: 10),
+
+          // Row 3: Final Amount + Platform Fee
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Final Amount",
+                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    "₹ ${payment.finalAmount ?? "0"}",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text(
+                    "Platform Fee",
+                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    "${payment.platformFee ?? "0"}",
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          // Row 4: Date
+          Row(
+            children: [
+              const Icon(Icons.access_time, size: 12, color: Colors.grey),
+              const SizedBox(width: 4),
+              Text(
+                payment.paymentDate ?? "",
+                style: const TextStyle(fontSize: 11, color: Colors.grey),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
+// ================= BADGE WIDGET =================
+  Widget _badge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+// ================= TYPE LABEL =================
+  Map<String, dynamic> _getTypeInfo(dynamic paymentType) {
+    switch (paymentType) {
+      case 1:
+        return {"label": "Online", "color": Colors.blue};
+      case 2:
+        return {"label": "Offline", "color": Colors.orange};
+      case 3:
+        return {"label": "Wallet", "color": Colors.purple};
+      case 5:
+        return {"label": "Due Wallet", "color": Colors.red};
+      default:
+        return {"label": "Unknown", "color": Colors.grey};
+    }
+  }
+
+// ================= STATUS LABEL =================
+  Map<String, dynamic> _getStatusInfo(dynamic status) {
+    switch (status) {
+      case 0:
+        return {"label": "Pending", "color": Colors.orange};
+      case 1:
+        return {"label": "Success", "color": Colors.green};
+      case 2:
+        return {"label": "Failed", "color": Colors.red};
+      default:
+        return {"label": "Unknown", "color": Colors.grey};
+    }
+  }
   // ================= FILTER LOGIC =================
   List _getFilteredList(TransactionHistoryViewModel vm) {
     final list = vm.transactionHistoryModel?.data ?? [];

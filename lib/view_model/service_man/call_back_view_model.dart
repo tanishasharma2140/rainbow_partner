@@ -19,7 +19,6 @@ class CallBackViewModel with ChangeNotifier {
   Future<void> callBackApi(
       dynamic orderID,
       dynamic status,
-      // dynamic moduleType, // <-- even if passed, we will ignore
       BuildContext context,
       ) async {
     setLoading(true);

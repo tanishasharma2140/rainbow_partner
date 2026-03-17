@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
@@ -25,6 +26,7 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
   final TextEditingController ifscCode = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  bool _reAccountObscure = true; // 👈 eye toggle state
 
   @override
   Widget build(BuildContext context) {
@@ -43,21 +45,27 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
             children: [
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon:  Icon(Icons.arrow_back, color: Colors.white),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-               TextConst(
+              const TextConst(
                 title: "Add Bank",
                 color: Colors.white,
                 size: 20,
                 fontWeight: FontWeight.w600,
               ),
-              Spacer(),
+              const Spacer(),
               GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, CupertinoPageRoute(builder: (context)=> ServiceBankHistory()));
-                  },
-                  child: Icon(Icons.history,color: AppColor.white,size: 27,)),
-              SizedBox(width: Sizes.screenWidth*0.04,)
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (context) => const ServiceBankHistory(),
+                    ),
+                  );
+                },
+                child: const Icon(Icons.history, color: AppColor.white, size: 27),
+              ),
+              SizedBox(width: Sizes.screenWidth * 0.04),
             ],
           ),
         ),
@@ -76,6 +84,9 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                     _inputBox(
                       controller: bankName,
                       hint: "State Bank of India",
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),
+                      ],
                       validator: (v) =>
                       v!.isEmpty ? "Please enter bank name" : null,
                     ),
@@ -85,8 +96,8 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                       controller: accountNumber,
                       hint: "Enter Account Number",
                       keyboard: TextInputType.number,
-                      maxLength: 12,
-
+                      maxLength: 18,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       validator: (v) =>
                       v!.isEmpty ? "Please enter account number" : null,
                     ),
@@ -95,8 +106,24 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                     _inputBox(
                       controller: reAccountNumber,
                       hint: "Re-enter account number",
-                      maxLength: 12,
+                      maxLength: 18,
                       keyboard: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      obscure: _reAccountObscure, // 👈 toggled by state
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _reAccountObscure
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _reAccountObscure = !_reAccountObscure;
+                          });
+                        },
+                      ),
                       validator: (v) {
                         if (v!.isEmpty) return "Please re-enter account number";
                         if (v != accountNumber.text) {
@@ -109,8 +136,12 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                     _fieldTitle("Account Holder Name"),
                     _inputBox(
                       controller: holderName,
-                      hint: "Enter AccountHolder Name",
+                      hint: "Enter Account Holder Name",
                       maxLength: 35,
+                      // ✅ Only alphabets and spaces allowed
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),
+                      ],
                       validator: (v) =>
                       v!.isEmpty ? "Please enter account holder name" : null,
                     ),
@@ -133,23 +164,14 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                       onTap: () {
                         if (_formKey.currentState!.validate()) {
                           serviceAddBankVm.addBankDetailApi(
-                              1,
-                              bankName.text,
-                              accountNumber.text,
-                              reAccountNumber.text,
-                              holderName.text,
-                              ifscCode.text, context);
-                          // API READY DATA
-                          // final bankData = {
-                          //   "bank_name": bankName.text,
-                          //   "account_number": accountNumber.text,
-                          //   "re_account_number": reAccountNumber.text,
-                          //   "account_holder_name": holderName.text,
-                          //   "ifsc_code": ifscCode.text,
-                          // };
-
-
-                          // TODO: call API here
+                            1,
+                            bankName.text,
+                            accountNumber.text,
+                            reAccountNumber.text,
+                            holderName.text,
+                            ifscCode.text,
+                            context,
+                          );
                         }
                       },
                     ),
@@ -169,7 +191,7 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: Colors.black26,
                           blurRadius: 10,
@@ -214,6 +236,9 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
     String? Function(String?)? validator,
     TextCapitalization textCap = TextCapitalization.none,
     int? maxLength,
+    bool obscure = false,
+    List<TextInputFormatter>? inputFormatters,
+    Widget? suffixIcon, // 👈 added
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -227,11 +252,15 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
         validator: validator,
         textCapitalization: textCap,
         maxLength: maxLength,
+        obscureText: obscure,
+        inputFormatters: inputFormatters,
         decoration: InputDecoration(
-          counterText: "", // 👈 counter hide
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          counterText: "",
+          contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           border: InputBorder.none,
           hintText: hint,
+          suffixIcon: suffixIcon, // 👈 added
           hintStyle: TextStyle(
             color: Colors.grey.shade400,
             fontFamily: AppFonts.kanitReg,
@@ -240,5 +269,4 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
       ),
     );
   }
-
 }

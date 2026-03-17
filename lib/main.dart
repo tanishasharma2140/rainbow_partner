@@ -76,6 +76,8 @@ MethodChannel('rainbow_partner/native_callback');
 
 @pragma('vm:entry-point')
 void servicemanNotificationBackgroundTap(NotificationResponse response) {
+  debugPrint("🔥 BACKGROUND TAP RECEIVED");
+
   ServicemanNotificationHelper.handleAction(response);
 }
 
@@ -144,34 +146,57 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
+     ServicemanNotificationHelper.init();
     servicemanActionSub =
         ServicemanNotificationHelper.actionStream.listen((action) async {
+
+          print("🔥 SERVICE ACTION RECEIVED");
+          print("👉 TYPE: ${action.type}");
+          print("📦 DATA: ${action.orderData}");
+
           final orderData = action.orderData;
           final orderId = orderData['order_id'];
 
-          final context = navigatorKey.currentContext;
-          if (context == null) return;
+          Future.delayed(const Duration(milliseconds: 500), () async {
+            final context = navigatorKey.currentContext;
 
-          switch (action.type) {
-            case ServiceActionType.accept:
-              FlutterBackgroundService().invoke('STOP_RINGTONE');
+            if (context == null) {
+              print("❌ Context still null (SERVICE)");
+              return;
+            }
 
-              navigatorKey.currentState?.push(
-                MaterialPageRoute(
-                  builder: (_) => ServiceTotalBooking(),
-                ),
-              );
-              break;
+            switch (action.type) {
 
-            case ServiceActionType.reject:
-              final ignoreVm =
-              Provider.of<IgnoreServiceOrderViewModel>(context, listen: false);
+            /// ✅ ACCEPT
+              case ServiceActionType.accept:
+                print("✅ SERVICE ACCEPT CLICKED");
+                print("📦 Order ID: $orderId");
 
-              await ignoreVm.ignoreServiceOrderApi(orderId, context);
-              await ServicemanNotificationHelper.clear();
-              break;
-          }
+                FlutterBackgroundService().invoke('STOP_RINGTONE');
+
+                navigatorKey.currentState?.push(
+                  MaterialPageRoute(
+                    builder: (_) => ServiceTotalBooking(),
+                  ),
+                );
+                break;
+
+            /// ❌ REJECT
+              case ServiceActionType.reject:
+                print("❌ SERVICE REJECT CLICKED");
+                print("📦 Order ID: $orderId");
+
+                final ignoreVm =
+                Provider.of<IgnoreServiceOrderViewModel>(context, listen: false);
+
+                await ignoreVm.ignoreServiceOrderApi(orderId, context);
+
+                print("✅ SERVICE IGNORE API CALLED");
+
+                await ServicemanNotificationHelper.clear();
+                break;
+            }
+          });
         });
 
 
@@ -295,7 +320,6 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> DriverOnlineStatusViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverCanDiscountViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverOfferViewModel()),
-          // ChangeNotifierProvider(create: (context)=> DeleteExpiredOrderViewModel()),
           ChangeNotifierProvider(create: (context)=> ChangeCabOrderStatusViewModel()),
           ChangeNotifierProvider(create: (context)=> CabEarningViewModel()),
           ChangeNotifierProvider(create: (context)=> DriverTransactionViewModel()),

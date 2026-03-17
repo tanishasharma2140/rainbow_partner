@@ -97,18 +97,18 @@ class _PersonalInformationState extends State<PersonalInformation> {
     return SafeArea(
       top: false,
       bottom: true,
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        backgroundColor: Colors.white,
+      child: Stack(
+        children: [
+          Scaffold(
+            resizeToAvoidBottomInset: true,
+            backgroundColor: Colors.white,
 
-        appBar: ConstantAppbar(
-          onBack: () => Navigator.pop(context),
-          onClose: () =>  SystemNavigator.pop(),
-        ),
+            appBar: ConstantAppbar(
+              onBack: () => Navigator.pop(context),
+              onClose: () =>  SystemNavigator.pop(),
+            ),
 
-        body: Stack(
-          children: [
-            LayoutBuilder(
+            body: LayoutBuilder(
               builder: (context, constraints) {
                 return SingleChildScrollView(
                   child: ConstrainedBox(
@@ -362,37 +362,37 @@ class _PersonalInformationState extends State<PersonalInformation> {
                 );
               },
             ),
-            if (driverRegOneVm.loading)
-              Container(
-                color: Colors.black54,
-                child: Center(
-                  child: Container(
-                    height: Sizes.screenHeight * 0.13,
-                    width: Sizes.screenWidth * 0.28,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: GradientCirPro(
-                        strokeWidth: 6,
-                        size: 70,
-                        gradient: AppColor.circularIndicator,
+          ),
+          if (driverRegOneVm.loading)
+            Container(
+              color: Colors.black54,
+              child: Center(
+                child: Container(
+                  height: Sizes.screenHeight * 0.13,
+                  width: Sizes.screenWidth * 0.28,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        spreadRadius: 2,
                       ),
+                    ],
+                  ),
+                  child: Center(
+                    child: GradientCirPro(
+                      strokeWidth: 6,
+                      size: 70,
+                      gradient: AppColor.circularIndicator,
                     ),
                   ),
                 ),
               ),
+            ),
+        ],
 
-          ],
-        ),
       ),
     );
   }

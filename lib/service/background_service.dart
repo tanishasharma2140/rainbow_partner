@@ -186,7 +186,7 @@ void initializeBackgroundService() async {
       onStart: backgroundServiceOnStart,
 
       notificationChannelId: 'SERVICE_CHANNEL',
-      initialNotificationTitle: 'Rainbow Driver Online',
+      // initialNotificationTitle: 'Rainbow Driver Online',
       initialNotificationContent: 'Waiting for rides',
       foregroundServiceNotificationId: 888,
     ),

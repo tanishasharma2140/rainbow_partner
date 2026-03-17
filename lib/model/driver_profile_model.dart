@@ -23,6 +23,7 @@ class Data {
   dynamic id;
   dynamic wallet;
   dynamic dueWallet;
+  dynamic vehicleId;
   dynamic platformType;
   dynamic vehicleType;
   dynamic vehicleName;
@@ -82,6 +83,7 @@ class Data {
       {this.id,
         this.wallet,
         this.dueWallet,
+        this.vehicleId,
         this.platformType,
         this.vehicleType,
         this.vehicleName,
@@ -142,6 +144,7 @@ class Data {
     id = json['id'];
     wallet = json['wallet'];
     dueWallet = json['due_wallet'];
+    vehicleId = json['vehicle_id'];
     platformType = json['platform_type'];
     vehicleType = json['vehicle_type'];
     vehicleName = json['vehicle_name'];
@@ -205,6 +208,7 @@ class Data {
     data['id'] = id;
     data['wallet'] = wallet;
     data['due_wallet'] = dueWallet;
+    data['vehicle_id'] = vehicleId;
     data['platform_type'] = platformType;
     data['vehicle_type'] = vehicleType;
     data['vehicle_name'] = vehicleName;

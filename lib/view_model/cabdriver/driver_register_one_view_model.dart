@@ -105,7 +105,7 @@ class DriverRegisterOneViewModel with ChangeNotifier {
         }
 
         if (isPendingOrRejected(profile.personalInformationStatus)) {
-          Navigator.push(context, CupertinoPageRoute(builder: (context)=>PersonalInformation(vehicleId: "", vehicleName: "", mobileNumber: "", profileId: 1)));
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>PersonalInformation(vehicleId: profile.vehicleId, vehicleName: profile.vehicleName, mobileNumber: profile.mobile, profileId: 1)));
         } else if (isPendingOrRejected(profile.driverLicenceStatus)) {
           Navigator.push(context, CupertinoPageRoute(builder: (context)=>DrivingLicense()));
         } else if (isPendingOrRejected(profile.aadhaarPanStatus)) {

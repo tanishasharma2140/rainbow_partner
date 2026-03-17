@@ -82,6 +82,11 @@ class ServicemanSocketService {
     required Function(Map<String, dynamic>) onNewOrder,
     required Function() onOrderRemoved,
   }) {
+    if (socket != null && socket!.connected) {
+      print("🟢 Socket already connected, skipping reconnect");
+      return;
+    }
+
     print("🟡 [BG SOCKET] connect() called");
     print("🆔 [BG SOCKET] servicemanId = $servicemanId");
 
@@ -93,7 +98,10 @@ class ServicemanSocketService {
       IO.OptionBuilder()
           .setPath("/socket/live")
           .setTransports(['websocket'])
-          .enableForceNew() // 🔥 VERY IMPORTANT
+          .enableForceNew()
+          .enableReconnection()              // ✅ ADD THIS
+          .setReconnectionAttempts(999999)
+      // 🔥 VERY IMPORTANT
           .build(),
     );
 

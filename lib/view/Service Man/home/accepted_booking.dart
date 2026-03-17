@@ -519,7 +519,6 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                           ),
                           _detailRow("Address :", booking.serviceAddress),
                           _detailRow("Amount :", "₹${booking.amount}"),
-                          _detailRow("GST :", "₹${booking.gstCharges}"),
                           _detailRow(
                             "Final Amount :",
                             "₹${booking.finalAmount}",

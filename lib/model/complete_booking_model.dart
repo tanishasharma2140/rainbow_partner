@@ -43,7 +43,6 @@ class Data {
   dynamic servicemanMobile;
   dynamic amount;
   dynamic couponDiscount;
-  dynamic gstCharges;
   dynamic finalAmount;
   dynamic paymentStatus;
   dynamic serviceStatus;
@@ -76,7 +75,6 @@ class Data {
         this.servicemanMobile,
         this.amount,
         this.couponDiscount,
-        this.gstCharges,
         this.finalAmount,
         this.paymentStatus,
         this.serviceStatus,
@@ -110,7 +108,6 @@ class Data {
     servicemanMobile = json['serviceman_mobile'];
     amount = json['amount'];
     couponDiscount = json['coupon_discount'];
-    gstCharges = json['gst_charges'];
     finalAmount = json['final_amount'];
     paymentStatus = json['payment_status'];
     serviceStatus = json['service_status'];
@@ -145,7 +142,6 @@ class Data {
     data['serviceman_mobile'] = servicemanMobile;
     data['amount'] = amount;
     data['coupon_discount'] = couponDiscount;
-    data['gst_charges'] = gstCharges;
     data['final_amount'] = finalAmount;
     data['payment_status'] = paymentStatus;
     data['service_status'] = serviceStatus;

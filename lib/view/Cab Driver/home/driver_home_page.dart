@@ -305,16 +305,19 @@ class _DriverHomePageState extends State<DriverHomePage> {
                                       color: Colors.white70,
                                     ),
                                     SizedBox(height: 5),
-                                    TextConst(
+
+                                    TextConst(// ✅ no Expanded
                                       title:
-                                          "${driverProfileVm.driverProfileModel?.data?.firstName ?? ""} "
+                                      "${driverProfileVm.driverProfileModel?.data?.firstName ?? ""} "
                                           "${driverProfileVm.driverProfileModel?.data?.lastName ?? ""}",
-                                      size: 22,
+                                      size: 20,
                                       fontWeight: FontWeight.w700,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       color: Colors.white,
                                     ),
                                   ],
-                                ),
+                                )
                               ],
                             ),
                           ),

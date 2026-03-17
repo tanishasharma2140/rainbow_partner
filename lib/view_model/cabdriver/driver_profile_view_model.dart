@@ -1,9 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rainbow_partner/model/driver_profile_model.dart';
-import 'package:rainbow_partner/model/vehicle_brand_model.dart';
 import 'package:rainbow_partner/repo/cabdriver/driver_profile_repo.dart';
-import 'package:rainbow_partner/repo/cabdriver/vehicle_brand_repo.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 

@@ -455,7 +455,5 @@ class AuthViewModel with ChangeNotifier {
     phoneController.clear();
     super.dispose();
   }
-
-
 }
 
