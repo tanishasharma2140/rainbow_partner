@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rainbow_partner/check_for_update.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_loader.dart';
@@ -75,61 +76,67 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: Scaffold(
-        backgroundColor: AppColor.royalBlue,
-        body: Column(
-          children: [
-            const Spacer(),
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop();
+        return false;
+      },
+      child: SafeArea(
+        top: false,
+        bottom: true,
+        child: Scaffold(
+          backgroundColor: AppColor.royalBlue,
+          body: Column(
+            children: [
+              const Spacer(),
 
-            if (_showLogo)
-              FadeTransition(
-                opacity: _logoAnimation,
-                child: ScaleTransition(
-                  scale: _logoAnimation,
-                  child: Image.asset(
-                    'assets/rainbow_logo.png',
-                    width: 240,
+              if (_showLogo)
+                FadeTransition(
+                  opacity: _logoAnimation,
+                  child: ScaleTransition(
+                    scale: _logoAnimation,
+                    child: Image.asset(
+                      'assets/rainbow_logo.png',
+                      width: 240,
+                    ),
                   ),
                 ),
-              ),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-            if (_showTextImage)
-              FadeTransition(
-                opacity: _textAnimation,
-                child: Image.asset(
-                  'assets/rainbow_part_text.png',
-                  width: 190,
+              if (_showTextImage)
+                FadeTransition(
+                  opacity: _textAnimation,
+                  child: Image.asset(
+                    'assets/rainbow_part_text.png',
+                    width: 190,
+                  ),
                 ),
+              const Spacer(),
+              Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.circle, size: 15, color: AppColor.white),
+                      SizedBox(width: 8),
+                      TextConst(
+                        title: "rainboW Partner",
+                        size: 15,
+                        color: AppColor.white,
+                        fontFamily: AppFonts.poppinsReg,
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: Sizes.screenHeight * 0.02),
+
+                  const CustomLoader(),
+                  SizedBox(height: Sizes.screenHeight * 0.04),
+                ],
               ),
-            const Spacer(),
-            Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.circle, size: 15, color: AppColor.white),
-                    SizedBox(width: 8),
-                    TextConst(
-                      title: "rainboW Partner",
-                      size: 15,
-                      color: AppColor.white,
-                      fontFamily: AppFonts.poppinsReg,
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: Sizes.screenHeight * 0.02),
-
-                const CustomLoader(),
-                SizedBox(height: Sizes.screenHeight * 0.04),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

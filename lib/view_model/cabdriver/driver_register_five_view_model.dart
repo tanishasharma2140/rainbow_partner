@@ -85,33 +85,49 @@ class DriverRegisterFiveViewModel with ChangeNotifier {
 
         // 🔥 STEP BASED NAVIGATION
         if (isPendingOrRejected(profile.personalInformationStatus)) {
-          Navigator.push(context, CupertinoPageRoute(builder: (_) => PersonalInformation(
-            vehicleId: "",
-            vehicleName: "",
-            mobileNumber: "",
-            profileId: 1,
-          )));
+          Navigator.push(
+            context,
+            CupertinoPageRoute(
+              builder: (_) => PersonalInformation(
+                vehicleId: "",
+                vehicleName: "",
+                mobileNumber: "",
+                profileId: 1,
+              ),
+            ),
+          );
         } else if (isPendingOrRejected(profile.driverLicenceStatus)) {
-          Navigator.push(context, CupertinoPageRoute(builder: (_) => DrivingLicense()));
+          Navigator.push(
+            context,
+            CupertinoPageRoute(builder: (_) => DrivingLicense()),
+          );
         } else if (isPendingOrRejected(profile.aadhaarPanStatus)) {
-          Navigator.push(context, CupertinoPageRoute(builder: (_) => AadhaarInfo()));
+          Navigator.push(
+            context,
+            CupertinoPageRoute(builder: (_) => AadhaarInfo()),
+          );
         } else if (isPendingOrRejected(profile.requiredCertificatesStatus)) {
-          Navigator.push(context, CupertinoPageRoute(builder: (_) => RequiredCertificates()));
+          Navigator.push(
+            context,
+            CupertinoPageRoute(builder: (_) => RequiredCertificates()),
+          );
         } else if (isPendingOrRejected(profile.vehicleInfoStatus)) {
-          Navigator.push(context, CupertinoPageRoute(builder: (_) => VehicleInformation()));
+          Navigator.push(
+            context,
+            CupertinoPageRoute(builder: (_) => VehicleInformation()),
+          );
+        } else if (isPendingOrRejected(profile.vehicleDocumentsStatus)) {
+          // ✅ Direct check without category condition
+          Navigator.push(
+            context,
+            CupertinoPageRoute(builder: (_) => VehicleDocument()),
+          );
         } else {
-          // 🔥 Category Based Final Step
-          if (profile.vehicleCategory != 2) {
-            // Documents Required
-            if (isPendingOrRejected(profile.vehicleDocumentsStatus)) {
-              Navigator.push(context, CupertinoPageRoute(builder: (_) => VehicleDocument()));
-            } else {
-              Navigator.push(context, CupertinoPageRoute(builder: (_) => DocumentVerified()));
-            }
-          } else {
-            // Category 2 => Auto Verified
-            Navigator.push(context, CupertinoPageRoute(builder: (_) => DocumentVerified()));
-          }
+          // ✅ Final step
+          Navigator.push(
+            context,
+            CupertinoPageRoute(builder: (_) => DocumentVerified()),
+          );
         }
 
       } else {

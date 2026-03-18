@@ -27,9 +27,9 @@ class DriverRegisterSixViewModel with ChangeNotifier {
   }
 
   Future<void> driverRegisterSixApi({
-    required File vehiclePermitA,
-    required File vehiclePermitB,
-    required File vehicleRegistrationFront,
+    required File? vehiclePermitA,
+    required File? vehiclePermitB,
+    required File? vehicleRegistrationFront,
      File? vehicleRegistrationBack,
     required String vehicleInfoStatus,
     required BuildContext context,

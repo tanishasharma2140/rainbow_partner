@@ -12,6 +12,7 @@ import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_six_view_model.dart';
 
 class VehicleDocument extends StatefulWidget {
@@ -24,52 +25,95 @@ class VehicleDocument extends StatefulWidget {
 class _VehicleDocumentState extends State<VehicleDocument> {
   final picker = ImagePicker();
 
-  /// Store images/pdf for each document
-  Map<String, File?> documentFiles = {
-    "Vehicle permit -\npart A": null,
-    "Vehicle permit -\npart B": null,
-    "Vehicle registration...": null,
-    "Back side of\nregistration...": null,
-  };
+  int? vehicleCategory;
+
+  // ✅ Flags
+  bool get showPermits => vehicleCategory == 3 || vehicleCategory == 4;
+  bool get showRegistration =>
+      vehicleCategory == 2 || vehicleCategory == 3 || vehicleCategory == 4;
+
+  // ✅ Backing file fields
+  File? _permitAFile;
+  File? _permitBFile;
+  File? _registrationFrontFile;
+  File? _registrationBackFile;
+
+  // ✅ Dynamic document map (getter)
+  Map<String, File?> get documentFiles {
+    final Map<String, File?> map = {};
+
+    if (showPermits) {
+      map["Vehicle permit -\npart A"] = _permitAFile;
+      map["Vehicle permit -\npart B"] = _permitBFile;
+    }
+
+    if (showRegistration) {
+      map["Vehicle registration certificate"] = _registrationFrontFile;
+      map["Back side of\nregistration certificate"] = _registrationBackFile;
+    }
+
+    return map;
+  }
+
+  // ✅ Getters for API
+  File? get vehiclePermitA => _permitAFile;
+  File? get vehiclePermitB => _permitBFile;
+  File? get vehicleRegistrationFront => _registrationFrontFile;
+  File? get vehicleRegistrationBack => _registrationBackFile;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileVm =
+      Provider.of<DriverProfileViewModel>(context, listen: false);
+      final category = profileVm.driverProfileModel?.data?.vehicleCategory;
+      setState(() {
+        vehicleCategory = category;
+      });
+    });
+  }
+
+  // ✅ Central setter
+  void _setFile(String key, File? file) {
+    setState(() {
+      if (key.contains("part A")) {
+        _permitAFile = file;
+      } else if (key.contains("part B")) {
+        _permitBFile = file;
+      } else if (key.contains("Back side")) {
+        _registrationBackFile = file;
+      } else if (key.contains("registration")) {
+        _registrationFrontFile = file;
+      }
+    });
+  }
 
   Future<void> pickImage(String key, ImageSource source) async {
     final picked = await picker.pickImage(source: source, imageQuality: 70);
-
     if (picked != null) {
-      documentFiles[key] = File(picked.path);
-      setState(() {});
+      _setFile(key, File(picked.path));
     }
   }
 
-  // ---------------------------
-  // PICK PDF DOCUMENT
-  // ---------------------------
   Future<void> pickDocument(String key) async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
       );
-
       if (result != null && result.files.single.path != null) {
-        documentFiles[key] = File(result.files.single.path!);
-        setState(() {});
+        _setFile(key, File(result.files.single.path!));
       }
     } catch (e) {
       print("Document pick error => $e");
     }
   }
 
-  // ---------------------------
-  // OPEN PICKED FILE (PDF/Image)
-  // ---------------------------
   void openFile(File file) {
     OpenFilex.open(file.path);
   }
 
-  // ---------------------------
-  // BOTTOM SHEET OPTIONS
-  // ---------------------------
   void showPicker(String key) {
     showModalBottomSheet(
       context: context,
@@ -83,38 +127,27 @@ class _VehicleDocumentState extends State<VehicleDocument> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              /// PDF PICK
               ListTile(
-                leading: const Icon(
-                  Icons.picture_as_pdf,
-                  color: AppColor.royalBlue,
-                ),
+                leading: const Icon(Icons.picture_as_pdf,
+                    color: AppColor.royalBlue),
                 title: const Text("Upload PDF Document"),
                 onTap: () {
                   Navigator.pop(context);
                   pickDocument(key);
                 },
               ),
-
-              /// GALLERY IMAGE
               ListTile(
-                leading: const Icon(
-                  Icons.photo_library,
-                  color: AppColor.royalBlue,
-                ),
+                leading: const Icon(Icons.photo_library,
+                    color: AppColor.royalBlue),
                 title: const Text("Choose From Gallery"),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(key, ImageSource.gallery);
                 },
               ),
-
-              /// CAMERA IMAGE
               ListTile(
-                leading: const Icon(
-                  Icons.camera_alt,
-                  color: AppColor.royalBlue,
-                ),
+                leading:
+                const Icon(Icons.camera_alt, color: AppColor.royalBlue),
                 title: const Text("Take a Photo"),
                 onTap: () {
                   Navigator.pop(context);
@@ -128,9 +161,6 @@ class _VehicleDocumentState extends State<VehicleDocument> {
     );
   }
 
-  // ---------------------------
-  // UPLOAD BOX
-  // ---------------------------
   Widget uploadBox(String title, {bool optional = false}) {
     File? file = documentFiles[title];
     bool isPDF = file != null && file.path.toLowerCase().endsWith(".pdf");
@@ -156,35 +186,29 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                     borderRadius: BorderRadius.circular(20),
                     image: file != null && !isPDF
                         ? DecorationImage(
-                            image: FileImage(file),
-                            fit: BoxFit.cover,
-                          )
+                      image: FileImage(file),
+                      fit: BoxFit.cover,
+                    )
                         : null,
                   ),
-
                   child: file == null
                       ? const Center(child: Icon(Icons.add, size: 35))
                       : isPDF
                       ? const Center(
-                          child: Icon(
-                            Icons.picture_as_pdf,
-                            size: 50,
-                            color: Colors.red,
-                          ),
-                        )
+                    child: Icon(Icons.picture_as_pdf,
+                        size: 50, color: Colors.red),
+                  )
                       : null,
                 ),
 
-                /// OPTIONAL TAG
+                // ✅ Optional tag
                 if (optional)
                   Positioned(
                     top: 0,
                     left: 0,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
+                          horizontal: 10, vertical: 4),
                       decoration: const BoxDecoration(
                         color: Colors.black12,
                         borderRadius: BorderRadius.only(
@@ -192,43 +216,33 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                           bottomRight: Radius.circular(20),
                         ),
                       ),
-                      child: const Text(
-                        "Optional",
-                        style: TextStyle(fontSize: 12),
-                      ),
+                      child: const Text("Optional",
+                          style: TextStyle(fontSize: 12)),
                     ),
                   ),
 
-                /// REMOVE BUTTON
+                // ✅ Remove button
                 if (file != null)
                   Positioned(
                     right: 6,
                     top: 6,
                     child: GestureDetector(
-                      onTap: () {
-                        documentFiles[title] = null;
-                        setState(() {});
-                      },
+                      onTap: () => _setFile(title, null),
                       child: Container(
                         height: 28,
                         width: 28,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.red,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 18,
-                        ),
+                        child: const Icon(Icons.close,
+                            color: Colors.white, size: 18),
                       ),
                     ),
                   ),
               ],
             ),
-
             const SizedBox(height: 10),
-
             TextConst(
               title: title,
               textAlign: TextAlign.center,
@@ -241,24 +255,11 @@ class _VehicleDocumentState extends State<VehicleDocument> {
     );
   }
 
-  File? get vehiclePermitA => documentFiles["Vehicle permit -\npart A"];
-
-  File? get vehiclePermitB => documentFiles["Vehicle permit -\npart B"];
-
-  File? get vehicleRegistrationFront =>
-      documentFiles["Vehicle registration..."];
-
-  File? get vehicleRegistrationBack =>
-      documentFiles["Back side of\nregistration..."];
-
-  // ---------------------------
-  // BUILD
-  // ---------------------------
   @override
   Widget build(BuildContext context) {
-    final driverRegisterSixVm = Provider.of<DriverRegisterSixViewModel>(
-      context,
-    );
+    final driverRegisterSixVm =
+    Provider.of<DriverRegisterSixViewModel>(context);
+
     return Stack(
       children: [
         SafeArea(
@@ -268,41 +269,44 @@ class _VehicleDocumentState extends State<VehicleDocument> {
             backgroundColor: Colors.white,
             appBar: ConstantAppbar(
               onBack: () => Navigator.pop(context),
-              onClose: () =>  SystemNavigator.pop(),
+              onClose: () => SystemNavigator.pop(),
             ),
-
             body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 15),
-
                   const TextConst(
                     title: "Vehicle documents",
                     size: 25,
                     fontWeight: FontWeight.w700,
                   ),
-
                   const SizedBox(height: 25),
 
                   Wrap(
                     spacing: 20,
                     runSpacing: 25,
                     children: [
-                      uploadBox("Vehicle permit -\npart A"),
-                      uploadBox("Vehicle permit -\npart B"),
-                      uploadBox("Vehicle registration..."),
-                      uploadBox(
-                        "Back side of\nregistration...",
-                        optional: true,
-                      ),
+                      // ✅ Permit A & B — sirf category 3, 4
+                      if (showPermits) ...[
+                        uploadBox("Vehicle permit -\npart A"),
+                        uploadBox("Vehicle permit -\npart B"),
+                      ],
+
+                      // ✅ Registration — category 2, 3, 4
+                      if (showRegistration) ...[
+                        uploadBox("Vehicle registration certificate"),
+                        uploadBox(
+                          "Back side of\nregistration certificate",
+                          optional: true,
+                        ),
+                      ],
                     ],
                   ),
 
                   const Spacer(),
 
-                  /// BOTTOM BAR
                   Row(
                     children: [
                       const TextConst(
@@ -310,9 +314,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                         size: 18,
                         fontWeight: FontWeight.w600,
                       ),
-
                       const SizedBox(width: 12),
-
                       Expanded(
                         child: Container(
                           height: 6,
@@ -334,9 +336,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                           ),
                         ),
                       ),
-
                       const SizedBox(width: 16),
-
                       SizedBox(
                         height: 50,
                         width: 110,
@@ -345,9 +345,12 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                           bgColor: AppColor.royalBlue,
                           textColor: Colors.white,
                           onTap: () {
-                            if (vehiclePermitA == null ||
-                                vehiclePermitB == null ||
-                                vehicleRegistrationFront == null) {
+                            // ✅ Validation
+                            if ((showPermits &&
+                                (vehiclePermitA == null ||
+                                    vehiclePermitB == null)) ||
+                                (showRegistration &&
+                                    vehicleRegistrationFront == null)) {
                               Utils.showErrorMessage(
                                 context,
                                 "Please upload all required vehicle documents",
@@ -356,12 +359,10 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                             }
 
                             driverRegisterSixVm.driverRegisterSixApi(
-                              vehiclePermitA: vehiclePermitA!,
-                              vehiclePermitB: vehiclePermitB!,
-                              vehicleRegistrationFront:
-                                  vehicleRegistrationFront!,
-                              vehicleRegistrationBack:
-                                  vehicleRegistrationBack, // optional
+                              vehiclePermitA: showPermits ? vehiclePermitA : null,
+                              vehiclePermitB: showPermits ? vehiclePermitB : null,
+                              vehicleRegistrationFront: showRegistration ? vehicleRegistrationFront : null,
+                              vehicleRegistrationBack: vehicleRegistrationBack,
                               vehicleInfoStatus: "1",
                               context: context,
                             );
@@ -387,7 +388,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 10,

@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:provider/provider.dart';
-
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
@@ -13,6 +12,7 @@ import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/utils/utils.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_four_view_model.dart';
 
 class RequiredCertificates extends StatefulWidget {
@@ -25,57 +25,80 @@ class RequiredCertificates extends StatefulWidget {
 class _RequiredCertificatesState extends State<RequiredCertificates> {
   final ImagePicker picker = ImagePicker();
 
-  /// ---------------- CERTIFICATE MAP ----------------
-  final Map<String, File?> certificateFiles = {
-    "RC\nCertificate\n(Optional)": null,
-    "Pollution (PUC)\nCertificate": null,
-    "Insurance\nCertificate": null,
-    "Police Verification\nCertificate\n(Optional)": null,
-  };
+  // ✅ Fitness show/hide flag
+  bool showFitnessCertificate = false;
 
-  /// ---------------- GETTERS FOR API ----------------
-  File? get fitnessCertificate =>
-      certificateFiles["RC\nCertificate\n(Optional)"];
+  // ✅ Backing file fields
+  File? _fitnessFile;
+  File? _pollutionFile;
+  File? _insuranceFile;
+  File? _policeFile;
 
-  File? get pollutionCertificate =>
-      certificateFiles["Pollution (PUC)\nCertificate"];
+  // ✅ Dynamic certificate map (getter)
+  Map<String, File?> get certificateFiles {
+    final Map<String, File?> map = {};
+    if (showFitnessCertificate) {
+      map["Fitness\nCertificate"] = _fitnessFile;
+    }
+    map["Pollution (PUC)\nCertificate"] = _pollutionFile;
+    map["Insurance\nCertificate"] = _insuranceFile;
+    map["Police Verification\nCertificate\n(Optional)"] = _policeFile;
+    return map;
+  }
 
-  File? get insuranceCertificate =>
-      certificateFiles["Insurance\nCertificate"];
+  // ✅ Getters for API
+  File? get fitnessCertificate => _fitnessFile;
+  File? get pollutionCertificate => _pollutionFile;
+  File? get insuranceCertificate => _insuranceFile;
+  File? get policeCertificate => _policeFile;
 
-  File? get policeCertificate =>
-      certificateFiles["Police Verification\nCertificate\n(Optional)"];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileVm = Provider.of<DriverProfileViewModel>(context, listen: false);
+      final category = profileVm.driverProfileModel?.data?.vehicleCategory; // apna field name use karo
+      setState(() {
+        showFitnessCertificate = category == 3 || category == 4;
+      });
+    });
+  }
 
-  /// ---------------- IMAGE PICKER ----------------
+  // ✅ Central setter
+  void _setFile(String key, File? file) {
+    setState(() {
+      if (key.contains("Fitness")) _fitnessFile = file;
+      else if (key.contains("Pollution")) _pollutionFile = file;
+      else if (key.contains("Insurance")) _insuranceFile = file;
+      else if (key.contains("Police")) _policeFile = file;
+    });
+  }
+
+  // ✅ Image picker
   Future<void> pickImage(String key, ImageSource source) async {
-    final XFile? file =
-    await picker.pickImage(source: source, imageQuality: 70);
-
+    final XFile? file = await picker.pickImage(source: source, imageQuality: 70);
     if (file != null) {
-      certificateFiles[key] = File(file.path);
-      setState(() {});
+      _setFile(key, File(file.path));
     }
   }
 
-  /// ---------------- PDF PICKER ----------------
+  // ✅ PDF picker
   Future<void> pickDocument(String key) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
-
     if (result != null && result.files.single.path != null) {
-      certificateFiles[key] = File(result.files.single.path!);
-      setState(() {});
+      _setFile(key, File(result.files.single.path!));
     }
   }
 
-  /// ---------------- OPEN FILE ----------------
+  // ✅ Open file
   void openFile(File file) {
     OpenFilex.open(file.path);
   }
 
-  /// ---------------- BOTTOM SHEET ----------------
+  // ✅ Bottom sheet picker
   void showPicker(String key) {
     showModalBottomSheet(
       context: context,
@@ -90,8 +113,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.picture_as_pdf,
-                    color: AppColor.royalBlue),
+                leading: const Icon(Icons.picture_as_pdf, color: AppColor.royalBlue),
                 title: const Text("Upload PDF Document"),
                 onTap: () {
                   Navigator.pop(context);
@@ -99,8 +121,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library,
-                    color: AppColor.royalBlue),
+                leading: const Icon(Icons.photo_library, color: AppColor.royalBlue),
                 title: const Text("Choose Image From Gallery"),
                 onTap: () {
                   Navigator.pop(context);
@@ -108,8 +129,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                 },
               ),
               ListTile(
-                leading:
-                const Icon(Icons.camera_alt, color: AppColor.royalBlue),
+                leading: const Icon(Icons.camera_alt, color: AppColor.royalBlue),
                 title: const Text("Take Photo"),
                 onTap: () {
                   Navigator.pop(context);
@@ -123,11 +143,10 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
     );
   }
 
-  /// ---------------- UPLOAD BOX ----------------
+  // ✅ Upload box widget
   Widget uploadBox(String title) {
     File? file = certificateFiles[title];
-    bool isPDF =
-        file != null && file.path.toLowerCase().endsWith(".pdf");
+    bool isPDF = file != null && file.path.toLowerCase().endsWith(".pdf");
 
     return GestureDetector(
       onTap: () {
@@ -156,8 +175,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                         : null,
                   ),
                   child: file == null
-                      ? const Center(
-                      child: Icon(Icons.add, size: 35))
+                      ? const Center(child: Icon(Icons.add, size: 35))
                       : isPDF
                       ? const Center(
                     child: Icon(Icons.picture_as_pdf,
@@ -166,16 +184,13 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                       : null,
                 ),
 
-                /// REMOVE BUTTON
+                // ✅ Remove button
                 if (file != null)
                   Positioned(
                     right: 6,
                     top: 6,
                     child: GestureDetector(
-                      onTap: () {
-                        certificateFiles[title] = null;
-                        setState(() {});
-                      },
+                      onTap: () => _setFile(title, null),
                       child: Container(
                         height: 28,
                         width: 28,
@@ -203,7 +218,6 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
     );
   }
 
-  /// ---------------- BUILD ----------------
   @override
   Widget build(BuildContext context) {
     final driverRegisterFour =
@@ -217,7 +231,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
             backgroundColor: Colors.white,
             appBar: ConstantAppbar(
               onBack: () => Navigator.pop(context),
-              onClose: () =>  SystemNavigator.pop(),
+              onClose: () => SystemNavigator.pop(),
             ),
             body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -232,6 +246,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                   ),
                   const SizedBox(height: 25),
 
+                  // ✅ Dynamic wrap — fitness sirf tab show hoga jab category 3 ya 4 ho
                   Wrap(
                     spacing: 20,
                     runSpacing: 25,
@@ -250,16 +265,19 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                       bgColor: AppColor.royalBlue,
                       textColor: Colors.white,
                       onTap: () {
-                        if (
+                        // ✅ Fitness validation sirf category 3,4 ke liye
+                        if ((showFitnessCertificate && fitnessCertificate == null) ||
                             pollutionCertificate == null ||
-                            insuranceCertificate == null ) {
-                          Utils.showErrorMessage(context, "Please upload all required certificates");
-
-                        return;
+                            insuranceCertificate == null) {
+                          Utils.showErrorMessage(
+                            context,
+                            "Please upload all required certificates",
+                          );
+                          return;
                         }
 
                         driverRegisterFour.driverRegisterFourApi(
-                          fitnessCertificate: fitnessCertificate,
+                          fitnessCertificate: fitnessCertificate, // null if category 1,2
                           pollutionCertificate: pollutionCertificate!,
                           insuranceCertificate: insuranceCertificate!,
                           policeCertificate: policeCertificate,
@@ -285,7 +303,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 10,
