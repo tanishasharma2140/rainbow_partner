@@ -28,7 +28,7 @@ class DriverRegisterFourViewModel with ChangeNotifier {
 
   Future<void> driverRegisterFourApi({
     required File? fitnessCertificate,
-    required File pollutionCertificate,
+    required File? pollutionCertificate,
     required File insuranceCertificate,
     required File? policeCertificate,
     required String requiresCertificateStatus,
@@ -83,29 +83,19 @@ class DriverRegisterFourViewModel with ChangeNotifier {
 
         // 🔥 STATUS-BASED NAVIGATION (SEQUENCE)
         if (isPendingOrRejected(profile.personalInformationStatus)) {
-          Navigator.push(context, CupertinoPageRoute(builder: (context) =>
-              PersonalInformation(vehicleId: "",
-                  vehicleName: "",
-                  mobileNumber: "",
-                  profileId: 1)));
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>PersonalInformation(vehicleId: profile.vehicleId, vehicleName: profile.vehicleName, mobileNumber: profile.mobile, profileId: 1)));
         } else if (isPendingOrRejected(profile.driverLicenceStatus)) {
-          Navigator.push(context,
-              CupertinoPageRoute(builder: (context) => DrivingLicense()));
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>DrivingLicense()));
         } else if (isPendingOrRejected(profile.aadhaarPanStatus)) {
-          Navigator.push(
-              context, CupertinoPageRoute(builder: (context) => AadhaarInfo()));
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>AadhaarInfo()));
+        }  else if (isPendingOrRejected(profile.vehicleInfoStatus)) {
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>VehicleInformation()));
         } else if (isPendingOrRejected(profile.requiredCertificatesStatus)) {
-          Navigator.push(context,
-              CupertinoPageRoute(builder: (context) => RequiredCertificates()));
-        } else if (isPendingOrRejected(profile.vehicleInfoStatus)) {
-          Navigator.push(context,
-              CupertinoPageRoute(builder: (context) => VehicleInformation()));
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>RequiredCertificates()));
         } else if (isPendingOrRejected(profile.vehicleDocumentsStatus)) {
-          Navigator.push(context,
-              CupertinoPageRoute(builder: (context) => VehicleDocument()));
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>VehicleDocument()));
         } else {
-          Navigator.push(context,
-              CupertinoPageRoute(builder: (context) => DocumentVerified()));
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>DocumentVerified()));
         }
       } else {
         Utils.showErrorMessage(

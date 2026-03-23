@@ -46,27 +46,17 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       final lat = position.latitude.toString();
       final lng = position.longitude.toString();
 
-      context.read<ServicemanProfileViewModel>().servicemanProfileApi(
-        lat,
-        lng,
-        context,
-      );
+      final profileVm = context.read<ServicemanProfileViewModel>();
+
+      // ✅ IMPORTANT: await profile API
+      await profileVm.servicemanProfileApi(lat, lng, context);
+
       Provider.of<ReviewViewModel>(context, listen: false).reviewApi(context);
-      Provider.of<ServiceInfoViewModel>(
-        context,
-        listen: false,
-      ).serviceInfoApi(context);
+      Provider.of<ServiceInfoViewModel>(context, listen: false)
+          .serviceInfoApi(context);
 
-      Provider.of<ServicemanProfileViewModel>(
-        context,
-        listen: false,
-      ).addListener(() {
-        final vm = Provider.of<ServicemanProfileViewModel>(
-          context,
-          listen: false,
-        );
-
-        final data = vm.servicemanProfileModel?.data;
+      profileVm.addListener(() {
+        final data = profileVm.servicemanProfileModel?.data;
 
         if (data?.loginStatus == 0) {
           if (data?.rejectReasion == null || data!.rejectReasion!.isEmpty) {
@@ -82,8 +72,13 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
       if (!mounted) return;
 
+      final isOnline =
+          profileVm.servicemanProfileModel?.data?.onlineStatus == 1;
 
-      if (completeVm.completeBookingModel?.data?.isNotEmpty == true) {
+      final hasBooking =
+          completeVm.completeBookingModel?.data?.isNotEmpty == true;
+
+      if (isOnline && hasBooking) {
         await Future.delayed(const Duration(milliseconds: 500));
 
         if (!mounted) return;

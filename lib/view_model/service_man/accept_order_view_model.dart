@@ -16,6 +16,7 @@ class AcceptOrderViewModel with ChangeNotifier {
 
   Future<void> acceptOrderApi(
       int orderId,
+      dynamic distance,
       context,
       ) async {
     /// ✅ Add order to loading set
@@ -28,6 +29,7 @@ class AcceptOrderViewModel with ChangeNotifier {
     Map<String, dynamic> data = {
       "order_id": orderId,
       "serviceman_id": userId,
+      "distance" : distance
     };
 
     if (kDebugMode) {

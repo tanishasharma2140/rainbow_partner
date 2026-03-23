@@ -78,6 +78,8 @@ class Data {
   dynamic createdAt;
   dynamic updatedAt;
   dynamic vehicleCategory;
+  dynamic vehicleFuelTypeId;
+  dynamic vehicleFuelTypeName;
 
   Data(
       {this.id,
@@ -138,6 +140,8 @@ class Data {
         this.createdAt,
         this.updatedAt,
         this.vehicleCategory,
+        this.vehicleFuelTypeId,
+        this.vehicleFuelTypeName,
       });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -201,6 +205,8 @@ class Data {
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
     vehicleCategory = json['vehicle_category'];
+    vehicleFuelTypeId = json['vehicle_fuel_type_id'];
+    vehicleFuelTypeName = json['vehicle_fuel_type_name'];
   }
 
   Map<String, dynamic> toJson() {
@@ -265,6 +271,8 @@ class Data {
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;
     data['vehicle_category'] = vehicleCategory;
+    data['vehicle_fuel_type_id'] = vehicleFuelTypeId;
+    data['vehicle_fuel_type_name'] = vehicleFuelTypeName;
     return data;
   }
 }

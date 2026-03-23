@@ -37,6 +37,7 @@ import 'package:rainbow_partner/view_model/cabdriver/driver_withdraw_history_vie
 import 'package:rainbow_partner/view_model/cabdriver/driver_withdraw_request_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/partner_notification_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_colors_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/vehicle_fuel_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_model_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_view_model.dart';
 import 'package:rainbow_partner/view_model/device_view_model.dart';
@@ -332,6 +333,7 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> PartnerNotificationViewModel()),
           ChangeNotifierProvider(create: (context)=> PolicyViewModel()),
           ChangeNotifierProvider(create: (context)=> HelpSupportViewModel()),
+          ChangeNotifierProvider(create: (context)=> VehicleFuelViewModel()),
 
         ],
         child: MaterialApp(

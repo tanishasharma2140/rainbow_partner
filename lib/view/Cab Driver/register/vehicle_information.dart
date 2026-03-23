@@ -16,6 +16,7 @@ import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/register/aadhaar_info.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_five_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_colors_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/vehicle_fuel_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_model_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_brand_view_model.dart';
@@ -35,6 +36,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
   String? selectedModel;
   int? selectedModelId;
   String? selectedColor;
+  String? selectedFuelType;   // ✅ NEW
+  int? selectedFuelTypeId;
 
   TextEditingController plateController = TextEditingController();
   TextEditingController yearController = TextEditingController();
@@ -49,6 +52,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
       final selectedVehicleId = context
           .read<VehicleViewModel>()
           .selectedVehicleId;
+      final selectedVehicleCategory = Provider.of<VehicleViewModel>(context, listen: false).selectedVehicleCategory;
+
 
       if (selectedVehicleId != null) {
         context.read<VehicleBrandViewModel>().vehicleBrandApi(
@@ -58,6 +63,15 @@ class _VehicleInformationState extends State<VehicleInformation> {
       } else {
         if (kDebugMode) {
           print("❌ Vehicle ID not selected yet");
+        }
+      }
+
+      if (selectedVehicleCategory != null) {
+        final vehicleFuelVm = Provider.of<VehicleFuelViewModel>(context, listen: false);
+        vehicleFuelVm.vehicleFuelApi(selectedVehicleCategory.toString());
+      } else {
+        if (kDebugMode) {
+          print("❌ Vehicle category not selected yet");
         }
       }
       final vehicleColorVm = Provider.of<VehicleColorsViewModel>(
@@ -392,6 +406,94 @@ class _VehicleInformationState extends State<VehicleInformation> {
     );
   }
 
+  void pickFuelType() {
+    final vehicleFuelVm = Provider.of<VehicleFuelViewModel>(
+      context,
+      listen: false,
+    );
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.55,
+          child: Column(
+            children: [
+              // ---------------- TOP BAR ----------------
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 15,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const SizedBox(width: 30),
+                    const TextConst(
+                      title: "Fuel Type",
+                      size: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.close, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // ---------------- FUEL LIST ----------------
+              Expanded(
+                child: vehicleFuelVm.loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : vehicleFuelVm.vehicleFuelModel?.data == null ||
+                    vehicleFuelVm.vehicleFuelModel!.data!.isEmpty
+                    ? const Center(child: Text("No fuel types found"))
+                    : ListView.builder(
+                  itemCount: vehicleFuelVm.vehicleFuelModel!.data!.length,
+                  itemBuilder: (_, i) {
+                    final fuel = vehicleFuelVm.vehicleFuelModel!.data![i];
+
+                    return ListTile(
+                      title: TextConst(title: fuel.fuelType ?? ""),
+                      trailing: selectedFuelTypeId == fuel.id
+                          ? Icon(
+                        Icons.check,
+                        color: AppColor.royalBlue,
+                      )
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          selectedFuelType = fuel.fuelType;
+                          selectedFuelTypeId = fuel.id;
+                        });
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   // INPUT FIELD CONTAINER
   Widget dropdownField({
     required String hint,
@@ -536,6 +638,11 @@ class _VehicleInformationState extends State<VehicleInformation> {
                     onTap: pickColor,
                     value: selectedColor,
                   ),
+                  dropdownField(
+                    hint: "Fuel type",
+                    onTap: pickFuelType,
+                    value: selectedFuelType,
+                  ),
 
                   inputField(
                     hint: "Vehicle Number",
@@ -595,7 +702,6 @@ class _VehicleInformationState extends State<VehicleInformation> {
                           textColor: Colors.white,
                           onTap: () {
                             if (!_validateVehicleInfo()) return;
-
                             driverRegisterFiveVm.driverRegisterFiveApi(
                               vehiclePhoto: vehiclePhoto!,
                               vehicleInfoStatus: "1",
@@ -604,6 +710,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
                               modelId: selectedModelId!,
                               modelName: selectedModel!,
                               vehicleColor: selectedColor!,
+                              vehicleFuelTypeName: selectedFuelType!,
+                              vehicleFuelTypeId: selectedFuelTypeId!,
                               vehiclePlateNumber: plateController.text.trim(),
                               vehicleProductionYear: yearController.text.trim(),
                               context: context,

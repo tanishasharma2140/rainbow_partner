@@ -86,7 +86,6 @@ class DriverRegisterOneViewModel with ChangeNotifier {
           body["message"] ?? "Submitted successfully",
         );
         final position = await LocationUtils.getLocation();
-        // 🔹 REFRESH PROFILE
         final profileVm =
         Provider.of<DriverProfileViewModel>(context, listen: false);
 
@@ -110,10 +109,10 @@ class DriverRegisterOneViewModel with ChangeNotifier {
           Navigator.push(context, CupertinoPageRoute(builder: (context)=>DrivingLicense()));
         } else if (isPendingOrRejected(profile.aadhaarPanStatus)) {
           Navigator.push(context, CupertinoPageRoute(builder: (context)=>AadhaarInfo()));
+        }  else if (isPendingOrRejected(profile.vehicleInfoStatus)) {
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>VehicleInformation()));
         } else if (isPendingOrRejected(profile.requiredCertificatesStatus)) {
           Navigator.push(context, CupertinoPageRoute(builder: (context)=>RequiredCertificates()));
-        } else if (isPendingOrRejected(profile.vehicleInfoStatus)) {
-          Navigator.push(context, CupertinoPageRoute(builder: (context)=>VehicleInformation()));
         } else if (isPendingOrRejected(profile.vehicleDocumentsStatus)) {
           Navigator.push(context, CupertinoPageRoute(builder: (context)=>VehicleDocument()));
         } else {

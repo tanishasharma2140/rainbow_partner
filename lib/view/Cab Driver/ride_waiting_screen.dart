@@ -36,8 +36,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
   // 🔊 RINGER MANAGEMENT
   final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _isRingerPlaying = false;
-  Set<String> _playedOrderIds = {};
+  final Set<String> _playedOrderIds = {};
 
   @override
   void initState() {
@@ -48,11 +47,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
       _loadMarkerIcon();
       _startSocket();
 
-    });
-
-    // 🔊 Listen to audio player completion
-    _audioPlayer.onPlayerComplete.listen((event) {
-      _isRingerPlaying = false;
     });
   }
   Future<void> _startSocket() async {
@@ -148,9 +142,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
   void _goToAcceptedRide({required int orderId}) {
     if (_currentLatLng == null) return;
 
-    // 🔇 STOP RINGER WHEN NAVIGATING TO ACCEPTED RIDE
-    // _stopRinger();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Navigator.pushReplacement(
         context,
@@ -235,11 +226,22 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
                   final docs = snapshot.data?.docs ?? [];
 
-                  /// 🔥 FILTER OLD STATUS (only allow 0 & 1)
+                  /// 🔥 FILTER STATUS & DRIVER ID
                   final filteredDocs = docs.where((doc) {
                     final data = doc.data() as Map<String, dynamic>;
                     final status = data['order_status'] ?? 0;
-                    return status < 2; // only 0 & 1
+                    final assignedDriverId = data['driver_id'];
+
+                    // 1. Agar status 0 hai (New Request), toh sabhi matched drivers ko dikhao
+                    if (status == 0) return true;
+
+                    // 2. Agar status 1 hai (Accepted), toh sirf usi driver ko dikhao jisne accept kiya hai
+                    // driver_id comparison int aur string dono ke liye safe rakha hai
+                    if (status == 1) {
+                      return assignedDriverId.toString() == driverId.toString();
+                    }
+
+                    return false;
                   }).toList();
 
                   debugPrint(
@@ -274,8 +276,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                     debugPrint(
                       "🔇 No rides, stopping ringer & clearing played IDs",
                     );
-                    // 🔇 STOP RINGER IF NO RIDES
-                    // _stopRinger();
                     _playedOrderIds.clear();
                     return _waitingUI();
                   }
@@ -286,7 +286,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    child: _orderListSheet(filteredDocs),
+                    child: _orderListSheet(filteredDocs, driverId!),
                   );
                 },
               ),
@@ -373,7 +373,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
     );
   }
 
-  Widget _orderListSheet(List<QueryDocumentSnapshot> docs) {
+  Widget _orderListSheet(List<QueryDocumentSnapshot> docs, int currentDriverId) {
     final driverCanDiscountVm = Provider.of<DriverCanDiscountViewModel>(
       context,
     );
@@ -435,11 +435,9 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                 final int vehicleId = data['vehicle_id'] ?? 0;
                 final int orderType = data['order_type'] ?? 1; // 🆕 ORDER TYPE
 
-                // 🆕 User details for order_type 2
                 final String userName = data['user_name'] ?? '';
                 final String userMobile = data['user_mobile']?.toString() ?? '';
 
-                /// ✅ FETCH DISCOUNT ONLY ONCE PER ORDER (only for order_type 1)
                 if (orderType == 1 &&
                     _discountFetchedForOrder[orderId] != true) {
                   _discountFetchedForOrder[orderId] = true;
@@ -454,7 +452,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                   });
                 }
 
-                /// DISCOUNT LOGIC (± FROM BASE) - only for order_type 1
                 final int maxDiscount = orderType == 1
                     ? (double.tryParse(
                                 driverCanDiscountVm.driverDiscount ?? '0',
@@ -470,11 +467,14 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                   baseAmount,
                 );
 
-                if (data['order_status'] == 1 && _currentLatLng != null) {
+
+                if (data['order_status'] == 1 && 
+                    _currentLatLng != null && 
+                    data['driver_id'].toString() == currentDriverId.toString()) {
                   _goToAcceptedRide(orderId: data['order_id']);
                 }
 
-                // 🆕 RENDER BASED ON ORDER_TYPE
+
                 if (orderType == 2) {
                   return _buildOrderType2Card(
                     data: data,
@@ -507,7 +507,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
     );
   }
 
-  /// 🆕 ORDER TYPE 2 CARD - Simple with user details and Accept button
+
   Widget _buildOrderType2Card({
     required Map<String, dynamic> data,
     required String orderId,
@@ -556,8 +556,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
               const Spacer(),
               InkWell(
                 onTap: () {
-                  // 🔇 STOP RINGER WHEN IGNORING
-                  // _stopRinger();
                   driverIgnoreVm.driverIgnoreOrderApi(orderId, context);
                 },
                 child: Container(
@@ -645,19 +643,8 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                   title: "Accept",
                   bgColor: AppColor.royalBlue,
                   onTap: () {
-                    // 🔇 STOP RINGER WHEN ACCEPTING
-                    // _stopRinger();
-
                     acceptLaterRideVm.acceptLaterRideApi(orderId, data['user_id'],  _currentLatLng!.latitude,
                         _currentLatLng!.longitude, context);
-
-                    // driverOfferVm.driverOfferApi(
-                    //   userIdOrder,
-                    //   orderId,
-                    //   baseAmount, // No negotiation for order_type 2
-                    //   baseAmount,
-                    //   context,
-                    // );
                   },
                 ),
         ],
@@ -715,8 +702,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
               const Spacer(),
               InkWell(
                 onTap: () {
-                  // 🔇 STOP RINGER WHEN IGNORING
-                  // _stopRinger();
                   driverIgnoreVm.driverIgnoreOrderApi(orderId, context);
                 },
                 child: Container(
@@ -777,7 +762,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
           const SizedBox(height: 16),
 
-          /// FARE AMOUNT (± BASE RANGE)
           ValueListenableBuilder<int>(
             valueListenable: amount,
             builder: (_, value, __) {
@@ -893,9 +877,6 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                       Utils.showErrorMessage(context, "Invalid offer amount");
                       return;
                     }
-
-                    // 🔇 STOP RINGER WHEN ACCEPTING
-                    // _stopRinger();
 
                     driverOfferVm.driverOfferApi(
                       userIdOrder,

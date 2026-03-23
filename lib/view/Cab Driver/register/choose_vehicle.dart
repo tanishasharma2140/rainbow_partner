@@ -84,7 +84,7 @@ class _ChooseVehicleState extends State<ChooseVehicle> {
                       onTap: () {
                         context.read<VehicleViewModel>().setSelectedVehicle(
                           vehicleId: vehicle.id!,
-                          vehicleName: vehicle.name ?? "",
+                          vehicleName: vehicle.name ?? "", vehicleCategory: vehicle.vehicleCategory ??"",
                         );
 
                         Navigator.push(

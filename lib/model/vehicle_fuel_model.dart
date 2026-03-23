@@ -1,12 +1,12 @@
-class VehicleModel {
+class VehicleFuelModel {
   bool? success;
   String? message;
   List<Data>? data;
   dynamic errors;
 
-  VehicleModel({this.success, this.message, this.data, this.errors});
+  VehicleFuelModel({this.success, this.message, this.data, this.errors});
 
-  VehicleModel.fromJson(Map<String, dynamic> json) {
+  VehicleFuelModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
     message = json['message'];
     if (json['data'] != null) {
@@ -31,34 +31,23 @@ class VehicleModel {
 }
 
 class Data {
- dynamic id;
-  dynamic name;
-  dynamic image;
+  dynamic id;
   dynamic vehicleCategory;
-  dynamic registerStatus;
+  dynamic fuelType;
 
-  Data(
-      {this.id,
-        this.name,
-        this.image,
-        this.vehicleCategory,
-        this.registerStatus});
+  Data({this.id, this.vehicleCategory, this.fuelType});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    name = json['name'];
-    image = json['image'];
     vehicleCategory = json['vehicle_category'];
-    registerStatus = json['register_status'];
+    fuelType = json['fuel_type'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
-    data['name'] = name;
-    data['image'] = image;
     data['vehicle_category'] = vehicleCategory;
-    data['register_status'] = registerStatus;
+    data['fuel_type'] = fuelType;
     return data;
   }
 }

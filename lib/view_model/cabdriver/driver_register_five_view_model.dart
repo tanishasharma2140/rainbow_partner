@@ -37,6 +37,8 @@ class DriverRegisterFiveViewModel with ChangeNotifier {
     required dynamic vehicleColor,
     required dynamic vehiclePlateNumber,
     required dynamic vehicleProductionYear,
+    required dynamic vehicleFuelTypeId,
+    required dynamic vehicleFuelTypeName,
     required BuildContext context,
   }) async {
 
@@ -55,6 +57,8 @@ class DriverRegisterFiveViewModel with ChangeNotifier {
       "vehicle_color": vehicleColor.toString(),
       "vehicle_plate_number": vehiclePlateNumber.toString(),
       "vehicle_production_year": vehicleProductionYear.toString(),
+      "vehicle_fuel_type_id": vehicleFuelTypeId.toString(),
+      "vehicle_fuel_type_name" : vehicleFuelTypeName.toString(),
     };
 
     Map<String, dynamic> files = {
@@ -85,51 +89,20 @@ class DriverRegisterFiveViewModel with ChangeNotifier {
 
         // 🔥 STEP BASED NAVIGATION
         if (isPendingOrRejected(profile.personalInformationStatus)) {
-          Navigator.push(
-            context,
-            CupertinoPageRoute(
-              builder: (_) => PersonalInformation(
-                vehicleId: "",
-                vehicleName: "",
-                mobileNumber: "",
-                profileId: 1,
-              ),
-            ),
-          );
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>PersonalInformation(vehicleId: profile.vehicleId, vehicleName: profile.vehicleName, mobileNumber: profile.mobile, profileId: 1)));
         } else if (isPendingOrRejected(profile.driverLicenceStatus)) {
-          Navigator.push(
-            context,
-            CupertinoPageRoute(builder: (_) => DrivingLicense()),
-          );
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>DrivingLicense()));
         } else if (isPendingOrRejected(profile.aadhaarPanStatus)) {
-          Navigator.push(
-            context,
-            CupertinoPageRoute(builder: (_) => AadhaarInfo()),
-          );
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>AadhaarInfo()));
+        }  else if (isPendingOrRejected(profile.vehicleInfoStatus)) {
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>VehicleInformation()));
         } else if (isPendingOrRejected(profile.requiredCertificatesStatus)) {
-          Navigator.push(
-            context,
-            CupertinoPageRoute(builder: (_) => RequiredCertificates()),
-          );
-        } else if (isPendingOrRejected(profile.vehicleInfoStatus)) {
-          Navigator.push(
-            context,
-            CupertinoPageRoute(builder: (_) => VehicleInformation()),
-          );
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>RequiredCertificates()));
         } else if (isPendingOrRejected(profile.vehicleDocumentsStatus)) {
-          // ✅ Direct check without category condition
-          Navigator.push(
-            context,
-            CupertinoPageRoute(builder: (_) => VehicleDocument()),
-          );
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>VehicleDocument()));
         } else {
-          // ✅ Final step
-          Navigator.push(
-            context,
-            CupertinoPageRoute(builder: (_) => DocumentVerified()),
-          );
+          Navigator.push(context, CupertinoPageRoute(builder: (context)=>DocumentVerified()));
         }
-
       } else {
         Utils.showErrorMessage(context, body["message"] ?? "Something went wrong!");
       }

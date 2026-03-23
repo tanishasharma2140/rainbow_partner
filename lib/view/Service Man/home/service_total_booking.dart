@@ -352,8 +352,9 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                     ),
                     onPressed: () async {
                       final int orderId = b["order_id"];
+                      final dynamic distance = b["distance"];
                       await RingtoneService().stopRingtone();
-                      acceptOrderVm.acceptOrderApi(orderId, context);
+                      acceptOrderVm.acceptOrderApi(orderId,distance, context);
                     },
 
                     child: acceptOrderVm.isLoading(orderId)

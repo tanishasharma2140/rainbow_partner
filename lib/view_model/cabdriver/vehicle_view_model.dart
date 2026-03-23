@@ -13,9 +13,12 @@ class VehicleViewModel with ChangeNotifier {
 
   int? _selectedVehicleId;
   String? _selectedVehicleName;
+  dynamic _selectedVehicleCategory;
 
   int? get selectedVehicleId => _selectedVehicleId;
   String? get selectedVehicleName => _selectedVehicleName;
+  dynamic get selectedVehicleCategory => _selectedVehicleCategory;
+
 
   void setLoading(bool value) {
     _loading = value;
@@ -31,14 +34,17 @@ class VehicleViewModel with ChangeNotifier {
   void setSelectedVehicle({
     required int vehicleId,
     required String vehicleName,
+    required dynamic vehicleCategory,
   }) {
     _selectedVehicleId = vehicleId;
     _selectedVehicleName = vehicleName;
+    _selectedVehicleCategory = vehicleCategory;
     notifyListeners();
 
     if (kDebugMode) {
       print("✅ Selected Vehicle ID: $_selectedVehicleId");
       print("✅ Selected Vehicle Name: $_selectedVehicleName");
+      print("✅ Selected Vehicle Category: $_selectedVehicleCategory");
     }
   }
 
