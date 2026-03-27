@@ -26,7 +26,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
   final ImagePicker picker = ImagePicker();
 
   bool showFitnessCertificate = false;
-  bool showPollutionCertificate = true; // ✅ NEW
+  bool showPollutionCertificate = true;
 
   File? _fitnessFile;
   File? _pollutionFile;
@@ -42,12 +42,10 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
 
     // ✅ Pollution condition
     if (showPollutionCertificate) {
-      map["Pollution (PUC)\nCertificate"] = _pollutionFile;
+      map["Pollution (PUC)\nCertificate\n(Optional)"] = _pollutionFile;
     }
-
     map["Insurance\nCertificate"] = _insuranceFile;
     map["Police Verification\nCertificate\n(Optional)"] = _policeFile;
-
     return map;
   }
 
@@ -288,30 +286,25 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                       title: "Next",
                       bgColor: AppColor.royalBlue,
                       textColor: Colors.white,
-                      onTap: () {
-                        if ((showFitnessCertificate &&
-                                fitnessCertificate == null) ||
-                            (showPollutionCertificate &&
-                                pollutionCertificate == null) ||
-                            insuranceCertificate == null) {
-                          Utils.showErrorMessage(
-                            context,
-                            "Please upload all required certificates",
-                          );
-                          return;
-                        }
+                        onTap: () {
+                          if ((showFitnessCertificate && fitnessCertificate == null) ||
+                              insuranceCertificate == null) {
+                            Utils.showErrorMessage(
+                              context,
+                              "Please upload all required certificates",
+                            );
+                            return;
+                          }
 
-                        driverRegisterFour.driverRegisterFourApi(
-                          fitnessCertificate: fitnessCertificate,
-                          pollutionCertificate: showPollutionCertificate
-                              ? pollutionCertificate
-                              : null,
-                          insuranceCertificate: insuranceCertificate!,
-                          policeCertificate: policeCertificate,
-                          requiresCertificateStatus: "1",
-                          context: context,
-                        );
-                      },
+                          driverRegisterFour.driverRegisterFourApi(
+                            fitnessCertificate: fitnessCertificate,
+                            pollutionCertificate: pollutionCertificate,
+                            insuranceCertificate: insuranceCertificate!,
+                            policeCertificate: policeCertificate,
+                            requiresCertificateStatus: "1",
+                            context: context,
+                          );
+                        }
                     ),
                   ),
                   const SizedBox(height: 15),

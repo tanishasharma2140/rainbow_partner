@@ -184,26 +184,25 @@ class _AddBankState extends State<AddBank> {
 
                           SizedBox(height: Sizes.screenHeight * 0.025),
 
-                          // Account Number
+
                           _buildFormField(
                             title: "Account Number",
-                            hintText: "Enter 12-digit account number",
+                            hintText: "Enter account number",
                             controller: _accountController,
                             icon: Icons.credit_card,
                             keyboardType: TextInputType.number,
-                            maxLength: 12,
+                            maxLength: 18,
                           ),
 
                           SizedBox(height: Sizes.screenHeight * 0.025),
 
-                          // Confirm Account Number
                           _buildFormField(
                             title: "Confirm Account Number",
                             hintText: "Re-enter account number",
                             controller: _reAccountController,
                             icon: Icons.credit_card_outlined,
                             keyboardType: TextInputType.number,
-                            maxLength: 12,
+                            maxLength: 18,
                           ),
 
                           SizedBox(height: Sizes.screenHeight * 0.025),

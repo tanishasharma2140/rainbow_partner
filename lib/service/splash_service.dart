@@ -148,16 +148,6 @@ class SplashServices {
 
     if (data.vehicleDocumentsStatus == 0) {
 
-      // // 🚫 If 2-wheeler → skip documents
-      // if (data.vehicleCategory == 2) {
-      //   Navigator.pushReplacement(
-      //     context,
-      //     CupertinoPageRoute(builder: (_) => const DocumentVerified()),
-      //   );
-      //   return;
-      // }
-
-      // 🚗 Other vehicles → go to document upload
       Navigator.pushReplacement(
         context,
         CupertinoPageRoute(builder: (_) => const VehicleDocument()),

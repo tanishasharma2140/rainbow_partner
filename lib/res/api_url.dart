@@ -48,6 +48,8 @@ class ApiUrl {
   static const String acceptLaterRideUrl ="${baseUrl}accept-later-ride";
   static const String cabCancelReasonUrl ="${baseUrl}cab-cancel-reasons?";
   static const String vehicleFuelTypesUrl ="${baseUrl}vehicle_fuel_types/";
+  static const String cabChangePayModeUrl ="${baseUrl}cab-change-payment-mode";
+
 
 
 

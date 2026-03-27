@@ -22,6 +22,7 @@ import 'package:rainbow_partner/view_model/cabdriver/cab_cancel_reason_view_mode
 import 'package:rainbow_partner/view_model/cabdriver/cab_earning_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_history_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/change_paymode_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_ignore_order_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_offer_view_model.dart';
@@ -334,6 +335,7 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> PolicyViewModel()),
           ChangeNotifierProvider(create: (context)=> HelpSupportViewModel()),
           ChangeNotifierProvider(create: (context)=> VehicleFuelViewModel()),
+          ChangeNotifierProvider(create: (context)=> ChangeCabPayModeViewModel()),
 
         ],
         child: MaterialApp(

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rainbow_partner/repo/serviceman/add_bank_detail_repo.dart';
@@ -45,11 +45,18 @@ class AddBankDetailViewModel with ChangeNotifier {
       final response = await _addBankDetailRepo.addBankDetailApi(data);
 
       final int statusCode = response['statusCode'] ?? 0;
-      final Map<String, dynamic> body = response['body'] ?? {};
+
+      /// ✅ FIX: Proper body parsing
+      final body = response['body'] is String
+          ? jsonDecode(response['body'])
+          : response['body'] ?? {};
+
+      final message = body["message"]?.toString() ?? "Something went wrong";
 
       if (statusCode == 200 || statusCode == 201) {
-        Utils.showSuccessMessage(context, body["message"]);
+        Utils.showSuccessMessage(context, message);
 
+        /// ✅ tumhara type logic same rakha
         if (type == 1) {
           Navigator.pop(context);
         } else if (type == 2) {
@@ -59,18 +66,28 @@ class AddBankDetailViewModel with ChangeNotifier {
           );
         }
       } else {
-        Utils.showErrorMessage(context, body["message"]);
+        /// ✅ API ka exact message show hoga
+        Utils.showErrorMessage(context, message);
+
         if (kDebugMode) {
           print("❌ Error Status: $statusCode → $body");
         }
       }
     } catch (e) {
       if (kDebugMode) print("❌ Exception: $e");
-      Utils.showErrorMessage(context, "Something went wrong");
+
+      String errorMessage = e.toString();
+
+      if (errorMessage.contains("Exception:")) {
+        errorMessage = errorMessage.replaceAll("Exception: ", "");
+      }
+
+      Utils.showErrorMessage(
+        context,
+        errorMessage.isNotEmpty ? errorMessage : "Something went wrong",
+      );
     } finally {
-      // ✅ ALWAYS STOP LOADER
       setLoading(false);
     }
   }
-
 }

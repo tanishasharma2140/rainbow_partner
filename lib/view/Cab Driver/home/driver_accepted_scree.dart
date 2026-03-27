@@ -13,6 +13,7 @@ import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/driver_home_page.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_cancel_reason_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/change_paymode_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 
@@ -1924,9 +1925,10 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
   }
 }
 
-/// =====================================================
-/// WAITING FOR PAYMENT SCREEN
-/// =====================================================
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WAITING FOR PAYMENT SCREEN  (Online payment)
+// ─────────────────────────────────────────────────────────────────────────────
 
 class WaitingForPaymentScreen extends StatefulWidget {
   final int orderId;
@@ -1946,129 +1948,399 @@ class WaitingForPaymentScreen extends StatefulWidget {
 }
 
 class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
+  // ── Pay-mode bottom sheet ──────────────────────────────────────────────────
+
+  void _showPayModeBottomSheet(BuildContext context) {
+    // Default: 1 = Online (current screen)
+    int selectedMode = 1;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Drag handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  const Text(
+                    "Change Payment Mode",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Online  → pay_mode = 1
+                  _payModeOption(
+                    icon: Icons.phone_android_outlined,
+                    iconColor: Colors.orange,
+                    bgColor: Colors.orange.withOpacity(0.1),
+                    title: "Online",
+                    subtitle: "UPI / Card",
+                    isSelected: selectedMode == 1,
+                    selectedColor: Colors.orange,
+                    onTap: () => setModalState(() => selectedMode = 1),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Cash / Offline  → pay_mode = 2
+                  _payModeOption(
+                    icon: Icons.account_balance_wallet_outlined,
+                    iconColor: Colors.green,
+                    bgColor: Colors.green.withOpacity(0.1),
+                    title: "Cash",
+                    subtitle: "Collect from passenger",
+                    isSelected: selectedMode == 2,
+                    selectedColor: Colors.green,
+                    onTap: () => setModalState(() => selectedMode = 2),
+                  ),
+
+                  // const SizedBox(height: 10),
+
+                  // // Wallet  → pay_mode = 3
+                  // _payModeOption(
+                  //   icon: Icons.wallet_outlined,
+                  //   iconColor: Colors.purple,
+                  //   bgColor: Colors.purple.withOpacity(0.1),
+                  //   title: "Wallet",
+                  //   subtitle: "In-app wallet balance",
+                  //   isSelected: selectedMode == 3,
+                  //   selectedColor: Colors.purple,
+                  //   onTap: () => setModalState(() => selectedMode = 3),
+                  // ),
+
+                  const SizedBox(height: 24),
+
+                  // Confirm button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        shape: const StadiumBorder(),
+                        padding:
+                        const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        final changePayMode =
+                        Provider.of<ChangeCabPayModeViewModel>(
+                          context,
+                          listen: false,
+                        );
+                        // selectedMode is int: 1, 2, or 3
+                        await changePayMode.changeCabPayModeApi(
+                          widget.orderId,
+                          selectedMode,
+                          context,
+                        );
+                      },
+                      child: const Text(
+                        "Confirm",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ── Pay-mode option tile ───────────────────────────────────────────────────
+
+  Widget _payModeOption({
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required Color selectedColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isSelected ? selectedColor : Colors.grey.shade200,
+            width: isSelected ? 1.5 : 1,
+          ),
+          borderRadius: BorderRadius.circular(14),
+          color: isSelected
+              ? selectedColor.withOpacity(0.05)
+              : Colors.white,
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: bgColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? selectedColor : Colors.transparent,
+                border: Border.all(
+                  color:
+                  isSelected ? selectedColor : Colors.grey.shade400,
+                ),
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check,
+                  size: 14, color: Colors.white)
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-
-                /// ICON WITH LOADER
-                Container(
-                  height: 140,
-                  width: 140,
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop();
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          title: const Text(
+            "Payment",
+            style: TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          actions: [
+            // ── Pay Mode Toggle Icon ──────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: () => _showPayModeBottomSheet(context),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: Colors.orange.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Stack(
-                    alignment: Alignment.center,
+                  child: Row(
                     children: [
-                      Icon(
-                        Icons.account_balance_wallet_outlined,
-                        size: 60,
+                      TextConst(title: "Change pay mode"),
+                      SizedBox(width: 5,),
+                      const Icon(
+                        Icons.credit_card_outlined,
                         color: Colors.orange,
+                        size: 22,
                       ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // ── Icon with loader ────────────────────────────────
+                  Container(
+                    height: 140,
+                    width: 140,
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet_outlined,
+                          size: 60,
+                          color: Colors.orange,
+                        ),
+                        SizedBox(
+                          height: 110,
+                          width: 110,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 4,
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // ── Title ───────────────────────────────────────────
+                  const Text(
+                    "Waiting for Payment",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // ── Subtitle ────────────────────────────────────────
+                  Text(
+                    "Waiting for ${widget.userName} to complete payment",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+
+                  const SizedBox(height: 36),
+
+                  // ── Amount card ─────────────────────────────────────
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.orange.withOpacity(0.1),
+                          Colors.orange.withOpacity(0.05),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.orange.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text(
+                          "Amount",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "₹${widget.amount}",
+                          style: TextStyle(
+                            fontSize: 42,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          "Order #${widget.orderId}",
+                          style: const TextStyle(color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // ── Waiting row ─────────────────────────────────────
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                       SizedBox(
-                        height: 110,
-                        width: 110,
+                        height: 18,
+                        width: 18,
                         child: CircularProgressIndicator(
-                          strokeWidth: 4,
+                          strokeWidth: 2.5,
                           color: Colors.orange,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 30),
-
-                /// TITLE
-                TextConst(
-                  title: "Waiting for Payment",
-                  textAlign: TextAlign.center,
-                  size: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-
-                const SizedBox(height: 10),
-
-                /// SUB TITLE
-                TextConst(
-                  title: "Waiting for ${widget.userName} to complete payment",
-                  textAlign: TextAlign.center,
-                  size: 16,
-                  color: Colors.grey,
-                ),
-
-                const SizedBox(height: 36),
-
-                /// AMOUNT CARD
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.orange.withOpacity(0.1),
-                        Colors.orange.withOpacity(0.05),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                  ),
-                  child: Column(
-                    children: [
-                      const TextConst(title: "Amount"),
-                      const SizedBox(height: 8),
+                      SizedBox(width: 12),
                       Text(
-                        "₹${widget.amount}",
+                        "Please wait...",
                         style: TextStyle(
-                          fontSize: 42,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange.shade700,
+                          fontSize: 15,
+                          color: Colors.black54,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        "Order #${widget.orderId}",
-                        style: const TextStyle(color: Colors.black54),
-                      ),
                     ],
                   ),
-                ),
-
-                const SizedBox(height: 30),
-
-                /// WAITING TEXT
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.orange,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Text(
-                      "Please wait...",
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -2077,10 +2349,10 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// COLLECT CASH SCREEN  (Offline / Cash payment)
+// ─────────────────────────────────────────────────────────────────────────────
 
-/// =====================================================
-/// COLLECT CASH SCREEN
-/// =====================================================
 class CollectCashScreen extends StatefulWidget {
   final int orderId;
   final dynamic amount;
@@ -2098,127 +2370,390 @@ class CollectCashScreen extends StatefulWidget {
 }
 
 class _CollectCashScreenState extends State<CollectCashScreen> {
-  bool isCollected = false;
+  // ── Pay-mode bottom sheet ──────────────────────────────────────────────────
+
+  void _showPayModeBottomSheet(BuildContext context) {
+    // Default: 2 = Cash/Offline (current screen)
+    int selectedMode = 2;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Drag handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  const Text(
+                    "Change Payment Mode",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Online  → pay_mode = 1
+                  _payModeOption(
+                    icon: Icons.phone_android_outlined,
+                    iconColor: Colors.orange,
+                    bgColor: Colors.orange.withOpacity(0.1),
+                    title: "Online",
+                    subtitle: "UPI / Card",
+                    isSelected: selectedMode == 1,
+                    selectedColor: Colors.orange,
+                    onTap: () => setModalState(() => selectedMode = 1),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Cash / Offline  → pay_mode = 2
+                  _payModeOption(
+                    icon: Icons.account_balance_wallet_outlined,
+                    iconColor: Colors.green,
+                    bgColor: Colors.green.withOpacity(0.1),
+                    title: "Cash",
+                    subtitle: "Collect from passenger",
+                    isSelected: selectedMode == 2,
+                    selectedColor: Colors.green,
+                    onTap: () => setModalState(() => selectedMode = 2),
+                  ),
+
+                  // const SizedBox(height: 10),
+
+                  // // Wallet  → pay_mode = 3
+                  // _payModeOption(
+                  //   icon: Icons.wallet_outlined,
+                  //   iconColor: Colors.purple,
+                  //   bgColor: Colors.purple.withOpacity(0.1),
+                  //   title: "Wallet",
+                  //   subtitle: "In-app wallet balance",
+                  //   isSelected: selectedMode == 3,
+                  //   selectedColor: Colors.purple,
+                  //   onTap: () => setModalState(() => selectedMode = 3),
+                  // ),
+
+                  const SizedBox(height: 24),
+
+                  // Confirm button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        shape: const StadiumBorder(),
+                        padding:
+                        const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        final changePayMode =
+                        Provider.of<ChangeCabPayModeViewModel>(
+                          context,
+                          listen: false,
+                        );
+                        // selectedMode is int: 1, 2, or 3
+                        await changePayMode.changeCabPayModeApi(
+                          widget.orderId,
+                          selectedMode,
+                          context,
+                        );
+                      },
+                      child: const Text(
+                        "Confirm",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ── Pay-mode option tile ───────────────────────────────────────────────────
+
+  Widget _payModeOption({
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required Color selectedColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isSelected ? selectedColor : Colors.grey.shade200,
+            width: isSelected ? 1.5 : 1,
+          ),
+          borderRadius: BorderRadius.circular(14),
+          color: isSelected
+              ? selectedColor.withOpacity(0.05)
+              : Colors.white,
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: bgColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? selectedColor : Colors.transparent,
+                border: Border.all(
+                  color:
+                  isSelected ? selectedColor : Colors.grey.shade400,
+                ),
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check,
+                  size: 14, color: Colors.white)
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    final changeCabOrder = Provider.of<ChangeCabOrderStatusViewModel>(context);
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+    final changeCabOrder =
+    Provider.of<ChangeCabOrderStatusViewModel>(context);
 
-              /// Cash Icon
-              Container(
-                height: 140,
-                width: 140,
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.account_balance_wallet_outlined,
-                  size: 70,
-                  color: Colors.green,
-                ),
-              ),
-
-              SizedBox(height: 32),
-
-              TextConst(
-                title:
-                "Collect Cash Payment",
-                size: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-
-              SizedBox(height: 12),
-
-              TextConst(
-                title:
-                "Collect cash from $widget.userName",
-                textAlign: TextAlign.center,
-                size: 15,
-                color: Colors.grey.shade600,
-              ),
-
-              SizedBox(height: 40),
-
-              /// Amount Card
-              Container(
-                padding: EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.green.withOpacity(0.1),
-                      Colors.green.withOpacity(0.05),
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop();
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          title: const Text(
+            "Collect Cash",
+            style: TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          actions: [
+            // ── Pay Mode Toggle Icon ──────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: () => _showPayModeBottomSheet(context),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child:  Row(
+                    children: [
+                      TextConst(title: "Change Pay Mode"),
+                      SizedBox(width: 5,),
+                      Icon(
+                        Icons.credit_card_outlined,
+                        color: Colors.green,
+                        size: 20,
+                      ),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.green.withOpacity(0.3)),
                 ),
-                child: Column(
-                  children: [
-                    Text(
-                      "Amount to Collect",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade700,
-                        fontWeight: FontWeight.w600,
-                      ),
+              ),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // ── Cash Icon ───────────────────────────────────────────
+                Container(
+                  height: 140,
+                  width: 140,
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.account_balance_wallet_outlined,
+                    size: 70,
+                    color: Colors.green,
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                const Text(
+                  "Collect Cash Payment",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                Text(
+                  "Collect cash from ${widget.userName}",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+
+                // ── Amount Card ─────────────────────────────────────────
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.green.withOpacity(0.1),
+                        Colors.green.withOpacity(0.05),
+                      ],
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      "₹${widget.amount}",
-                      style: TextStyle(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green.shade700,
-                      ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.green.withOpacity(0.3),
                     ),
-                    SizedBox(height: 8),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        "Order #${widget.orderId}",
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        "Amount to Collect",
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 14,
                           color: Colors.grey.shade700,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        "₹${widget.amount}",
+                        style: TextStyle(
+                          fontSize: 42,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          "Order #${widget.orderId}",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              SizedBox(height: 50),
+                const SizedBox(height: 50),
 
-              SlideToButton(
-                title: "Collect Cash",
-                onAccepted: () async {
-                  await changeCabOrder.changeCabOrderApi(
-                    widget.orderId,
-                    5,
-                    "",
-                    "",
-                    context,
-                  );
-                  // Navigator.pop(context);
-                },
-              ),
-
-            ],
+                // ── Slide to collect ────────────────────────────────────
+                SlideToButton(
+                  title: "Collect Cash",
+                  onAccepted: () async {
+                    await changeCabOrder.changeCabOrderApi(
+                      widget.orderId,
+                      5,
+                      "",
+                      "",
+                      context,
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -2240,82 +2775,96 @@ class CollectByWalletScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                height: 140,
-                width: 140,
-                decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.account_balance_wallet,
-                  size: 70,
-                  color: Colors.purple,
-                ),
-              ),
+    final changeCabOrder =
+    Provider.of<ChangeCabOrderStatusViewModel>(context);
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop();
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xffF8F7FC),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              children: [
+                const Spacer(),
 
-              const SizedBox(height: 30),
-
-              const Text(
-                "Wallet Payment",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Text(
-                "$userName paid via wallet",
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
-
-              const SizedBox(height: 40),
-
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.purple.withOpacity(0.3),
+                /// 🔵 Wallet Icon Card
+                Container(
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.green.shade100,
+                        Colors.green.shade50,
+                      ],
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.account_balance_wallet_rounded,
+                    size: 60,
+                    color: Colors.green,
                   ),
                 ),
-                child: Column(
-                  children: [
-                    const Text("Amount Received"),
-                    const SizedBox(height: 8),
-                    Text(
-                      "₹$amount",
-                      style: const TextStyle(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.purple,
-                      ),
-                    ),
-                  ],
+
+                const SizedBox(height: 30),
+
+                /// 🟣 Title
+                const Text(
+                  "Payment Received",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                      fontFamily: AppFonts.kanitReg
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 40),
+                const SizedBox(height: 8),
 
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context)
-                      .popUntil((route) => route.isFirst);
-                },
-                child: const Text("Done"),
-              ),
-            ],
+                Text(
+                  "Payment has been successfully received from $userName via wallet.\nTap 'Done' to continue and pick up your next ride.",
+                  style: TextStyle(
+                    fontSize: 17,
+                    color: Colors.grey.shade600,
+                    height: 1.5,
+                    fontFamily: AppFonts.kanitReg
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+
+
+                const Spacer(),
+
+                CustomButton(
+                  bgColor: AppColor.royalBlue,
+                  textColor: AppColor.white,
+                  title: "Done",
+                  onTap: () async {
+                    final response = await changeCabOrder.changeCabOrderApi(
+                      orderId,
+                      5,
+                      "",
+                      "",
+                      context,
+                    );
+
+                    if (response == true) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => DriverHomePage()),
+                            (route) => false,
+                      );
+                    }
+                  },
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
