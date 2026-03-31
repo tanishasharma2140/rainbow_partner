@@ -6,21 +6,21 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/no_data_found.dart';
 import 'package:rainbow_partner/view_model/policy_view_model.dart';
 
-class DriverTermsCondition extends StatefulWidget {
-  const DriverTermsCondition({super.key});
+class DriverContactUs extends StatefulWidget {
+  const DriverContactUs({super.key});
 
 
   @override
-  State<DriverTermsCondition> createState() => _DriverTermsConditionState();
+  State<DriverContactUs> createState() => _DriverContactUsState();
 }
 
-class _DriverTermsConditionState extends State<DriverTermsCondition> {
+class _DriverContactUsState extends State<DriverContactUs> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<PolicyViewModel>(context, listen: false)
-          .policyApi("2");
+          .policyApi("5");
     });
   }
 
@@ -38,7 +38,7 @@ class _DriverTermsConditionState extends State<DriverTermsCondition> {
           elevation: 0,
           centerTitle: true,
           title: const Text(
-            "Terms and Condition",
+            "Contact us",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,

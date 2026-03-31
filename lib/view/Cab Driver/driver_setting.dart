@@ -2,9 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/driver_about_us.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/driver_contact_us.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/driver_help_and_support.dart' show DriverHelpAndSupport;
 import 'package:rainbow_partner/view/Cab%20Driver/driver_notification.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/driver_privacy_policy.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/driver_refund_policy.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/driver_terms_and_condition.dart';
 
 class DriverSetting extends StatefulWidget {
@@ -74,6 +77,33 @@ class _DriverSettingState extends State<DriverSetting> {
                 subtitle: 'How we use your data',
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverPrivacyPolicy()));
+                },
+              ),
+              const SizedBox(height: 12),
+              _settingCard(
+                icon: Icons.policy,
+                title: 'Refund Policy',
+                subtitle: 'Read our refund & Cancellation policy ',
+                onTap: () {
+                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverRefundPolicy()));
+                },
+              ),
+              const SizedBox(height: 12),
+              _settingCard(
+                icon: Icons.contact_page,
+                title: 'Contact us',
+                subtitle: 'Reach out for help and support',
+                onTap: () {
+                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverContactUs()));
+                },
+              ),
+              const SizedBox(height: 12),
+              _settingCard(
+                icon: Icons.account_box_outlined,
+                title: 'About us',
+                subtitle: 'Know more about our services',
+                onTap: () {
+                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverAboutUs()));
                 },
               ),
             ],

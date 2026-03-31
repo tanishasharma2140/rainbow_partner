@@ -16,6 +16,9 @@ import 'package:rainbow_partner/view/Service%20Man/drawer/service_help_support.d
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_privacy_policy.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_wallet_balance.dart';
 import 'package:rainbow_partner/view/Service%20Man/partner_notification.dart';
+import 'package:rainbow_partner/view/Service%20Man/service_about_us.dart';
+import 'package:rainbow_partner/view/Service%20Man/service_contact_us.dart';
+import 'package:rainbow_partner/view/Service%20Man/service_refund_policy.dart';
 import 'package:rainbow_partner/view/Service%20Man/service_terms_and_condition.dart';
 import 'package:rainbow_partner/view_model/service_man/service_online_status_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
@@ -192,8 +195,8 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
       backgroundColor: AppColor.white,
       width: 280,
       child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
 
             // ---------------- PROFILE HEADER ----------------
@@ -348,6 +351,30 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               },
             ),
             _drawerItem(
+              icon: Icons.policy,
+              title: "Refund Policy",
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceRefundPolicy()));
+              },
+            ),
+            _drawerItem(
+              icon: Icons.account_box_outlined,
+              title: "Contact us",
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceContactUs()));
+              },
+            ),
+            _drawerItem(
+              icon: Icons.privacy_tip_outlined,
+              title: "About us",
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceAboutUs()));
+              },
+            ),
+            _drawerItem(
               icon: Icons.logout,
               title: "Logout",
               onTap: () {
@@ -355,7 +382,6 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               },
             ),
 
-            Spacer(),
             SizedBox(height: 20),
           ],
         ),

@@ -9,6 +9,7 @@ import 'package:rainbow_partner/view_model/policy_view_model.dart';
 class ServiceTermsAndCondition extends StatefulWidget {
   const ServiceTermsAndCondition({super.key});
 
+
   @override
   State<ServiceTermsAndCondition> createState() => _ServiceTermsAndConditionState();
 }

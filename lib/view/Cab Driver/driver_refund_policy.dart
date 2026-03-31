@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:provider/provider.dart';
@@ -6,21 +7,21 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/no_data_found.dart';
 import 'package:rainbow_partner/view_model/policy_view_model.dart';
 
-class DriverTermsCondition extends StatefulWidget {
-  const DriverTermsCondition({super.key});
+class DriverRefundPolicy extends StatefulWidget {
+  const DriverRefundPolicy({super.key});
 
 
   @override
-  State<DriverTermsCondition> createState() => _DriverTermsConditionState();
+  State<DriverRefundPolicy> createState() => _DriverRefundPolicyState();
 }
 
-class _DriverTermsConditionState extends State<DriverTermsCondition> {
+class _DriverRefundPolicyState extends State<DriverRefundPolicy> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<PolicyViewModel>(context, listen: false)
-          .policyApi("2");
+          .policyApi("3");
     });
   }
 
@@ -38,7 +39,7 @@ class _DriverTermsConditionState extends State<DriverTermsCondition> {
           elevation: 0,
           centerTitle: true,
           title: const Text(
-            "Terms and Condition",
+            "Refund Policy",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
