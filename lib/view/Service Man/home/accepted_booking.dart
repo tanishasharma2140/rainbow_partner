@@ -4,15 +4,14 @@ import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_loader.dart';
-import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/map_utils.dart';
-import 'package:rainbow_partner/res/no_data_found.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/utils/call_utils.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/service/ringtone_service.dart';
 import 'package:rainbow_partner/view_model/service_man/change_order_status_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/change_service_pay_mode_vm.dart';
 import 'package:rainbow_partner/view_model/service_man/complete_booking_view_model.dart';
 import 'package:rainbow_partner/res/slide_to_button.dart';
 
@@ -150,6 +149,117 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     );
   }
 
+  void _showPayModeDialog(BuildContext context, int orderId) {
+    final changePayModeVm = Provider.of<ChangeServicePayModeVm>(context, listen: false);
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const TextConst(
+                  title:
+                  "Change Payment Mode",
+                  size: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                const SizedBox(height: 8),
+                const TextConst(
+                    title:
+                  "Please select your preferred payment mode",
+                  size: 13,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 20),
+
+                // ---------- PAY ONLINE ----------
+                InkWell(
+                  onTap: () {
+                    changePayModeVm.changePayModeApi(orderId, 1, context).then((value) {
+                      _refreshBookings();
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColor.royalBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColor.royalBlue),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.payment, color: AppColor.royalBlue),
+                        SizedBox(width: 12),
+                        Text(
+                          "Pay Online",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ---------- PAY OFFLINE ----------
+                InkWell(
+                  onTap: () {
+                    changePayModeVm.changePayModeApi(orderId, 2, context).then((value) {
+                      _refreshBookings();
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.orange),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.money, color: Colors.orange),
+                        SizedBox(width: 12),
+                        Text(
+                          "Pay Offline",
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: AppColor.black,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Cancel"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   void showCollectCashDialog({
     required int orderId,
@@ -167,7 +277,6 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 💰 Icon
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -180,29 +289,20 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                   size: 32,
                 ),
               ),
-
               const SizedBox(height: 14),
-
-              // Title
               const Text(
                 "Collect Cash",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
-
               const SizedBox(height: 8),
-
-              // Amount
               Text(
                 "Please collect ₹$amount from customer",
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 14, color: Colors.black54),
               ),
-
               const SizedBox(height: 22),
-
               Row(
                 children: [
-                  // ❌ Cancel
                   Expanded(
                     child: InkWell(
                       onTap: () => Navigator.pop(context),
@@ -217,19 +317,15 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                       ),
                     ),
                   ),
-
                   const SizedBox(width: 12),
-
-                  // ✅ Cash Collected
                   Expanded(
                     child: InkWell(
                       onTap: () {
                         RingtoneService().playNotification();
                         Navigator.pop(context);
-
                         vm.changeOrderStatusApi(
                           orderId,
-                          3, // Payment Done
+                          3,
                           "",
                           "",
                           context,
@@ -263,59 +359,46 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
 
   String formatDistance(dynamic distance) {
     if (distance == null) return "--";
-
     double value = double.tryParse(distance.toString()) ?? 0;
-
     int km = value.floor();
     int meter = ((value - km) * 1000).round();
-
-    if (km == 0) {
-      return "$meter meter";
-    }
-
-    if (meter == 0) {
-      return "$km km";
-    }
-
+    if (km == 0) return "$meter meter";
+    if (meter == 0) return "$km km";
     return "$km km $meter meter";
   }
 
   String formatDateTime(dynamic value) {
     if (value == null || value.toString().isEmpty) return "--";
-
     try {
       DateTime dateTime = DateTime.parse(value.toString()).toLocal();
-
-      // Day
       String day = dateTime.day.toString().padLeft(2, '0');
-
-      // Month short name
-      const months = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-      ];
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       String month = months[dateTime.month - 1];
-
-      // Year
       String year = dateTime.year.toString();
-
-      // Time
       int hour = dateTime.hour;
       int minute = dateTime.minute;
       String amPm = hour >= 12 ? "PM" : "AM";
-
       hour = hour % 12;
       if (hour == 0) hour = 12;
-
       String minStr = minute.toString().padLeft(2, '0');
-
       return "$day $month $year, $hour:$minStr $amPm";
     } catch (e) {
       return value.toString();
     }
   }
 
-
+  String formatPayMode(dynamic payMode) {
+    switch (int.tryParse(payMode?.toString() ?? "") ?? 0) {
+      case 1:
+        return "Pay Online";
+      case 2:
+        return "Pay Offline";
+      case 3:
+        return "Wallet";
+      default:
+        return "N/A";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -328,9 +411,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
         backgroundColor: AppColor.royalBlue,
         automaticallyImplyLeading: false,
         leading: GestureDetector(
-          onTap: () {
-            Navigator.pop(context);
-          },
+          onTap: () => Navigator.pop(context),
           child: Icon(Icons.arrow_back, color: AppColor.white),
         ),
         title: const TextConst(
@@ -343,22 +424,20 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
       body: RefreshIndicator(
         color: AppColor.royalBlue,
         onRefresh: _refreshBookings,
-        child:   bookingVm.loading
-            ? Center(child: CustomLoader(color: AppColor.royalBlue,))
+        child: bookingVm.loading
+            ? Center(child: CustomLoader(color: AppColor.royalBlue))
             : bookingVm.completeBookingModel == null ||
             bookingVm.completeBookingModel!.data == null ||
             bookingVm.completeBookingModel!.data!.isEmpty
-            ?  _noDataFound()
-            :ListView.builder(
+            ? _noDataFound()
+            : ListView.builder(
           padding: const EdgeInsets.all(15),
           itemCount: bookingVm.completeBookingModel!.data!.length,
           itemBuilder: (_, index) {
             final booking = bookingVm.completeBookingModel!.data![index];
-            final int status =
-                int.tryParse(booking.serviceStatus.toString()) ?? 0;
+            final int status = int.tryParse(booking.serviceStatus.toString()) ?? 0;
             final int orderId = booking.id;
-            final int payMode =
-                int.tryParse(booking.payMode.toString()) ?? 0;
+            final int payMode = int.tryParse(booking.payMode.toString()) ?? 0;
 
             return Container(
               margin: const EdgeInsets.only(bottom: 15),
@@ -373,7 +452,6 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// ---------- TOP ROW ----------
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -392,8 +470,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 TextConst(
                                   title: "#${booking.id}",
@@ -401,20 +478,11 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                                   fontWeight: FontWeight.w600,
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 5,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                                   decoration: BoxDecoration(
-                                    color: Colors.orange.withOpacity(
-                                      0.15,
-                                    ),
-                                    borderRadius: BorderRadius.circular(
-                                      18,
-                                    ),
-                                    border: Border.all(
-                                      color: Colors.orange,
-                                    ),
+                                    color: Colors.orange.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(color: Colors.orange),
                                   ),
                                   child: const Text(
                                     "Pending",
@@ -452,7 +520,6 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 12),
                   infoRow(
                     "Address:",
@@ -465,31 +532,21 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                       );
                     },
                   ),
-
                   infoRow("Date:", formatDateTime(booking.serviceDatetime)),
                   infoRow("Customer:", booking.userName ?? ""),
-                  infoRow(
-                    "Payment:",
-                    getPaymentModeText(booking.payMode),
-                  ),
                   infoRow("Distance:", formatDistance(booking.distance)),
-                  infoRow("Quantity:", booking.quantity.toString() ?? ""),
-
-
+                  infoRow("Quantity:", booking.quantity.toString()),
 
                   InkWell(
                     onTap: () {
                       setState(() {
-                        _expandedMap[booking.id] =
-                        !(_expandedMap[booking.id] ?? false);
+                        _expandedMap[booking.id] = !(_expandedMap[booking.id] ?? false);
                       });
                     },
                     child: Align(
                       alignment: Alignment.bottomRight,
                       child: Text(
-                        (_expandedMap[booking.id] ?? false)
-                            ? "Hide Details"
-                            : "View Order Detail",
+                        (_expandedMap[booking.id] ?? false) ? "Hide Details" : "View Order Detail",
                         style: const TextStyle(
                           color: AppColor.royalBlue,
                           fontSize: 14,
@@ -500,7 +557,6 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                   ),
                   if (_expandedMap[booking.id] ?? false) ...[
                     const SizedBox(height: 12),
-
                     Container(
                       width: Sizes.screenWidth,
                       padding: const EdgeInsets.all(14),
@@ -513,28 +569,71 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _detailRow("Customer Name :", booking.userName),
-                          _detailRow(
-                            "Customer Mobile :",
-                            booking.userMobile,
-                          ),
+                          _detailRow("Customer Mobile :", booking.userMobile),
                           _detailRow("Address :", booking.serviceAddress),
                           _detailRow("Amount :", "₹${booking.amount}"),
-                          _detailRow(
-                            "Final Amount :",
-                            "₹${booking.finalAmount}",
-                          ),
-                          _detailRow(
-                            "Payment Mode",
-                            getPaymentModeText(booking.payMode),
-                          ),
-                          _detailRow(
-                            "Service Date",
-                            formatDateTime(booking.serviceDatetime),
-                          ),
+                          _detailRow("Final Amount :", "₹${booking.finalAmount}"),
+                          _detailRow("Payment Mode", formatPayMode(booking.payMode)),
+                          _detailRow("Service Date", formatDateTime(booking.serviceDatetime)),
                         ],
                       ),
                     ),
                   ],
+
+                  const SizedBox(height: 10),
+
+                  // CHANGE PAY MODE SECTION
+                  if (status == 1 || status == 2)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: InkWell(
+                        onTap: () => _showPayModeDialog(context, booking.id),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColor.royalBlue.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColor.royalBlue.withOpacity(0.2)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    TextConst(
+                                      title:
+                                      "Current Pay Mode",
+                                      size: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    TextConst(
+                                      title:
+                                      formatPayMode(booking.payMode),
+                                      size: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColor.royalBlue,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const TextConst(
+                                title:
+                                "Change",
+                                size: 13,
+                                color: AppColor.royalBlue,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    _detailRow("Pay Mode", formatPayMode(booking.payMode)),
+
                   const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -542,85 +641,52 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            // 👤 User Details
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    booking.userName ?? "N/A",
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    booking.userMobile ?? "",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                booking.userName ?? "N/A",
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                               ),
-                            ),
-
-                            // 📞 CALL BUTTON
-                            InkWell(
-                              onTap: () {
-                                CallUtils.makePhoneCall(
-                                  booking.userMobile ?? "",
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: AppColor.royalBlue.withOpacity(
-                                    0.1,
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.call,
-                                  color: AppColor.royalBlue,
-                                  size: 20,
-                                ),
+                              const SizedBox(height: 4),
+                              Text(
+                                booking.userMobile ?? "",
+                                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-
-                        const SizedBox(height: 8),
+                        InkWell(
+                          onTap: () => CallUtils.makePhoneCall(booking.userMobile ?? ""),
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColor.royalBlue.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.call, color: AppColor.royalBlue, size: 20),
+                          ),
+                        ),
                       ],
                     ),
                   ),
 
-                  // 👇 VIEW MORE
                   const SizedBox(height: 14),
 
                   /// ---------- STATUS BASED UI ----------
                   if (status == 1) ...[
-                    const Text(
-                      "Enter OTP",
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
+                    const Text("Enter OTP", style: TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     otpField(),
                     const SizedBox(height: 12),
-
                     Row(
                       children: [
                         Expanded(
                           child: InkWell(
-                            onTap: () =>
-                                showRejectDialog(orderId, changeVm),
+                            onTap: () => showRejectDialog(orderId, changeVm),
                             child: Container(
                               height: 46,
                               alignment: Alignment.center,
@@ -629,10 +695,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Colors.red),
                               ),
-                              child: const TextConst(
-                                title: "Reject",
-                                color: Colors.red,
-                              ),
+                              child: const TextConst(title: "Reject", color: Colors.red),
                             ),
                           ),
                         ),
@@ -642,13 +705,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                             title: "Verify & Start",
                             loading: changeVm.isLoading(orderId),
                             onTap: () {
-                              changeVm.changeOrderStatusApi(
-                                orderId,
-                                2,
-                                otpController.text,
-                                "",
-                                context,
-                              );
+                              changeVm.changeOrderStatusApi(orderId, 2, otpController.text, "", context);
                             },
                           ),
                         ),
@@ -658,7 +715,6 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
 
                   if (status == 2) ...[
                     serviceStartedMessage(),
-
                     if (payMode == 2)
                       actionButton(
                         title: "Work Completed Collect Cash",
@@ -671,18 +727,11 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                           );
                         },
                       )
-                    /// 🔵 ONLINE / WALLET → COMPLETE SERVICE
                     else
                       SlideToButton(
                         title: "Update Complete Status",
                         onAccepted: () {
-                          changeVm.changeOrderStatusApi(
-                            orderId,
-                            3,
-                            "",
-                            "",
-                            context,
-                          );
+                          changeVm.changeOrderStatusApi(orderId, 3, "", "", context);
                         },
                       ),
                   ],
@@ -712,7 +761,6 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
             );
           },
         ),
-
       ),
     );
   }
@@ -723,13 +771,8 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.inbox_rounded, size: 60, color: Colors.grey),
-          SizedBox(height: 12),
-          TextConst(
-            title: "No Data Found",
-            size: 16,
-            color: Colors.grey,
-            fontWeight: FontWeight.w600,
-          ),
+          const SizedBox(height: 12),
+          TextConst(title: "No Data Found", size: 16, color: Colors.grey, fontWeight: FontWeight.w600),
         ],
       ),
     );
@@ -777,83 +820,34 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     ),
   );
 
-  Widget infoRow(
-      String label,
-      String value, {
-        bool marquee = false,
-        bool showMapIcon = false,
-        VoidCallback? onMapTap,
-      }) =>
-      Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 90,
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontFamily: AppFonts.kanitReg,
-                  color: Colors.black54,
-                ),
-              ),
-            ),
-
-            /// TEXT
-            Expanded(
-              child: marquee
-                  ? SizedBox(
-                height: 20,
-                child: Marquee(
-                  text: value,
-                  blankSpace: 40,
-                  velocity: 25,
-                ),
-              )
-                  : Text(
-                value,
-                style: const TextStyle(
-                  fontFamily: AppFonts.kanitReg,
-                ),
-              ),
-            ),
-
-            /// 📍 MAP ICON (ONLY FOR ADDRESS)
-            if (showMapIcon) ...[
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: onMapTap,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColor.royalBlue.withOpacity(0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.location_on,
-                    size: 18,
-                    color: AppColor.royalBlue,
-                  ),
-                ),
-              ),
-            ],
-          ],
+  Widget infoRow(String label, String value, {bool marquee = false, bool showMapIcon = false, VoidCallback? onMapTap}) => Padding(
+    padding: const EdgeInsets.only(bottom: 6),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 90,
+          child: Text(label, style: const TextStyle(fontFamily: AppFonts.kanitReg, color: Colors.black54)),
         ),
-      );
-
-  String getPaymentModeText(dynamic payMode) {
-    switch (int.tryParse(payMode?.toString() ?? "") ?? 0) {
-      case 1:
-        return "Pay Online";
-      case 2:
-        return "Pay Offline";
-      case 3:
-        return "Wallet";
-      default:
-        return "N/A";
-    }
-  }
+        Expanded(
+          child: marquee
+              ? SizedBox(height: 20, child: Marquee(text: value, blankSpace: 40, velocity: 25))
+              : Text(value, style: const TextStyle(fontFamily: AppFonts.kanitReg)),
+        ),
+        if (showMapIcon) ...[
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: onMapTap,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: AppColor.royalBlue.withOpacity(0.12), shape: BoxShape.circle),
+              child: const Icon(Icons.location_on, size: 18, color: AppColor.royalBlue),
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
 
   Widget serviceStartedMessage() {
     return Container(
@@ -867,11 +861,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
       ),
       child: const Text(
         "Service has started successfully. Please complete the job and update the status once done.",
-        style: TextStyle(
-          color: Colors.green,
-          fontWeight: FontWeight.w600,
-          fontSize: 13,
-        ),
+        style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 13),
       ),
     );
   }

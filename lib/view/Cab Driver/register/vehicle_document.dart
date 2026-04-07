@@ -260,153 +260,159 @@ class _VehicleDocumentState extends State<VehicleDocument> {
     final driverRegisterSixVm =
     Provider.of<DriverRegisterSixViewModel>(context);
 
-    return Stack(
-      children: [
-        SafeArea(
-          top: false,
-          bottom: true,
-          child: Scaffold(
-            backgroundColor: Colors.white,
-            appBar: ConstantAppbar(
-              onBack: () => Navigator.pop(context),
-              onClose: () => SystemNavigator.pop(),
-            ),
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 15),
-                  const TextConst(
-                    title: "Vehicle documents",
-                    size: 25,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  const SizedBox(height: 25),
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop();
+        return false;
+      },
+      child: Stack(
+        children: [
+          SafeArea(
+            top: false,
+            bottom: true,
+            child: Scaffold(
+              backgroundColor: Colors.white,
+              appBar: ConstantAppbar(
+                onBack: () => Navigator.pop(context),
+                onClose: () => SystemNavigator.pop(),
+              ),
+              body: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 15),
+                    const TextConst(
+                      title: "Vehicle documents",
+                      size: 25,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    const SizedBox(height: 25),
 
-                  Wrap(
-                    spacing: 20,
-                    runSpacing: 25,
-                    children: [
-                      // ✅ Permit A & B — sirf category 3, 4
-                      if (showPermits) ...[
-                        uploadBox("Vehicle permit -\npart A"),
-                        uploadBox("Vehicle permit -\npart B"),
-                      ],
+                    Wrap(
+                      spacing: 20,
+                      runSpacing: 25,
+                      children: [
+                        // ✅ Permit A & B — sirf category 3, 4
+                        if (showPermits) ...[
+                          uploadBox("Vehicle permit -\npart A"),
+                          uploadBox("Vehicle permit -\npart B"),
+                        ],
 
-                      // ✅ Registration — category 2, 3, 4
-                      if (showRegistration) ...[
-                        uploadBox("Vehicle registration certificate"),
-                        uploadBox(
-                          "Back side of\nregistration certificate",
-                          optional: true,
-                        ),
-                      ],
-                    ],
-                  ),
-
-                  const Spacer(),
-
-                  Row(
-                    children: [
-                      const TextConst(
-                        title: "6 of 6",
-                        size: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(12),
+                        // ✅ Registration — category 2, 3, 4
+                        if (showRegistration) ...[
+                          uploadBox("Vehicle registration certificate"),
+                          uploadBox(
+                            "Back side of\nregistration certificate",
+                            optional: true,
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: AppColor.royalBlue,
-                                    borderRadius: BorderRadius.circular(12),
+                        ],
+                      ],
+                    ),
+
+                    const Spacer(),
+
+                    Row(
+                      children: [
+                        const TextConst(
+                          title: "6 of 6",
+                          size: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: AppColor.royalBlue,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      SizedBox(
-                        height: 50,
-                        width: 110,
-                        child: CustomButton(
-                          title: "Next",
-                          bgColor: AppColor.royalBlue,
-                          textColor: Colors.white,
-                          onTap: () {
-                            // ✅ Validation
-                            if ((showPermits &&
-                                (vehiclePermitA == null ||
-                                    vehiclePermitB == null)) ||
-                                (showRegistration &&
-                                    vehicleRegistrationFront == null)) {
-                              Utils.showErrorMessage(
-                                context,
-                                "Please upload all required vehicle documents",
-                              );
-                              return;
-                            }
+                        const SizedBox(width: 16),
+                        SizedBox(
+                          height: 50,
+                          width: 110,
+                          child: CustomButton(
+                            title: "Next",
+                            bgColor: AppColor.royalBlue,
+                            textColor: Colors.white,
+                            onTap: () {
+                              // ✅ Validation
+                              if ((showPermits &&
+                                  (vehiclePermitA == null ||
+                                      vehiclePermitB == null)) ||
+                                  (showRegistration &&
+                                      vehicleRegistrationFront == null)) {
+                                Utils.showErrorMessage(
+                                  context,
+                                  "Please upload all required vehicle documents",
+                                );
+                                return;
+                              }
 
-                            driverRegisterSixVm.driverRegisterSixApi(
-                              vehiclePermitA: showPermits ? vehiclePermitA : null,
-                              vehiclePermitB: showPermits ? vehiclePermitB : null,
-                              vehicleRegistrationFront: showRegistration ? vehicleRegistrationFront : null,
-                              vehicleRegistrationBack: vehicleRegistrationBack,
-                              vehicleInfoStatus: "1",
-                              context: context,
-                            );
-                          },
+                              driverRegisterSixVm.driverRegisterSixApi(
+                                vehiclePermitA: showPermits ? vehiclePermitA : null,
+                                vehiclePermitB: showPermits ? vehiclePermitB : null,
+                                vehicleRegistrationFront: showRegistration ? vehicleRegistrationFront : null,
+                                vehicleRegistrationBack: vehicleRegistrationBack,
+                                vehicleInfoStatus: "1",
+                                context: context,
+                              );
+                            },
+                          ),
                         ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 15),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (driverRegisterSixVm.loading)
+            Container(
+              color: Colors.black54,
+              child: Center(
+                child: Container(
+                  height: Sizes.screenHeight * 0.13,
+                  width: Sizes.screenWidth * 0.28,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        spreadRadius: 2,
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 15),
-                ],
-              ),
-            ),
-          ),
-        ),
-        if (driverRegisterSixVm.loading)
-          Container(
-            color: Colors.black54,
-            child: Center(
-              child: Container(
-                height: Sizes.screenHeight * 0.13,
-                width: Sizes.screenWidth * 0.28,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      spreadRadius: 2,
+                  child: Center(
+                    child: GradientCirPro(
+                      strokeWidth: 6,
+                      size: 70,
+                      gradient: AppColor.circularIndicator,
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: GradientCirPro(
-                    strokeWidth: 6,
-                    size: 70,
-                    gradient: AppColor.circularIndicator,
                   ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

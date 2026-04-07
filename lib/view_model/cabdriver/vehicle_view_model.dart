@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:rainbow_partner/model/vehicle_model.dart';
 import 'package:rainbow_partner/repo/cabdriver/vehicle_repo.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VehicleViewModel with ChangeNotifier {
   final _vehicleRepo = VehicleRepo();
@@ -19,6 +20,9 @@ class VehicleViewModel with ChangeNotifier {
   String? get selectedVehicleName => _selectedVehicleName;
   dynamic get selectedVehicleCategory => _selectedVehicleCategory;
 
+  VehicleViewModel() {
+    loadSelectedVehicle();
+  }
 
   void setLoading(bool value) {
     _loading = value;
@@ -30,15 +34,35 @@ class VehicleViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  /// 🔥 LOAD SELECTED VEHICLE FROM LOCAL STORAGE
+  Future<void> loadSelectedVehicle() async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    _selectedVehicleId = sp.getInt('selectedVehicleId');
+    _selectedVehicleName = sp.getString('selectedVehicleName');
+    _selectedVehicleCategory = sp.get('selectedVehicleCategory'); // can be int or string
+    notifyListeners();
+  }
+
   /// 🔥 SET SELECTED VEHICLE
-  void setSelectedVehicle({
+  Future<void> setSelectedVehicle({
     required int vehicleId,
     required String vehicleName,
     required dynamic vehicleCategory,
-  }) {
+  }) async {
     _selectedVehicleId = vehicleId;
     _selectedVehicleName = vehicleName;
     _selectedVehicleCategory = vehicleCategory;
+
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    await sp.setInt('selectedVehicleId', vehicleId);
+    await sp.setString('selectedVehicleName', vehicleName);
+    
+    if (vehicleCategory is int) {
+      await sp.setInt('selectedVehicleCategory', vehicleCategory);
+    } else {
+      await sp.setString('selectedVehicleCategory', vehicleCategory.toString());
+    }
+    
     notifyListeners();
 
     if (kDebugMode) {

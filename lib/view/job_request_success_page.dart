@@ -49,7 +49,7 @@ class JobRequestSuccessPage extends StatelessWidget {
                 // ✅ MESSAGE
                 const TextConst(
                   title:
-                  "Tumhara job request successfully submit ho gaya hai.\nAb job assign hone ka wait karo.",
+                  "Your job request has been successfully submitted.\nNow please wait for the job to be assigned",
                   size: 15,
                   color: Colors.black54,
                   textAlign: TextAlign.center,

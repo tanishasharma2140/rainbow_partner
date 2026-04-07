@@ -26,17 +26,25 @@ class JobRequestViewModel with ChangeNotifier {
     required String designation,
     required String skillType,
     required String city,
-    required File policeVerificationFile,
     required List<File> designationFiles,
     required BuildContext context,
   }) async {
 
     setLoading(true);
 
+    // ✅ SAHI TARIKA: UserViewModel initialize karke getUser call karna
     UserViewModel userViewModel = UserViewModel();
     String? userId = await userViewModel.getUser();
-    print("lkjuijki");
-    print(userId);
+    
+    if (kDebugMode) {
+      print("🔍 Attempting to fetch User ID...");
+      print("🆔 Fetched User ID: $userId");
+    }
+
+    // Validation if userId is mandatory for your API
+    if (userId == null || userId.isEmpty) {
+       if (kDebugMode) print("⚠️ User ID is null or empty!");
+    }
 
     Map<String, String> fields = {
       "first_name": firstName,
@@ -51,7 +59,6 @@ class JobRequestViewModel with ChangeNotifier {
     };
 
     Map<String, dynamic> files = {
-      "police_verification_certificate": policeVerificationFile,
       "profile_photo": profilePhoto,
       "designation_file": designationFiles,
     };
@@ -66,7 +73,6 @@ class JobRequestViewModel with ChangeNotifier {
 
     debugPrint("\n📌 FILE FIELDS:");
     debugPrint("  profile_photo → ${profilePhoto.path}");
-    debugPrint("  police_verification_certificate → ${policeVerificationFile.path}");
 
     debugPrint("\n📌 DESIGNATION FILES (${designationFiles.length} files):");
     for (int i = 0; i < designationFiles.length; i++) {

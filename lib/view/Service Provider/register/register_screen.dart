@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/res/app_color.dart';
+import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
@@ -54,6 +55,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   List<String> selectedCategoryNames = [];
   List<String> selectedCategoryIds = [];
   String? selectedCityId;
+  bool isFetchingLocation = false;
 
   // CONTROLLERS
   final TextEditingController firstController = TextEditingController();
@@ -67,41 +69,54 @@ class _RegisterScreenState extends State<RegisterScreen> {
     bool serviceEnabled;
     LocationPermission permission;
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      await Geolocator.openLocationSettings();
-      return;
+    setState(() => isFetchingLocation = true);
+
+    try {
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        await Geolocator.openLocationSettings();
+        setState(() => isFetchingLocation = false);
+        return;
+      }
+
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() => isFetchingLocation = false);
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        Utils.showErrorMessage(context, "Location permission denied permanently");
+        setState(() => isFetchingLocation = false);
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      _currentPosition = position;
+      currentLat = position.latitude.toString();
+      currentLng = position.longitude.toString();
+
+      List<Placemark> placemarks =
+      await placemarkFromCoordinates(position.latitude, position.longitude);
+
+      Placemark place = placemarks.first;
+
+      String address =
+          "${place.street}, ${place.subLocality}, ${place.locality}, "
+          "${place.administrativeArea}, ${place.postalCode}";
+
+      addressController.text = address;
+    } catch (e) {
+      Utils.showErrorMessage(context, "Error fetching location: $e");
+    } finally {
+      setState(() => isFetchingLocation = false);
     }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return;
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      Utils.showErrorMessage(context, "Location permission denied permanently");
-      return;
-    }
-
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-
-    _currentPosition = position;
-    currentLat = position.latitude.toString();
-    currentLng = position.longitude.toString();
-
-    List<Placemark> placemarks =
-    await placemarkFromCoordinates(position.latitude, position.longitude);
-
-    Placemark place = placemarks.first;
-
-    String address =
-        "${place.street}, ${place.subLocality}, ${place.locality}, "
-        "${place.administrativeArea}, ${place.postalCode}";
-
-    addressController.text = address;
   }
 
 
@@ -189,7 +204,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final serviceRegisterVm = Provider.of<ServicemanRegisterViewModel>(context);
-    final categoriesVm = Provider.of<CategoriesViewModel>(context);
 
     return SafeArea(
       top: false,
@@ -210,7 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onTap: (){
                         Navigator.pop(context);
                       },
-                      child:  Align(
+                      child:  const Align(
                         alignment: Alignment.centerLeft,
                         child: Icon(Icons.arrow_back, size: 28),
                       ),
@@ -263,18 +277,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 30),
 
                     // INPUT FIELDS
-                    cardField("First Name", firstController),
-                    cardField("Last Name", lastController),
+                    cardField("First Name", firstController, icon: Icons.person_outline),
+                    cardField("Last Name", lastController, icon: Icons.person_outline),
                     cardField(
                       "City",
                       cityController,
                       isCity: true,
+                      icon: Icons.location_city_outlined,
                     ),
-                    cardField("Email Address (Optional)", emailController),
+                    cardField("Email Address (Optional)", emailController, icon: Icons.email_outlined),
                     cardField(
                       "Full Address",
                       addressController,
                       isAddress: true,
+                      icon: Icons.map_outlined,
                     ),
 
                     // CATEGORY DROPDOWN
@@ -296,6 +312,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         Checkbox(
                             value: noSkill,
+                            activeColor: AppColor.royalBlue,
                             onChanged: (v) {
                               setState(() {
                                 noSkill = v!;
@@ -364,7 +381,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: Colors.black26,
                           blurRadius: 10,
@@ -393,8 +410,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void showCityBottomSheet() async {
     final zoneVm = Provider.of<ZoneCitiesViewModel>(context, listen: false);
 
-    await zoneVm.zoneCitiesApi(); // 👈 API CALL
+    await zoneVm.zoneCitiesApi(); 
 
+    if (!mounted) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -407,16 +425,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             final cities = vm.zoneCitiesModel?.cities ?? [];
 
             if (vm.loading) {
-              return SizedBox(
+              return const SizedBox(
                 height: 200,
-                child: const Center(child: CircularProgressIndicator()),
+                child: Center(child: CircularProgressIndicator()),
               );
             }
 
             if (cities.isEmpty) {
-              return SizedBox(
+              return const SizedBox(
                 height: 200,
-                child: const Center(child: Text("No Cities Found")),
+                child: Center(child: Text("No Cities Found")),
               );
             }
 
@@ -441,7 +459,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Divider(),
+                  const Divider(),
 
                   Expanded(
                     child: ListView.builder(
@@ -521,6 +539,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       TextEditingController c, {
         bool isAddress = false,
         bool isCity = false,
+        IconData? icon,
       }) {
     return Container(
       height: 58,
@@ -528,32 +547,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColor.blackLight),
-        color: Colors.grey.shade100,
+        border: Border.all(color: AppColor.blackLight.withOpacity(0.3)),
+        color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(14),
       ),
       child:TextField(
         controller: c,
-        readOnly: isCity, // 👈 prevent keyboard + allow tap
+        readOnly: isCity, 
         onTap: () {
           if (isCity) showCityBottomSheet();
         },
+        style: const TextStyle(fontFamily: AppFonts.kanitReg),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(),
+          prefixIcon: icon != null ? Icon(icon, size: 20, color: AppColor.royalBlue) : null,
+          hintStyle: const TextStyle(color: Colors.grey),
           border: InputBorder.none,
           suffixIcon: isAddress
-              ? IconButton(
-            icon: const Icon(Icons.my_location),
-            onPressed: () async {
-              if (c.text.isEmpty) {
-                await getCurrentAddress(c);
-              }
-            },
-          )
-              : Icon(
-            isCity ? Icons.keyboard_arrow_down : null,
-          ),
+              ? (isFetchingLocation 
+                 ? const Padding(padding: EdgeInsets.all(15), child: CupertinoActivityIndicator())
+                 : IconButton(
+                    icon: const Icon(Icons.my_location, color: AppColor.royalBlue),
+                    onPressed: () async {
+                      await getCurrentAddress(c);
+                    },
+                   ))
+              : (isCity ? const Icon(Icons.keyboard_arrow_down) : null),
         ),
       ),
 
@@ -572,10 +591,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: Colors.grey.shade400),
+          color: Colors.grey.shade50,
         ),
         child: Row(
           children: [
-            const Icon(Icons.upload_rounded, color: Colors.blueGrey),
+            const Icon(Icons.upload_rounded, color: AppColor.royalBlue),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -638,7 +658,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
 
                   const SizedBox(height: 8),
-                  Divider(color: Colors.grey.shade300),
+                  const Divider(),
 
                   Expanded(
                     child: ListView.builder(
@@ -655,7 +675,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         return CheckboxListTile(
                           value: isChecked,
-                          hoverColor: AppColor.royalBlue,
                           activeColor: AppColor.royalBlue,
                           title: Text(catName),
                           onChanged: (val) {
@@ -678,7 +697,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: CustomButton(
                     bgColor: AppColor.royalBlue,
                       title: "Done", onTap: (){
@@ -705,22 +724,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
     await deviceVm.fetchDeviceId();
     final deviceId = deviceVm.deviceId ??"unknown";
 
-    // if (mobileController.text.length != 10) {
-    //   Utils.showErrorMessage(context, "Enter valid mobile number");
-    //   return;
-    // }
+    if (firstController.text.trim().isEmpty) {
+      Utils.showErrorMessage(context, "Please enter first name");
+      return;
+    }
+
+    if (lastController.text.trim().isEmpty) {
+      Utils.showErrorMessage(context, "Please enter last name");
+      return;
+    }
+
+    if (selectedCityId == null) {
+      Utils.showErrorMessage(context, "Please select city");
+      return;
+    }
+
+    if (addressController.text.trim().isEmpty) {
+      Utils.showErrorMessage(context, "Please enter address");
+      return;
+    }
+
+    if (currentLat.isEmpty || currentLng.isEmpty) {
+      Utils.showErrorMessage(context, "Please click on the location icon in address field to fetch your current location");
+      return;
+    }
 
     if (gender == null) {
       Utils.showErrorMessage(context, "Select gender");
       return;
     }
 
-    // if (selectedCategoryId == null) {
-    //   Utils.showErrorMessage(context, "Select a category");
-    //   return;
-    // }
+    if (selectedCategoryIds.isEmpty) {
+      Utils.showErrorMessage(context, "Select at least one category");
+      return;
+    }
 
-    // ✔ Experience certificate only required when noSkill = false
     if (!noSkill && experienceCertificate == null) {
       Utils.showErrorMessage(context, "Upload Experience Certificate");
       return;
@@ -736,7 +774,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // ⭐ correct skill status
     String skillStatusValue = noSkill ? "1" : "0";
 
     serviceRegisterVm.servicemanRegisterApi(
@@ -761,10 +798,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
 
-  //
-  // void error(String msg) {
-  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  // }
   Widget pickerCard({required String title, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
@@ -773,24 +806,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
         margin: const EdgeInsets.only(bottom: 18),
         padding: const EdgeInsets.symmetric(horizontal: 18),
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
+          color: Colors.grey.shade50,
           borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-              color: Colors.black12,
-            ),
-          ],
+          border: Border.all(color: AppColor.blackLight.withOpacity(0.3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                color: title.contains("Select") ? Colors.grey : Colors.black,
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: title.contains("Select") ? Colors.grey : Colors.black,
+                ),
               ),
             ),
             const Icon(Icons.keyboard_arrow_down, color: Colors.grey),

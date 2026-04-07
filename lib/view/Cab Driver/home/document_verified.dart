@@ -443,49 +443,54 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
   }
 
 
-  // ================= BUILD =================
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Scaffold(
-        backgroundColor: AppColor.white,
-        appBar: ConstantAppbar(
-          onBack: () => Navigator.pop(context),
-          onClose: () => SystemNavigator.pop(),
-        ),
-        body: RefreshIndicator(
-          color: AppColor.royalBlue,
-          onRefresh: hitProfileApi,
-          child: Consumer<DriverProfileViewModel>(
-            builder: (context, vm, _) {
-              final status = getOverallStatus(vm);
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop();
+        return false;
+      },
+      child: SafeArea(
+        top: false,
+        child: Scaffold(
+          backgroundColor: AppColor.white,
+          appBar: ConstantAppbar(
+            onBack: () => Navigator.pop(context),
+            onClose: () => SystemNavigator.pop(),
+          ),
+          body: RefreshIndicator(
+            color: AppColor.royalBlue,
+            onRefresh: hitProfileApi,
+            child: Consumer<DriverProfileViewModel>(
+              builder: (context, vm, _) {
+                final status = getOverallStatus(vm);
 
-              return SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height -
-                      kToolbarHeight -
-                      MediaQuery.of(context).padding.top,
-                  child: () {
-                    if (status == "verified") {
-                      if (!_navigated && mounted) {
-                        _navigated = true;
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          Navigator.pushReplacement(
-                            context,
-                            CupertinoPageRoute(builder: (_) => const DriverHomePage()),
-                          );
-                        });
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height -
+                        kToolbarHeight -
+                        MediaQuery.of(context).padding.top,
+                    child: () {
+                      if (status == "verified") {
+                        if (!_navigated && mounted) {
+                          _navigated = true;
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            Navigator.pushReplacement(
+                              context,
+                              CupertinoPageRoute(builder: (_) => const DriverHomePage()),
+                            );
+                          });
+                        }
+                        return const SizedBox.shrink();
                       }
-                      return const SizedBox.shrink();
-                    }
-                    if (status == "rejected") return rejectedWidget(vm);
-                    return pendingWidget();
-                  }(),
-                ),
-              );
-            },
+                      if (status == "rejected") return rejectedWidget(vm);
+                      return pendingWidget();
+                    }(),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),

@@ -249,99 +249,105 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
       context,
     );
 
-    return Stack(
-      children: [
-        SafeArea(
-          top: false,
-          child: Scaffold(
-            backgroundColor: Colors.white,
-            appBar: ConstantAppbar(
-              onBack: () => Navigator.pop(context),
-              onClose: () => SystemNavigator.pop(),
-            ),
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 15),
-                  const TextConst(
-                    title: "Upload Required Certificates",
-                    size: 25,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  const SizedBox(height: 25),
-                  Wrap(
-                    spacing: 20,
-                    runSpacing: 25,
-                    children: certificateFiles.keys
-                        .map((e) => uploadBox(e))
-                        .toList(),
-                  ),
-                  const Spacer(),
-                  SizedBox(
-                    height: 50,
-                    width: double.infinity,
-                    child: CustomButton(
-                      title: "Next",
-                      bgColor: AppColor.royalBlue,
-                      textColor: Colors.white,
-                        onTap: () {
-                          if ((showFitnessCertificate && fitnessCertificate == null) ||
-                              insuranceCertificate == null) {
-                            Utils.showErrorMessage(
-                              context,
-                              "Please upload all required certificates",
-                            );
-                            return;
-                          }
-
-                          driverRegisterFour.driverRegisterFourApi(
-                            fitnessCertificate: fitnessCertificate,
-                            pollutionCertificate: pollutionCertificate,
-                            insuranceCertificate: insuranceCertificate!,
-                            policeCertificate: policeCertificate,
-                            requiresCertificateStatus: "1",
-                            context: context,
-                          );
-                        }
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                ],
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop();
+        return false;
+      },
+      child: Stack(
+        children: [
+          SafeArea(
+            top: false,
+            child: Scaffold(
+              backgroundColor: Colors.white,
+              appBar: ConstantAppbar(
+                onBack: () => Navigator.pop(context),
+                onClose: () => SystemNavigator.pop(),
               ),
-            ),
-          ),
-        ),
-        if (driverRegisterFour.loading)
-          Container(
-            color: Colors.black54,
-            child: Center(
-              child: Container(
-                height: Sizes.screenHeight * 0.13,
-                width: Sizes.screenWidth * 0.28,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      spreadRadius: 2,
+              body: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 15),
+                    const TextConst(
+                      title: "Upload Required Certificates",
+                      size: 25,
+                      fontWeight: FontWeight.w700,
                     ),
+                    const SizedBox(height: 25),
+                    Wrap(
+                      spacing: 20,
+                      runSpacing: 25,
+                      children: certificateFiles.keys
+                          .map((e) => uploadBox(e))
+                          .toList(),
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      height: 50,
+                      width: double.infinity,
+                      child: CustomButton(
+                        title: "Next",
+                        bgColor: AppColor.royalBlue,
+                        textColor: Colors.white,
+                          onTap: () {
+                            if ((showFitnessCertificate && fitnessCertificate == null) ||
+                                insuranceCertificate == null) {
+                              Utils.showErrorMessage(
+                                context,
+                                "Please upload all required certificates",
+                              );
+                              return;
+                            }
+
+                            driverRegisterFour.driverRegisterFourApi(
+                              fitnessCertificate: fitnessCertificate,
+                              pollutionCertificate: pollutionCertificate,
+                              insuranceCertificate: insuranceCertificate!,
+                              policeCertificate: policeCertificate,
+                              requiresCertificateStatus: "1",
+                              context: context,
+                            );
+                          }
+                      ),
+                    ),
+                    const SizedBox(height: 15),
                   ],
                 ),
-                child: Center(
-                  child: GradientCirPro(
-                    strokeWidth: 6,
-                    size: 70,
-                    gradient: AppColor.circularIndicator,
+              ),
+            ),
+          ),
+          if (driverRegisterFour.loading)
+            Container(
+              color: Colors.black54,
+              child: Center(
+                child: Container(
+                  height: Sizes.screenHeight * 0.13,
+                  width: Sizes.screenWidth * 0.28,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: GradientCirPro(
+                      strokeWidth: 6,
+                      size: 70,
+                      gradient: AppColor.circularIndicator,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -13,7 +13,6 @@ import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/utils/utils.dart';
-import 'package:rainbow_partner/view/Cab%20Driver/register/aadhaar_info.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_register_five_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_colors_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/vehicle_fuel_view_model.dart';
@@ -36,7 +35,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
   String? selectedModel;
   int? selectedModelId;
   String? selectedColor;
-  String? selectedFuelType;   // ✅ NEW
+  String? selectedFuelType;
   int? selectedFuelTypeId;
 
   TextEditingController plateController = TextEditingController();
@@ -47,39 +46,35 @@ class _VehicleInformationState extends State<VehicleInformation> {
   @override
   void initState() {
     super.initState();
+    _loadInitialData();
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final selectedVehicleId = context
-          .read<VehicleViewModel>()
-          .selectedVehicleId;
-      final selectedVehicleCategory = Provider.of<VehicleViewModel>(context, listen: false).selectedVehicleCategory;
+  Future<void> _loadInitialData() async {
+    final vehicleVm = Provider.of<VehicleViewModel>(context, listen: false);
+    
+    await vehicleVm.loadSelectedVehicle();
 
+    if (!mounted) return;
 
-      if (selectedVehicleId != null) {
-        context.read<VehicleBrandViewModel>().vehicleBrandApi(
-          selectedVehicleId,
-          context,
-        );
-      } else {
-        if (kDebugMode) {
-          print("❌ Vehicle ID not selected yet");
-        }
-      }
+    final selectedVehicleId = vehicleVm.selectedVehicleId;
+    final selectedVehicleCategory = vehicleVm.selectedVehicleCategory;
 
-      if (selectedVehicleCategory != null) {
-        final vehicleFuelVm = Provider.of<VehicleFuelViewModel>(context, listen: false);
-        vehicleFuelVm.vehicleFuelApi(selectedVehicleCategory.toString());
-      } else {
-        if (kDebugMode) {
-          print("❌ Vehicle category not selected yet");
-        }
-      }
-      final vehicleColorVm = Provider.of<VehicleColorsViewModel>(
+    if (selectedVehicleId != null) {
+      context.read<VehicleBrandViewModel>().vehicleBrandApi(
+        selectedVehicleId,
         context,
-        listen: false,
       );
-      vehicleColorVm.vehicleColorsApi(context);
-    });
+    } else {
+      if (kDebugMode) print("❌ Vehicle ID not found after loading");
+    }
+
+    if (selectedVehicleCategory != null) {
+      final vehicleFuelVm = Provider.of<VehicleFuelViewModel>(context, listen: false);
+      vehicleFuelVm.vehicleFuelApi(selectedVehicleCategory.toString());
+    }
+
+    final vehicleColorVm = Provider.of<VehicleColorsViewModel>(context, listen: false);
+    vehicleColorVm.vehicleColorsApi(context);
   }
 
   final RegExp vehicleNumberRegex = RegExp(
@@ -298,8 +293,6 @@ class _VehicleInformationState extends State<VehicleInformation> {
       return;
     }
 
-    // List<String> models = modelMap[selectedBrand] ?? [];
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -321,27 +314,32 @@ class _VehicleInformationState extends State<VehicleInformation> {
               const SizedBox(height: 20),
 
               Expanded(
-                child: ListView.builder(
-                  itemCount: vehicleModelVm.vehicleSameModel?.data?.length ?? 0,
-                  itemBuilder: (_, i) {
-                    final model = vehicleModelVm.vehicleSameModel!.data![i];
+                child: vehicleModelVm.loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : vehicleModelVm.vehicleSameModel?.data == null ||
+                    vehicleModelVm.vehicleSameModel!.data!.isEmpty
+                    ? const Center(child: Text("No models found"))
+                    : ListView.builder(
+                        itemCount: vehicleModelVm.vehicleSameModel?.data?.length ?? 0,
+                        itemBuilder: (_, i) {
+                          final model = vehicleModelVm.vehicleSameModel!.data![i];
 
-                    return ListTile(
-                      title: TextConst(title: model.name ?? ""),
-                      trailing: selectedModel == model.name
-                          ? const Icon(Icons.check, color: AppColor.royalBlue)
-                          : null,
-                      onTap: () {
-                        setState(() {
-                          selectedModel = model.name;
-                          selectedModelId = model.id; // 🔥 IMPORTANT
-                        });
-                        Navigator.pop(context);
-                      },
+                          return ListTile(
+                            title: TextConst(title: model.name ?? ""),
+                            trailing: selectedModel == model.name
+                                ? const Icon(Icons.check, color: AppColor.royalBlue)
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                selectedModel = model.name;
+                                selectedModelId = model.id;
+                              });
+                              Navigator.pop(context);
+                            },
 
-                    );
-                  },
-                ),
+                          );
+                        },
+                      ),
               ),
             ],
           ),
@@ -369,7 +367,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
           child: Column(
             children: [
               const SizedBox(height: 20),
-              TextConst(
+              const TextConst(
                 title: "Vehicle color",
                 size: 20,
                 fontWeight: FontWeight.w700,
@@ -471,7 +469,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
                     return ListTile(
                       title: TextConst(title: fuel.fuelType ?? ""),
                       trailing: selectedFuelTypeId == fuel.id
-                          ? Icon(
+                          ? const Icon(
                         Icons.check,
                         color: AppColor.royalBlue,
                       )
@@ -536,7 +534,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: Icon(Icons.photo, color: AppColor.royalBlue),
+                leading: const Icon(Icons.photo, color: AppColor.royalBlue),
                 title: const Text("Select from Gallery"),
                 onTap: () {
                   Navigator.pop(context);
@@ -544,7 +542,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.camera_alt, color: AppColor.royalBlue),
+                leading: const Icon(Icons.camera_alt, color: AppColor.royalBlue),
                 title: const Text("Take Photo"),
                 onTap: () {
                   Navigator.pop(context);
@@ -563,201 +561,206 @@ class _VehicleInformationState extends State<VehicleInformation> {
     final driverRegisterFiveVm = Provider.of<DriverRegisterFiveViewModel>(
       context,
     );
-    return Stack(
-      children: [
-        SafeArea(
-          top: false,
-          bottom: true,
-          child: Scaffold(
-            backgroundColor: AppColor.white,
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop();
+        return false;
+      },
+      child: Stack(
+        children: [
+          SafeArea(
+            top: false,
+            bottom: true,
+            child: Scaffold(
+              backgroundColor: AppColor.white,
 
-            appBar: ConstantAppbar(
-              onBack: () => Navigator.pop(context),
-              onClose: () =>  SystemNavigator.pop(),
-            ),
+              appBar: ConstantAppbar(
+                onBack: () => Navigator.pop(context),
+                onClose: () =>  SystemNavigator.pop(),
+              ),
 
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22),
-              child: ListView(
-                // crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: topPadding),
+              body: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                child: ListView(
+                  children: [
+                    SizedBox(height: topPadding),
 
-                  TextConst(
-                    title: "Vehicle information",
-                    size: 25,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  const SizedBox(height: 25),
+                    const TextConst(
+                      title: "Vehicle information",
+                      size: 25,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    const SizedBox(height: 25),
 
-                  // VEHICLE IMAGE
-                  GestureDetector(
-                    onTap: showPicker,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 110,
-                          width: 110,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.grey.shade100,
-                            image: vehiclePhoto != null
-                                ? DecorationImage(
-                                    image: FileImage(vehiclePhoto!),
-                                    fit: BoxFit.cover,
-                                  )
+                    // VEHICLE IMAGE
+                    GestureDetector(
+                      onTap: showPicker,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 110,
+                            width: 110,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.grey.shade100,
+                              image: vehiclePhoto != null
+                                  ? DecorationImage(
+                                      image: FileImage(vehiclePhoto!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child: vehiclePhoto == null
+                                ? const Icon(Icons.add, size: 35)
                                 : null,
                           ),
-                          child: vehiclePhoto == null
-                              ? const Icon(Icons.add, size: 35)
-                              : null,
+                          const SizedBox(height: 8),
+                          const Text(
+                            "Photo of your\nvehicle",
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // DROPDOWN FIELDS
+                    dropdownField(
+                      hint: "Vehicle brand",
+                      onTap: pickBrand,
+                      value: selectedBrand,
+                    ),
+                    dropdownField(
+                      hint: "Vehicle model",
+                      onTap: pickModel,
+                      value: selectedModel,
+                    ),
+                    dropdownField(
+                      hint: "Vehicle color",
+                      onTap: pickColor,
+                      value: selectedColor,
+                    ),
+                    dropdownField(
+                      hint: "Fuel type",
+                      onTap: pickFuelType,
+                      value: selectedFuelType,
+                    ),
+
+                    inputField(
+                      hint: "Vehicle Number",
+                      controller: plateController,
+                    ),
+
+                    inputField(
+                      hint: "Vehicle production year",
+                      controller: yearController,
+                      readOnly: true,
+                      onTap: () => _selectYear(context),
+                    ),
+
+
+                    SizedBox(height: Sizes.screenHeight * 0.03),
+
+                    /// FOOTER
+                    Row(
+                      children: [
+                        const TextConst(
+                          title: "5 of 6",
+                          size: 18,
+                          fontWeight: FontWeight.w600,
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          "Photo of your\nvehicle",
-                          textAlign: TextAlign.center,
+
+                        const SizedBox(width: 12),
+
+                        Expanded(
+                          child: Container(
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 94,
+                                  decoration: BoxDecoration(
+                                    color: AppColor.royalBlue,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 16),
+
+                        SizedBox(
+                          height: 50,
+                          width: 110,
+                          child: CustomButton(
+                            title: "Next",
+                            bgColor: AppColor.royalBlue,
+                            textColor: Colors.white,
+                            onTap: () {
+                              if (!_validateVehicleInfo()) return;
+                              driverRegisterFiveVm.driverRegisterFiveApi(
+                                vehiclePhoto: vehiclePhoto!,
+                                vehicleInfoStatus: "1",
+                                brandId: selectedBrandId!,
+                                brandName: selectedBrand!,
+                                modelId: selectedModelId!,
+                                modelName: selectedModel!,
+                                vehicleColor: selectedColor!,
+                                vehicleFuelTypeName: selectedFuelType!,
+                                vehicleFuelTypeId: selectedFuelTypeId!,
+                                vehiclePlateNumber: plateController.text.trim(),
+                                vehicleProductionYear: yearController.text.trim(),
+                                context: context,
+                              );
+                            },
+
+                          ),
                         ),
                       ],
                     ),
-                  ),
 
-                  // DROPDOWN FIELDS
-                  dropdownField(
-                    hint: "Vehicle brand",
-                    onTap: pickBrand,
-                    value: selectedBrand,
-                  ),
-                  dropdownField(
-                    hint: "Vehicle model",
-                    onTap: pickModel,
-                    value: selectedModel,
-                  ),
-                  dropdownField(
-                    hint: "Vehicle color",
-                    onTap: pickColor,
-                    value: selectedColor,
-                  ),
-                  dropdownField(
-                    hint: "Fuel type",
-                    onTap: pickFuelType,
-                    value: selectedFuelType,
-                  ),
-
-                  inputField(
-                    hint: "Vehicle Number",
-                    controller: plateController,
-                  ),
-
-                  inputField(
-                    hint: "Vehicle production year",
-                    controller: yearController,
-                    readOnly: true,
-                    onTap: () => _selectYear(context),
-                  ),
-
-
-                  SizedBox(height: Sizes.screenHeight * 0.03),
-
-                  /// FOOTER
-                  Row(
-                    children: [
-                      TextConst(
-                        title: "5 of 6",
-                        size: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-
-                      const SizedBox(width: 12),
-
-                      Expanded(
-                        child: Container(
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 94,
-                                decoration: BoxDecoration(
-                                  color: AppColor.royalBlue,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      SizedBox(
-                        height: 50,
-                        width: 110,
-                        child: CustomButton(
-                          title: "Next",
-                          bgColor: AppColor.royalBlue,
-                          textColor: Colors.white,
-                          onTap: () {
-                            if (!_validateVehicleInfo()) return;
-                            driverRegisterFiveVm.driverRegisterFiveApi(
-                              vehiclePhoto: vehiclePhoto!,
-                              vehicleInfoStatus: "1",
-                              brandId: selectedBrandId!,
-                              brandName: selectedBrand!,
-                              modelId: selectedModelId!,
-                              modelName: selectedModel!,
-                              vehicleColor: selectedColor!,
-                              vehicleFuelTypeName: selectedFuelType!,
-                              vehicleFuelTypeId: selectedFuelTypeId!,
-                              vehiclePlateNumber: plateController.text.trim(),
-                              vehicleProductionYear: yearController.text.trim(),
-                              context: context,
-                            );
-                          },
-
-                        ),
+                    const SizedBox(height: 15),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (driverRegisterFiveVm.loading)
+            Container(
+              color: Colors.black54,
+              child: Center(
+                child: Container(
+                  height: Sizes.screenHeight * 0.13,
+                  width: Sizes.screenWidth * 0.28,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        spreadRadius: 2,
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 15),
-                ],
-              ),
-            ),
-          ),
-        ),
-        if (driverRegisterFiveVm.loading)
-          Container(
-            color: Colors.black54,
-            child: Center(
-              child: Container(
-                height: Sizes.screenHeight * 0.13,
-                width: Sizes.screenWidth * 0.28,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      spreadRadius: 2,
+                  child: Center(
+                    child: GradientCirPro(
+                      strokeWidth: 6,
+                      size: 70,
+                      gradient: AppColor.circularIndicator,
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: GradientCirPro(
-                    strokeWidth: 6,
-                    size: 70,
-                    gradient: AppColor.circularIndicator,
                   ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 

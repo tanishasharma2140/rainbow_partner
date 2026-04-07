@@ -681,52 +681,6 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
 
                   const SizedBox(height: 8),
 
-                  // police verification upload
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const TextConst(
-                        title: "Police Verification Certificate",
-                        size: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      GestureDetector(
-                        onTap: _pickImageOrPdfForPolice,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColor.royalBlue,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text(
-                            "Upload",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  if (policeVerificationFile != null)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            policeVerificationFile!.path.split('/').last,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () =>
-                              setState(() => policeVerificationFile = null),
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
-                        ),
-                      ],
-                    ),
-
                   // const SizedBox(height: 16),
                   Row(
                     children: [
@@ -790,7 +744,6 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                           designation: designationController.text,
                           skillType: skillType,
                           city: selectedCity,
-                          policeVerificationFile: policeVerificationFile!,
                           profilePhoto: profileImage!,
                           designationFiles: designationFiles,  // <-- Correct
                           context: context,

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
@@ -30,79 +31,85 @@ class _ChooseVehicleState extends State<ChooseVehicle> {
   @override
   Widget build(BuildContext context) {
     final vehicleVm = Provider.of<VehicleViewModel>(context);
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: Scaffold(
-        backgroundColor: Colors.white,
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop();
+        return false;
+      },
+      child: SafeArea(
+        top: false,
+        bottom: true,
+        child: Scaffold(
+          backgroundColor: Colors.white,
 
-        appBar: ConstantAppbar(
-          onBack: () => Navigator.pop(context),
-          onClose: () => Navigator.pop(context),
-        ),
+          appBar: ConstantAppbar(
+            onBack: () => Navigator.pop(context),
+            onClose: () => Navigator.pop(context),
+          ),
 
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Icon(Icons.arrow_back, color: AppColor.black),
-              ),
-              SizedBox(height: Sizes.screenHeight * 0.02),
-              TextConst(
-                title: "Choose your vehicle",
-                color: Colors.black,
-                size: 25,
-                fontWeight: FontWeight.w700,
-              ),
-
-              const SizedBox(height: 30),
-
-              /// Vehicle Item 1
-              if (vehicleVm.loading)
-                const Center(child: CircularProgressIndicator())
-              else if (vehicleVm.vehicleModel?.data == null ||
-                  vehicleVm.vehicleModel!.data!.isEmpty)
-                const Center(child: Text("No vehicles found"))
-              else
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: vehicleVm.vehicleModel!.data!.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 22),
-                  itemBuilder: (context, index) {
-                    final vehicle = vehicleVm.vehicleModel!.data![index];
-
-                    return _vehicleTile(
-                      image: vehicle.image ?? "",
-                      title: vehicle.name ?? "",
-                      onTap: () {
-                        context.read<VehicleViewModel>().setSelectedVehicle(
-                          vehicleId: vehicle.id!,
-                          vehicleName: vehicle.name ?? "", vehicleCategory: vehicle.vehicleCategory ??"",
-                        );
-
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                            builder: (_) => PersonalInformation(
-                              vehicleId: vehicle.id.toString(),
-                              vehicleName: vehicle.name,
-                              mobileNumber : widget.mobileNumber.toString(),
-                              profileId : widget.profileId
-                            ),
-                          ),
-                        );
-                      },
-                    );
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
                   },
+                  child: Icon(Icons.arrow_back, color: AppColor.black),
                 ),
-            ],
+                SizedBox(height: Sizes.screenHeight * 0.02),
+                TextConst(
+                  title: "Choose your vehicle",
+                  color: Colors.black,
+                  size: 25,
+                  fontWeight: FontWeight.w700,
+                ),
+
+                const SizedBox(height: 30),
+
+                /// Vehicle Item 1
+                if (vehicleVm.loading)
+                  const Center(child: CircularProgressIndicator())
+                else if (vehicleVm.vehicleModel?.data == null ||
+                    vehicleVm.vehicleModel!.data!.isEmpty)
+                  const Center(child: Text("No vehicles found"))
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: vehicleVm.vehicleModel!.data!.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 22),
+                    itemBuilder: (context, index) {
+                      final vehicle = vehicleVm.vehicleModel!.data![index];
+
+                      return _vehicleTile(
+                        image: vehicle.image ?? "",
+                        title: vehicle.name ?? "",
+                        onTap: () {
+                          context.read<VehicleViewModel>().setSelectedVehicle(
+                            vehicleId: vehicle.id!,
+                            vehicleName: vehicle.name ?? "", vehicleCategory: vehicle.vehicleCategory ??"",
+                          );
+
+                          Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                              builder: (_) => PersonalInformation(
+                                vehicleId: vehicle.id.toString(),
+                                vehicleName: vehicle.name,
+                                mobileNumber : widget.mobileNumber.toString(),
+                                profileId : widget.profileId
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+              ],
+            ),
           ),
         ),
       ),

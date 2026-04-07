@@ -94,305 +94,311 @@ class _PersonalInformationState extends State<PersonalInformation> {
   @override
   Widget build(BuildContext context) {
     final driverRegOneVm = Provider.of<DriverRegisterOneViewModel>(context);
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: Stack(
-        children: [
-          Scaffold(
-            resizeToAvoidBottomInset: true,
-            backgroundColor: Colors.white,
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop();
+        return false;
+      },
+      child: SafeArea(
+        top: false,
+        bottom: true,
+        child: Stack(
+          children: [
+            Scaffold(
+              resizeToAvoidBottomInset: true,
+              backgroundColor: Colors.white,
 
-            appBar: ConstantAppbar(
-              onBack: () => Navigator.pop(context),
-              onClose: () =>  SystemNavigator.pop(),
-            ),
+              appBar: ConstantAppbar(
+                onBack: () => Navigator.pop(context),
+                onClose: () =>  SystemNavigator.pop(),
+              ),
 
-            body: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                    child: IntrinsicHeight(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 22),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(height: topPadding),
+              body: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: IntrinsicHeight(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 22),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: topPadding),
 
-                            TextConst(
-                              title: "Personal information",
-                              size: 25,
-                              fontWeight: FontWeight.w700,
-                            ),
+                              TextConst(
+                                title: "Personal information",
+                                size: 25,
+                                fontWeight: FontWeight.w700,
+                              ),
 
-                            SizedBox(height: 25),
+                              SizedBox(height: 25),
 
-                            /// IMAGE PICKER (your code)
-                            /// IMAGE PICKER (with remove option)
-                            GestureDetector(
-                              onTap: selectedImage == null
-                                  ? showImagePickerOptions
-                                  : null,
-                              child: Column(
-                                children: [
-                                  Stack(
-                                    children: [
-                                      Container(
-                                        height: 110,
-                                        width: 110,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade100,
-                                          borderRadius: BorderRadius.circular(20),
-                                          image: selectedImage != null
-                                              ? DecorationImage(
-                                                  image: FileImage(selectedImage!),
-                                                  fit: BoxFit.cover,
+                              /// IMAGE PICKER (your code)
+                              /// IMAGE PICKER (with remove option)
+                              GestureDetector(
+                                onTap: selectedImage == null
+                                    ? showImagePickerOptions
+                                    : null,
+                                child: Column(
+                                  children: [
+                                    Stack(
+                                      children: [
+                                        Container(
+                                          height: 110,
+                                          width: 110,
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade100,
+                                            borderRadius: BorderRadius.circular(20),
+                                            image: selectedImage != null
+                                                ? DecorationImage(
+                                                    image: FileImage(selectedImage!),
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                : null,
+                                          ),
+                                          child: selectedImage == null
+                                              ? const Center(
+                                                  child: Icon(Icons.add, size: 35),
                                                 )
                                               : null,
                                         ),
-                                        child: selectedImage == null
-                                            ? const Center(
-                                                child: Icon(Icons.add, size: 35),
-                                              )
-                                            : null,
-                                      ),
 
-                                      /// ❌ REMOVE ICON (only show when image selected)
-                                      if (selectedImage != null)
-                                        Positioned(
-                                          right: 6,
-                                          top: 6,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                selectedImage = null;
-                                              });
-                                            },
-                                            child: Container(
-                                              height: 26,
-                                              width: 26,
-                                              decoration: BoxDecoration(
-                                                color: Colors.red,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: const Icon(
-                                                Icons.close,
-                                                color: Colors.white,
-                                                size: 18,
+                                        /// ❌ REMOVE ICON (only show when image selected)
+                                        if (selectedImage != null)
+                                          Positioned(
+                                            right: 6,
+                                            top: 6,
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  selectedImage = null;
+                                                });
+                                              },
+                                              child: Container(
+                                                height: 26,
+                                                width: 26,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.close,
+                                                  color: Colors.white,
+                                                  size: 18,
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 8),
-                                  const TextConst(
-                                    title: "Personal picture",
-                                    size: 14,
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            SizedBox(height: 35),
-
-                            _textFieldContainer(
-                              child: TextField(
-                                controller: nameController,
-                                maxLength: 20,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(
-                                      r'[a-zA-Z ]',
-                                    ), // ← only letters and space
-                                  ),
-                                ],
-                                decoration: InputDecoration(
-                                  hintText: "Name",
-                                  counterText: "",
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
-
-                            SizedBox(height: 18),
-
-                            _textFieldContainer(
-                              child: TextField(
-                                controller: surnameController,
-                                maxLength: 20,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(
-                                      r'[a-zA-Z ]',
-                                    ), // ← only letters and space
-                                  ),
-                                ],
-                                decoration: InputDecoration(
-                                  hintText: "Surname",
-                                  counterText: "",
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 18),
-
-                            _textFieldContainer(
-                              child: TextField(
-                                controller: mobileController,
-                                keyboardType: TextInputType.number,
-                                readOnly: true,
-                                maxLength: 10,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter
-                                      .digitsOnly, // ← only numbers allowed
-                                ],
-                                decoration: InputDecoration(
-                                  hintText: widget.mobileNumber,
-                                  counterText: "",
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
-
-                            SizedBox(height: 18),
-
-                            _textFieldContainer(
-                              child: TextField(
-                                controller: dobController,
-                                readOnly: true,
-                                decoration: InputDecoration(
-                                  hintText: "Date of birth",
-                                  border: InputBorder.none,
-                                ),
-                                onTap: () => _selectDate(context),
-                              ),
-                            ),
-
-                            Spacer(), // 🔥 NOW Spacer Works PERFECT!
-                            /// ---------------- FOOTER -----------------
-                            Row(
-                              children: [
-                                TextConst(
-                                  title: "1 of 6",
-                                  size: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                SizedBox(width: 12),
-
-                                Expanded(
-                                  child: Container(
-                                    height: 6,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade300,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 25,
-                                          decoration: BoxDecoration(
-                                            color: AppColor.royalBlue,
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                        ),
                                       ],
                                     ),
+
+                                    const SizedBox(height: 8),
+                                    const TextConst(
+                                      title: "Personal picture",
+                                      size: 14,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              SizedBox(height: 35),
+
+                              _textFieldContainer(
+                                child: TextField(
+                                  controller: nameController,
+                                  maxLength: 20,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(
+                                        r'[a-zA-Z ]',
+                                      ), // ← only letters and space
+                                    ),
+                                  ],
+                                  decoration: InputDecoration(
+                                    hintText: "Name",
+                                    counterText: "",
+                                    border: InputBorder.none,
                                   ),
                                 ),
+                              ),
 
-                                SizedBox(width: 16),
+                              SizedBox(height: 18),
 
-                                SizedBox(
-                                  height: 50,
-                                  width: 110,
-                                  child: CustomButton(
-                                    bgColor: AppColor.royalBlue,
-                                    textColor: AppColor.white,
-                                    title: "Next",
-                                    onTap: () {
-                                      if (selectedImage == null) {
-                                       Utils.showErrorMessage(context, "Please select personal picture");
-                                        return;
-                                      }
-
-                                      if (nameController.text.trim().isEmpty) {
-                                        Utils.showErrorMessage(context, "Please enter name");
-                                        return;
-                                      }
-
-                                      if (surnameController.text.trim().isEmpty) {
-                                        Utils.showErrorMessage(context, "Please enter surname");
-                                        return;
-                                      }
-
-                                      if (dobController.text.trim().isEmpty) {
-                                        Utils.showErrorMessage(context, "Please select date of birth");
-                                        return;
-                                      }
-                                      driverRegOneVm.driverRegisterOneApi(
-                                          profilePhoto: selectedImage!,
-                                          personalInfoStatus: "1",
-                                          mobile: widget.mobileNumber,
-                                          firstName: nameController.text,
-                                          platformType: widget.profileId.toString(),
-                                          vehicleType: widget.vehicleId,
-                                          vehicleName: widget.vehicleName,
-                                          lastName: surnameController.text,
-                                          dob: dobController.text,
-                                          deviceId: "edfrgtyujy",
-                                          // fcm: fcmToken.toString(),
-                                          context: context
-                                      );
-                                    },
+                              _textFieldContainer(
+                                child: TextField(
+                                  controller: surnameController,
+                                  maxLength: 20,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(
+                                        r'[a-zA-Z ]',
+                                      ), // ← only letters and space
+                                    ),
+                                  ],
+                                  decoration: InputDecoration(
+                                    hintText: "Surname",
+                                    counterText: "",
+                                    border: InputBorder.none,
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              SizedBox(height: 18),
 
-                            SizedBox(height: 15),
-                          ],
+                              _textFieldContainer(
+                                child: TextField(
+                                  controller: mobileController,
+                                  keyboardType: TextInputType.number,
+                                  readOnly: true,
+                                  maxLength: 10,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter
+                                        .digitsOnly, // ← only numbers allowed
+                                  ],
+                                  decoration: InputDecoration(
+                                    hintText: widget.mobileNumber,
+                                    counterText: "",
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+
+                              SizedBox(height: 18),
+
+                              _textFieldContainer(
+                                child: TextField(
+                                  controller: dobController,
+                                  readOnly: true,
+                                  decoration: InputDecoration(
+                                    hintText: "Date of birth",
+                                    border: InputBorder.none,
+                                  ),
+                                  onTap: () => _selectDate(context),
+                                ),
+                              ),
+
+                              Spacer(), // 🔥 NOW Spacer Works PERFECT!
+                              /// ---------------- FOOTER -----------------
+                              Row(
+                                children: [
+                                  TextConst(
+                                    title: "1 of 6",
+                                    size: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  SizedBox(width: 12),
+
+                                  Expanded(
+                                    child: Container(
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade300,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 25,
+                                            decoration: BoxDecoration(
+                                              color: AppColor.royalBlue,
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  SizedBox(width: 16),
+
+                                  SizedBox(
+                                    height: 50,
+                                    width: 110,
+                                    child: CustomButton(
+                                      bgColor: AppColor.royalBlue,
+                                      textColor: AppColor.white,
+                                      title: "Next",
+                                      onTap: () {
+                                        if (selectedImage == null) {
+                                         Utils.showErrorMessage(context, "Please select personal picture");
+                                          return;
+                                        }
+
+                                        if (nameController.text.trim().isEmpty) {
+                                          Utils.showErrorMessage(context, "Please enter name");
+                                          return;
+                                        }
+
+                                        if (surnameController.text.trim().isEmpty) {
+                                          Utils.showErrorMessage(context, "Please enter surname");
+                                          return;
+                                        }
+
+                                        if (dobController.text.trim().isEmpty) {
+                                          Utils.showErrorMessage(context, "Please select date of birth");
+                                          return;
+                                        }
+                                        driverRegOneVm.driverRegisterOneApi(
+                                            profilePhoto: selectedImage!,
+                                            personalInfoStatus: "1",
+                                            mobile: widget.mobileNumber,
+                                            firstName: nameController.text,
+                                            platformType: widget.profileId.toString(),
+                                            vehicleType: widget.vehicleId,
+                                            vehicleName: widget.vehicleName,
+                                            lastName: surnameController.text,
+                                            dob: dobController.text,
+                                            deviceId: "edfrgtyujy",
+                                            // fcm: fcmToken.toString(),
+                                            context: context
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              SizedBox(height: 15),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-          if (driverRegOneVm.loading)
-            Container(
-              color: Colors.black54,
-              child: Center(
-                child: Container(
-                  height: Sizes.screenHeight * 0.13,
-                  width: Sizes.screenWidth * 0.28,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10,
-                        spreadRadius: 2,
+            if (driverRegOneVm.loading)
+              Container(
+                color: Colors.black54,
+                child: Center(
+                  child: Container(
+                    height: Sizes.screenHeight * 0.13,
+                    width: Sizes.screenWidth * 0.28,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: GradientCirPro(
+                        strokeWidth: 6,
+                        size: 70,
+                        gradient: AppColor.circularIndicator,
                       ),
-                    ],
-                  ),
-                  child: Center(
-                    child: GradientCirPro(
-                      strokeWidth: 6,
-                      size: 70,
-                      gradient: AppColor.circularIndicator,
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
 
+        ),
       ),
     );
   }

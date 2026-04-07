@@ -49,6 +49,7 @@ import 'package:rainbow_partner/view_model/service_man/add_bank_detail_view_mode
 import 'package:rainbow_partner/view_model/service_man/call_back_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/categories_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/change_order_status_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/change_service_pay_mode_vm.dart';
 import 'package:rainbow_partner/view_model/service_man/city_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/complete_booking_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/driver_online_status_view_model.dart';
@@ -306,6 +307,7 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (context)=> ZoneCitiesViewModel()),
           ChangeNotifierProvider(create: (context)=> CabCancelReasonViewModel()),
           ChangeNotifierProvider(create: (context)=> IgnoreServiceOrderViewModel()),
+          ChangeNotifierProvider(create: (context)=> ChangeServicePayModeVm()),
 
           /// cab Driver
           ChangeNotifierProvider(create: (context)=> VehicleViewModel()),
