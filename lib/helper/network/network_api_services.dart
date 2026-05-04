@@ -228,7 +228,7 @@ class NetworkApiServices extends BaseApiServices {
         return {"statusCode": statusCode, "body": body};
 
       case 400:
-        throw BadRequestException(body["message"] ?? "Bad Request");
+        return {"statusCode": statusCode, "body": body};
       case 401:
       case 403:
         throw UnauthorisedException(body["message"] ?? "Unauthorized");

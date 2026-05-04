@@ -18,7 +18,7 @@ class JobRequestViewModel with ChangeNotifier {
   }
 
   Future<void> jobRequestApi({
-    required File profilePhoto,
+    required File? profilePhoto,
     required String firstName,
     required String lastName,
     required String email,
@@ -32,7 +32,6 @@ class JobRequestViewModel with ChangeNotifier {
 
     setLoading(true);
 
-    // ✅ SAHI TARIKA: UserViewModel initialize karke getUser call karna
     UserViewModel userViewModel = UserViewModel();
     String? userId = await userViewModel.getUser();
     
@@ -72,7 +71,7 @@ class JobRequestViewModel with ChangeNotifier {
     });
 
     debugPrint("\n📌 FILE FIELDS:");
-    debugPrint("  profile_photo → ${profilePhoto.path}");
+    // debugPrint("  profile_photo → ${profilePhoto.path}");
 
     debugPrint("\n📌 DESIGNATION FILES (${designationFiles.length} files):");
     for (int i = 0; i < designationFiles.length; i++) {

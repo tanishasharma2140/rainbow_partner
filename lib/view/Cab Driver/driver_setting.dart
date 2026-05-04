@@ -8,6 +8,7 @@ import 'package:rainbow_partner/view/Cab%20Driver/driver_help_and_support.dart' 
 import 'package:rainbow_partner/view/Cab%20Driver/driver_notification.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/driver_privacy_policy.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/driver_refund_policy.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/driver_service_description.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/driver_terms_and_condition.dart';
 
 class DriverSetting extends StatefulWidget {
@@ -86,6 +87,15 @@ class _DriverSettingState extends State<DriverSetting> {
                 subtitle: 'Read our refund & Cancellation policy ',
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverRefundPolicy()));
+                },
+              ),
+              const SizedBox(height: 12),
+              _settingCard(
+                icon: Icons.design_services,
+                title: 'Service Description',
+                subtitle: 'Read our service description ',
+                onTap: () {
+                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverServiceDescription()));
                 },
               ),
               const SizedBox(height: 12),

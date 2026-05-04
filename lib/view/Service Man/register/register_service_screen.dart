@@ -718,24 +718,8 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                       bgColor: AppColor.royalBlue,
                       textColor: Colors.white,
                       onTap: () {
-                        if (firstNameController.text.trim().isEmpty) {
-                          Utils.showErrorMessage(context, "Please Enter First Name");
-                          return;
-                        }
-                        if (mobileController.text.trim().length != 10) {
-                          Utils.showErrorMessage(context, "Please Enter 10 digit number");
-                          return;
-                        }
                         String skillType = doesntKnowSkill ? "1" : "0";
                         File? singleDesignationFile;
-                        if (skillType == "0") {
-                          if (designationFiles.isNotEmpty) {
-                            singleDesignationFile = designationFiles.first;
-                          } else {
-                            Utils.showErrorMessage(context, "Please upload at least 1 designation certificate");
-                            return;
-                          }
-                        }
                         jobRequestVm.jobRequestApi(
                           firstName: firstNameController.text,
                           lastName: lastNameController.text,

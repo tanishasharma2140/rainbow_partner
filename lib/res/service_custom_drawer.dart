@@ -11,6 +11,7 @@ import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/bank_update_request.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/edit_serviceman_profile.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_add_bank.dart';
+import 'package:rainbow_partner/view/Service%20Man/drawer/service_description.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_due_wallet.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_help_support.dart';
 import 'package:rainbow_partner/view/Service%20Man/drawer/service_privacy_policy.dart';
@@ -356,6 +357,14 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceRefundPolicy()));
+              },
+            ),
+            _drawerItem(
+              icon: Icons.design_services,
+              title: "Service Description",
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceDescription()));
               },
             ),
             _drawerItem(
