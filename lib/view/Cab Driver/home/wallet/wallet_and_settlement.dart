@@ -12,6 +12,7 @@ import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/driver_withdraw_history.dart';
+import 'package:rainbow_partner/view_model/cabdriver/cab_payment_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_transaction_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_withdraw_request_view_model.dart';
@@ -917,7 +918,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
 
   void _showDueWalletDialog() {
     final profileVm = Provider.of<DriverProfileViewModel>(context, listen: false);
-    final payment = Provider.of<PaymentViewModel>(context, listen: false);
+    final payment = Provider.of<CabPaymentViewmodel>(context, listen: false);
 
     final double dueAmount = double.tryParse(
       profileVm.driverProfileModel?.data?.dueWallet?.toString() ?? "0",
@@ -1008,7 +1009,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Consumer<PaymentViewModel>(
+                      child: Consumer<CabPaymentViewmodel>(
                         builder: (context, payVm, _) {
                           final isLoading = payVm.loading;
 
@@ -1016,12 +1017,11 @@ class _WalletSettlementState extends State<WalletSettlement> {
                             onPressed: (dueAmount == 0 || isLoading)
                                 ? null
                                 : () {
-                              payment.paymentApi(
+                              payment.cabPaymentApi(
                                 dueAmount.toString(),   // full due
                                 5,                      // payment mode
-                                "",                     // serviceOrderId
-                                2,                      // driver module
-                                context,
+                                "",
+                                context// serviceOrderId
                               );
                             },
                             style: ElevatedButton.styleFrom(

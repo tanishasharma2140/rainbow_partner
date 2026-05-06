@@ -9,7 +9,7 @@ object IncomingOrderNotification {
     private const val NOTIFICATION_ID = 9301
 
     fun ensureChannel(context: Context) {
-        // No longer needed
+        // No longer needed for overlay style
     }
 
     fun show(
@@ -19,14 +19,18 @@ object IncomingOrderNotification {
         dropAddress: String,
         distance: String = "",
         amount: String = "",
-        routeName: String = RapidoIncomingOrderOverlayService.ROUTE_LIVE_RIDE
+        routeName: String = "live_ride_screen" // Directly using string to avoid unresolved reference
     ) {
-        // Disabled status bar notification as per user request ("nh show karana hai")
-        Log.d(tag, "show: Status bar notification is disabled.")
+        // Disabled status bar notification as per user request
+        Log.d(tag, "show: Status bar notification is disabled. Using Overlay instead.")
     }
 
     fun cancel(context: Context) {
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.cancel(NOTIFICATION_ID)
+        try {
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.cancel(NOTIFICATION_ID)
+        } catch (e: Exception) {
+            Log.e(tag, "Error cancelling notification", e)
+        }
     }
 }

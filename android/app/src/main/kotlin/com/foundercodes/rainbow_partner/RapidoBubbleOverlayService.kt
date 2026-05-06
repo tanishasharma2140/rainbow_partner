@@ -40,7 +40,7 @@ class RapidoBubbleOverlayService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(tag, "onStartCommand action=${intent?.action}")
-        
+
         // If system restarts service after it was killed
         if (intent == null || intent.action == null) {
             val isOnline = getSharedPreferences("rapido_online_prefs", Context.MODE_PRIVATE)
@@ -130,7 +130,7 @@ class RapidoBubbleOverlayService : Service() {
 
             background = GradientDrawable().apply {
                 shape = GradientDrawable.OVAL
-                setColor(0xfffeca1f.toInt())
+                setColor(0xff4169E1.toInt())
             }
             elevation = dp(6).toFloat()
         }

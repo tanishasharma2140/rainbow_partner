@@ -433,7 +433,7 @@ class SocketService {
     socket?.dispose();
 
     socket = IO.io(
-      "https://admin.rainbowsenterprises.com",
+      "https://dev.rainbowsenterprises.com",
       IO.OptionBuilder()
           .setPath("/socket/live")
           .setTransports(['websocket'])

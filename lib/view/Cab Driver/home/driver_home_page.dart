@@ -12,6 +12,7 @@ import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/service/background_service.dart';
 import 'package:rainbow_partner/service/driver_socket_service.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
+import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/action/driver_profile.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/driver_setting.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/driver_accepted_scree.dart';
@@ -35,6 +36,8 @@ class DriverHomePage extends StatefulWidget {
 }
 
 class _DriverHomePageState extends State<DriverHomePage> {
+  static const _channel = MethodChannel('rapido_background_button');
+
   Future<void> hitProfileApi() async {
     final vm = Provider.of<DriverProfileViewModel>(context, listen: false);
     final position = await LocationUtils.getLocation();
@@ -44,6 +47,13 @@ class _DriverHomePageState extends State<DriverHomePage> {
       position.longitude.toString(),
       context,
     );
+
+    // ✅ Sync status with Native side
+    if (mounted) {
+      final isOnline = vm.driverProfileModel?.data?.onlineStatus == 1;
+      _channel.invokeMethod('setDriverOnline', {'online': isOnline});
+    }
+
     final activeRide = await Provider.of<ActiveRideViewModel>(
       context,
       listen: false,
@@ -192,7 +202,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
     debugPrint("✅ Starting socket with driverId: $driverId");
 
     // Background service start
-    initializeBackgroundService();
+    // initializeBackgroundService();
   }
 
   Future<void> _handleExit() async {
@@ -207,15 +217,17 @@ class _DriverHomePageState extends State<DriverHomePage> {
         0.0,
         context,
       );
+      // ✅ Inform native
+      await _channel.invokeMethod('setDriverOnline', {'online': false});
     } catch (e) {
       debugPrint("Offline API error: $e");
     }
 
     // 🔌 Disconnect socket
-    DriverSocketService().disconnect();
+    // DriverSocketService().disconnect();
 
     // 📴 Stop background service
-    await stopBackgroundService();
+    // await stopBackgroundService();
 
     // 🚪 Close app
     SystemNavigator.pop();
@@ -505,6 +517,62 @@ class _DriverHomePageState extends State<DriverHomePage> {
     );
   }
 
+  Future<bool> _maybeAskOverlayPermission() async {
+    bool hasPermission = true;
+
+    try {
+      final bool? platformValue =
+      await _channel.invokeMethod<bool>('hasOverlayPermission');
+      hasPermission = platformValue ?? true;
+    } catch (_) {
+      hasPermission = true;
+    }
+
+    if (hasPermission) return true;
+
+    if (!mounted) return false;
+
+    final shouldOpenSettings = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColor.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        title:  TextConst(
+            title:
+            "Overlay Permission",
+            fontWeight: FontWeight.w600
+        ),
+        content: TextConst(title:
+        "Enable Display over other apps to continue.",
+            size: 13
+        ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child:  TextConst(title:"Later",color: AppColor.black,),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child:  TextConst(title: "Allow",color: AppColor.black,),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldOpenSettings == true) {
+      await _channel.invokeMethod('requestPermissions');
+    }
+
+    // 🔁 Recheck
+    final bool? updated =
+    await _channel.invokeMethod<bool>('hasOverlayPermission');
+
+    return updated ?? false;
+  }
+
   // -------------------------------------------------
   //              ONLINE / OFFLINE SWITCH
   // -------------------------------------------------
@@ -531,70 +599,138 @@ class _DriverHomePageState extends State<DriverHomePage> {
       ),
       child: Row(
         children: [
+
           TextConst(
             title: isOnline ? "Online" : "Offline",
             size: 14,
             color: isOnline ? Colors.green : Colors.red,
             fontWeight: FontWeight.w600,
           ),
+
           const SizedBox(width: 8),
 
           CupertinoSwitch(
             value: isOnline,
             activeColor: Colors.green,
+
             onChanged: (value) async {
 
-              /// 🔥 Agar ONLINE karna hai
+              /// ================= ONLINE =================
               if (value) {
+
+                /// ✅ Overlay Permission
+                final hasOverlayPermission =
+                await _maybeAskOverlayPermission();
+
+                if (!hasOverlayPermission) {
+
+                  Utils.showErrorMessage(
+                    context,
+                    "Overlay permission is required",
+                  );
+
+                  return;
+                }
 
                 showLocationPermissionDialog(
                   context,
                   onAccept: () async {
 
-                    // 🔹 Foreground permission already dialog me request ho raha hai
+                    try {
 
-                    // 🔹 Location fetch karo
-                    final position = await LocationUtils.getLocation();
+                      /// 📍 Get Current Location
+                      final position =
+                      await LocationUtils.getLocation();
 
-                    /// 🔥 1️⃣ ONLINE API CALL
-                    await driverOnlineVm.driverOnlineStatusApi(
-                      1,
-                      position.latitude,
-                      position.longitude,
-                      context,
-                    );
+                      /// 🌐 ONLINE API
+                      await driverOnlineVm.driverOnlineStatusApi(
+                        1,
+                        position.latitude,
+                        position.longitude,
+                        context,
+                      );
 
-                    /// 🔁 2️⃣ PROFILE REFRESH
-                    await driverProfileVm.driverProfileApi(
-                      position.latitude.toString(),
-                      position.longitude.toString(),
-                      context,
-                    );
+                      // ✅ Inform Native side
+                      await _channel.invokeMethod('setDriverOnline', {'online': true});
 
-                    /// 🔥 3️⃣ START SOCKET
-                    await _startSocket();
+                      /// 🔄 PROFILE REFRESH
+                      await driverProfileVm.driverProfileApi(
+                        position.latitude.toString(),
+                        position.longitude.toString(),
+                        context,
+                      );
+
+                      /// 🔥 SOCKET START
+                      await _startSocket();
+
+                      /// 🚀 START BACKGROUND SERVICE
+                      // await startBackgroundService();
+
+                      Utils.showSuccessMessage(
+                        context,
+                        "You are online now",
+                      );
+
+                    } catch (e) {
+
+                      debugPrint("ONLINE ERROR => $e");
+
+                      Utils.showErrorMessage(
+                        context,
+                        "Something went wrong",
+                      );
+                    }
                   },
                 );
 
-              } else {
+              }
 
-                /// 🔥 OFFLINE direct kare
-                final position = await LocationUtils.getLocation();
+              /// ================= OFFLINE =================
+              else {
 
-                await driverOnlineVm.driverOnlineStatusApi(
-                  0,
-                  position.latitude,
-                  position.longitude,
-                  context,
-                );
+                try {
 
-                await driverProfileVm.driverProfileApi(
-                  position.latitude.toString(),
-                  position.longitude.toString(),
-                  context,
-                );
+                  final position =
+                  await LocationUtils.getLocation();
 
-                await stopBackgroundService();
+                  /// 🌐 OFFLINE API
+                  await driverOnlineVm.driverOnlineStatusApi(
+                    0,
+                    position.latitude,
+                    position.longitude,
+                    context,
+                  );
+
+                  // ✅ Inform Native side
+                  await _channel.invokeMethod('setDriverOnline', {'online': false});
+
+                  /// 🔄 PROFILE REFRESH
+                  await driverProfileVm.driverProfileApi(
+                    position.latitude.toString(),
+                    position.longitude.toString(),
+                    context,
+                  );
+
+                  /// 🛑 STOP SOCKET
+                  // socket.disconnect();
+
+                  /// 🛑 STOP BACKGROUND SERVICE
+                  // await stopBackgroundService();
+
+                  Utils.showSuccessMessage(
+                    context,
+                    "You are offline now",
+                  );
+
+                } catch (e) {
+
+                  debugPrint("OFFLINE ERROR => $e");
+
+                  Utils.showErrorMessage(
+                    context,
+                    "Something went wrong",
+                  );
+                }
               }
             },
           ),

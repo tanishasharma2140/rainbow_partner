@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/auth/splash.dart';
 import 'package:rainbow_partner/res/app_color.dart';
@@ -154,7 +155,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
       final lat = position.latitude.toString();
       final lng = position.longitude.toString();
 
-      // 🔴 1️⃣ Make serviceman offline
+      // 🔴 1️⃣ Make serviceman offline (API call)
       await serviceOnlineVm.serviceOnlineStatusApi(
         0,
         lat,
@@ -162,23 +163,23 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
         context,
       );
 
-      // 🔄 2️⃣ Refresh profile (optional but good)
+      // ✅ Sync with Native side (Offline)
+      const MethodChannel('rapido_background_button').invokeMethod('setServicemanOnline', {'online': false});
+
+      // 🔄 2️⃣ Refresh profile
       await profileVm.servicemanProfileApi(lat, lng, context);
 
     } catch (e) {
       debugPrint("Logout Offline API Error: $e");
     }
 
-    // 🔌 3️⃣ Disconnect socket (UI side)
-    ServicemanSocketService().disconnect();
+    // 🔌 3️⃣ Disconnect socket
+    // ServicemanSocketService().disconnect();
 
-    // 📴 4️⃣ Stop background service
-    await stopServicemanBackgroundService();
-
-    // 🧹 5️⃣ Clear user data
+    // 🧹 4️⃣ Clear user data
     await UserViewModel().remove();
 
-    // 🚪 6️⃣ Navigate to Splash
+    // 🚪 5️⃣ Navigate to Splash
     if (!mounted) return;
 
     Navigator.pushAndRemoveUntil(
@@ -224,15 +225,15 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                       children: [
                         TextConst(
                           title:
-                          "${profileVm.servicemanProfileModel!.data!.firstName} "
-                              "${profileVm.servicemanProfileModel!.data!.lastName}",
+                          "${profileVm.servicemanProfileModel?.data?.firstName ?? ''} "
+                              "${profileVm.servicemanProfileModel?.data?.lastName ?? ''}",
                           size: 18,
                           fontWeight: FontWeight.bold,
                           color: AppColor.royalBlue,
                         ),
 
                         TextConst(
-                          title: profileVm.servicemanProfileModel!.data!.email,
+                          title: profileVm.servicemanProfileModel?.data?.email ?? '',
                           size: 13,
                           color: Colors.grey,
                         ),
@@ -261,13 +262,13 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                       SizedBox(height: 3),
 
                       Text(
-                        profileVm.servicemanProfileModel!.data!.onlineStatus == 1
+                        profileVm.servicemanProfileModel?.data?.onlineStatus == 1
                             ? "Online"
                             : "Offline",
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: profileVm.servicemanProfileModel!.data!.onlineStatus == 1
+                          color: profileVm.servicemanProfileModel?.data?.onlineStatus == 1
                               ? Colors.green
                               : Colors.red,
                         ),
@@ -343,55 +344,54 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                     CupertinoPageRoute(builder: (_) => ServicePrivacyPolicy()));
               },
             ),
+
             _drawerItem(
-              icon: Icons.privacy_tip_outlined,
-              title: "Term & Condition",
+              icon: Icons.description_outlined,
+              title: "Terms & Conditions",
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceTermsAndCondition()));
               },
             ),
+
             _drawerItem(
-              icon: Icons.policy,
+              icon: Icons.info_outline,
+              title: "About Us",
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceAboutUs()));
+              },
+            ),
+
+            _drawerItem(
+              icon: Icons.contact_support_outlined,
+              title: "Contact Us",
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (_) => ServiceContactUs()));
+              },
+            ),
+
+            _drawerItem(
+              icon: Icons.refresh_outlined,
               title: "Refund Policy",
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceRefundPolicy()));
               },
             ),
-            _drawerItem(
-              icon: Icons.design_services,
-              title: "Service Description",
-              onTap: () {
-                Navigator.push(context,
-                    CupertinoPageRoute(builder: (_) => ServiceDescription()));
-              },
-            ),
-            _drawerItem(
-              icon: Icons.account_box_outlined,
-              title: "Contact us",
-              onTap: () {
-                Navigator.push(context,
-                    CupertinoPageRoute(builder: (_) => ServiceContactUs()));
-              },
-            ),
-            _drawerItem(
-              icon: Icons.privacy_tip_outlined,
-              title: "About us",
-              onTap: () {
-                Navigator.push(context,
-                    CupertinoPageRoute(builder: (_) => ServiceAboutUs()));
-              },
-            ),
+
+            Divider(),
+
             _drawerItem(
               icon: Icons.logout,
               title: "Logout",
-              onTap: () {
-                _showLogoutDialog(context);
-              },
+              titleColor: Colors.red,
+              iconColor: Colors.red,
+              onTap: () => _showLogoutDialog(context),
             ),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -402,20 +402,22 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    Color? iconColor,
+    Color? titleColor,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        child: Row(
-          children: [
-            Icon(icon, size: 24, color: Colors.grey),
-            SizedBox(width: 18),
-            Text(title, style: TextStyle(fontSize: 16)),
-          ],
+    return ListTile(
+      leading: Icon(icon, color: iconColor ?? Colors.grey.shade600),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15,
+          color: titleColor ?? Colors.black87,
+          fontWeight: FontWeight.w500,
         ),
       ),
+      onTap: onTap,
+      dense: true,
+      visualDensity: VisualDensity.compact,
     );
   }
 }

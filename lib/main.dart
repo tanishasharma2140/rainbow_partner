@@ -21,6 +21,7 @@ import 'package:rainbow_partner/view_model/cabdriver/active_ride_view_model.dart
 import 'package:rainbow_partner/view_model/cabdriver/cab_cancel_reason_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_earning_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_history_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/cab_payment_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_paymode_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_model.dart';
@@ -76,14 +77,12 @@ import 'firebase_options.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 const MethodChannel nativeChannel =
 MethodChannel('rainbow_partner/native_callback');
+const MethodChannel overlayChannel = MethodChannel('rapido_background_button');
 
 @pragma('vm:entry-point')
 void servicemanNotificationBackgroundTap(NotificationResponse response) {
   debugPrint("🔥 BACKGROUND TAP RECEIVED");
-
-  ServicemanNotificationHelper.handleAction(response);
 }
-
 
 @pragma('vm:entry-point')
 Future<void> handleNativeCallback(MethodCall call) async {
@@ -93,19 +92,12 @@ Future<void> handleNativeCallback(MethodCall call) async {
     case 'onRideEvent':
       final Map<String, dynamic> data =
       Map<String, dynamic>.from(call.arguments);
-
       debugPrint("🚖 Ride Event from Native: $data");
-
-      await RideNotificationHelper.showIncomingRide(data);
       break;
-
     default:
       debugPrint("⚠️ Unknown native callback");
   }
 }
-
-
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -113,7 +105,6 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -125,8 +116,6 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-
-
 double topPadding = 0.0;
 double bottomPadding = 0.0;
 
@@ -137,132 +126,244 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final InternetCheckerService _internetCheckerService =
   InternetCheckerService();
   final notificationService = NotificationService(navigatorKey: navigatorKey);
 
+  // ── Pending overlay intents (for when navigator isn't ready yet) ──────────
+  Map<String, dynamic>? _pendingOverlayAccept;
+  Map<String, dynamic>? _pendingOverlayIgnore;
+  bool _overlayAcceptBusy = false;
+  bool _overlayIgnoreBusy = false;
 
-  late final StreamSubscription rideActionSub;
-  late final StreamSubscription servicemanActionSub;
+  // ─────────────────────────────────────────────────────────────────────────
+  // Waits up to ~4 s for the navigator context to become available.
+  // Useful on cold-start / keyguard scenarios.
+  // ─────────────────────────────────────────────────────────────────────────
+  Future<BuildContext?> _waitForNavigatorContext() async {
+    for (var i = 0; i < 80; i++) {
+      final ctx = navigatorKey.currentContext;
+      if (ctx != null && ctx.mounted) return ctx;
+      await Future<void>.delayed(
+        i == 0 ? Duration.zero : const Duration(milliseconds: 50),
+      );
+    }
+    return null;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Overlay: Accept ride
+  // ─────────────────────────────────────────────────────────────────────────
+  Future<void> _handleOverlayAcceptRide(Map<String, dynamic> data) async {
+    if (_overlayAcceptBusy) return;
+    _overlayAcceptBusy = true;
+
+    try {
+      var ctx = await _waitForNavigatorContext();
+      ctx ??= navigatorKey.currentContext;
+
+      if (ctx == null || !ctx.mounted) {
+        _pendingOverlayAccept = Map<String, dynamic>.from(data);
+        debugPrint('overlay accept: navigator not ready, will retry on resume');
+        return;
+      }
+
+      FlutterBackgroundService().invoke('STOP_RINGTONE');
+
+      final panel = data['panel'] as String? ?? 'driver';
+      if (panel == 'serviceman') {
+        navigatorKey.currentState
+            ?.push(MaterialPageRoute(builder: (_) => ServiceTotalBooking()));
+      } else {
+        // 🔥 Hit driverOfferApi automatically on Accept
+        final String orderId = data['id']?.toString() ?? '';
+        final String userIdOrder = data['user_id']?.toString() ?? '';
+        final int amount = int.tryParse(data['amount']?.toString() ?? '0') ?? 0;
+
+        if (orderId.isNotEmpty && userIdOrder.isNotEmpty) {
+          Provider.of<DriverOfferViewModel>(ctx, listen: false).driverOfferApi(
+            userIdOrder,
+            orderId,
+            amount,
+            amount,
+            ctx,
+          );
+        }
+
+        navigatorKey.currentState
+            ?.push(MaterialPageRoute(builder: (_) => RideWaitingScreen()));
+      }
+    } finally {
+      _overlayAcceptBusy = false;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Overlay: Ignore ride
+  // ─────────────────────────────────────────────────────────────────────────
+  Future<void> _handleOverlayIgnoreRide(Map<String, dynamic> data) async {
+    if (_overlayIgnoreBusy) return;
+    _overlayIgnoreBusy = true;
+
+    try {
+      var ctx = await _waitForNavigatorContext();
+      ctx ??= navigatorKey.currentContext;
+
+      if (ctx == null || !ctx.mounted) {
+        _pendingOverlayIgnore = Map<String, dynamic>.from(data);
+        debugPrint('overlay ignore: navigator not ready, will retry on resume');
+        return;
+      }
+
+      FlutterBackgroundService().invoke('STOP_RINGTONE');
+
+      final panel = data['panel'] as String? ?? 'driver';
+      final orderId = (data['id'] as String? ?? '').isNotEmpty
+          ? data['id'] as String
+          : data['order_id'] as String? ?? '';
+
+      if (orderId.isNotEmpty) {
+        if (panel == 'serviceman') {
+          Provider.of<IgnoreServiceOrderViewModel>(ctx, listen: false)
+              .ignoreServiceOrderApi(1, ctx);
+        } else {
+          Provider.of<DriverIgnoreOrderViewModel>(ctx, listen: false)
+              .driverIgnoreOrderApi(orderId, ctx);
+        }
+      }
+    } finally {
+      _overlayIgnoreBusy = false;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Flush any overlay intents that arrived before the navigator was ready.
+  // Called every time the app resumes.
+  // ─────────────────────────────────────────────────────────────────────────
+  Future<void> _flushPendingOverlayIntents() async {
+    final accept = _pendingOverlayAccept;
+    if (accept != null) {
+      _pendingOverlayAccept = null;
+      await _handleOverlayAcceptRide(accept);
+    }
+    final ign = _pendingOverlayIgnore;
+    if (ign != null) {
+      _pendingOverlayIgnore = null;
+      await _handleOverlayIgnoreRide(ign);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // App lifecycle: show/hide background floating button based on online status
+  // ─────────────────────────────────────────────────────────────────────────
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Flush pending intents when app comes back to foreground
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_flushPendingOverlayIntents());
+    }
+
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      final driverProfile =
+      Provider.of<DriverProfileViewModel>(context, listen: false);
+      final bool isOnline =
+          driverProfile.driverProfileModel?.data?.onlineStatus.toString() ==
+              "1";
+
+      if (state == AppLifecycleState.paused ||
+          state == AppLifecycleState.hidden) {
+        if (isOnline) {
+          _safeInvoke('showBackgroundButton');
+        } else {
+          _safeInvoke('hideBackgroundButton');
+          _safeInvoke('cancelIncomingOrderOverlay');
+        }
+      } else if (state == AppLifecycleState.resumed ||
+          state == AppLifecycleState.inactive) {
+        _safeInvoke('hideBackgroundButton');
+        _safeInvoke('cancelIncomingOrderOverlay');
+      }
+    }
+  }
+
+  Future<void> _safeInvoke(String method) async {
+    try {
+      await overlayChannel.invokeMethod<void>(method);
+    } catch (_) {
+      // Silently ignore if native side doesn't support the method
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Cold-start: check if the app was launched via a notification/overlay route
+  // ─────────────────────────────────────────────────────────────────────────
+  Future<void> _tryHandleLaunchRoute() async {
+    try {
+      final String? route =
+      await overlayChannel.invokeMethod<String>('getLaunchRoute');
+      if (route != null && route.isNotEmpty) {
+        navigatorKey.currentState?.pushNamed(route);
+      }
+    } catch (_) {
+      // Ignore if not supported on platform
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Overlay channel setup
+  // ─────────────────────────────────────────────────────────────────────────
+  void _setupOverlayChannel() {
+    overlayChannel.setMethodCallHandler((call) async {
+      debugPrint("🔥 MethodChannel call received: ${call.method}");
+
+      final data = call.arguments is Map
+          ? Map<String, dynamic>.from(call.arguments as Map)
+          : <String, dynamic>{};
+
+      if (call.method == 'onOverlayAcceptRide') {
+        await _handleOverlayAcceptRide(data);
+      } else if (call.method == 'onOverlayIgnoreRide') {
+        await _handleOverlayIgnoreRide(data);
+      } else if (call.method == 'navigateTo') {
+        final route = call.arguments as String?;
+        if (route != null && route.isNotEmpty) {
+          navigatorKey.currentState?.pushNamed(route);
+        }
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-     ServicemanNotificationHelper.init();
-    servicemanActionSub =
-        ServicemanNotificationHelper.actionStream.listen((action) async {
+    WidgetsBinding.instance.addObserver(this); // <-- lifecycle observer
 
-          print("🔥 SERVICE ACTION RECEIVED");
-          print("👉 TYPE: ${action.type}");
-          print("📦 DATA: ${action.orderData}");
-
-          final orderData = action.orderData;
-          final orderId = orderData['order_id'];
-
-          Future.delayed(const Duration(milliseconds: 500), () async {
-            final context = navigatorKey.currentContext;
-
-            if (context == null) {
-              print("❌ Context still null (SERVICE)");
-              return;
-            }
-
-            switch (action.type) {
-
-            /// ✅ ACCEPT
-              case ServiceActionType.accept:
-                print("✅ SERVICE ACCEPT CLICKED");
-                print("📦 Order ID: $orderId");
-
-                FlutterBackgroundService().invoke('STOP_RINGTONE');
-
-                navigatorKey.currentState?.push(
-                  MaterialPageRoute(
-                    builder: (_) => ServiceTotalBooking(),
-                  ),
-                );
-                break;
-
-            /// ❌ REJECT
-              case ServiceActionType.reject:
-                print("❌ SERVICE REJECT CLICKED");
-                print("📦 Order ID: $orderId");
-
-                final ignoreVm =
-                Provider.of<IgnoreServiceOrderViewModel>(context, listen: false);
-
-                await ignoreVm.ignoreServiceOrderApi(orderId, context);
-
-                print("✅ SERVICE IGNORE API CALLED");
-
-                await ServicemanNotificationHelper.clear();
-                break;
-            }
-          });
-        });
-
-
-
-    RideNotificationHelper.init();
-    rideActionSub = RideNotificationHelper.actionStream.listen((action) async {
-      if (action.type == ActionType.accept) {
-        print("🚕 ACCEPT tapped");
-        print("📦 Booking data: ${action.bookingData}");
-        navigatorKey.currentState?.push(
-          MaterialPageRoute(builder: (context) => RideWaitingScreen()),
-        );
-
-        // TODO later:
-        // acceptRideApi(...)
-      }
-
-      if (action.type == ActionType.reject) {
-        print("❌ REJECT tapped");
-        print("📦 Booking data: ${action.bookingData}");
-
-        final orderId = action.bookingData['order_id'];
-
-        if (orderId == null) {
-          print("❌ Order ID missing");
-          return;
-        }
-
-        // 🔥 CALL IGNORE API
-        final context = navigatorKey.currentContext;
-
-        if (context == null) {
-          print("❌ Context not available");
-          return;
-        }
-
-        final ignoreVm =
-        Provider.of<DriverIgnoreOrderViewModel>(context, listen: false);
-
-        await ignoreVm.driverIgnoreOrderApi(
-          orderId,
-          context,
-        );
-
-        print("✅ IGNORE API CALLED FOR ORDER: $orderId");
-      }
-    });
-
+    _setupOverlayChannel();
 
     notificationService.requestedNotificationPermission();
     notificationService.firebaseInit(context);
     notificationService.setupInteractMassage(context);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _internetCheckerService.startMonitoring(navigatorKey.currentContext!);
+    });
+
+    // Two-frame delay so getLaunchRoute runs after the navigator has consumed
+    // any initial intent (same pattern as yoyomiles_partner).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _tryHandleLaunchRoute();
+      });
     });
   }
 
   @override
   void dispose() {
-    rideActionSub.cancel();
+    WidgetsBinding.instance.removeObserver(this); // <-- cleanup
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -279,80 +380,114 @@ class _MyAppState extends State<MyApp> {
       ),
       child: MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (context)=>AuthViewModel()),
-          ChangeNotifierProvider(create: (context)=>UserViewModel()),
-          ChangeNotifierProvider(create: (context)=> ServicemanRegisterViewModel()),
-          ChangeNotifierProvider(create: (context)=> ServicemanProfileViewModel()),
-          ChangeNotifierProvider(create: (context)=> ServiceOnlineStatusViewModel()),
-          ChangeNotifierProvider(create: (context)=> ServiceOnlineStatusViewModel()),
-          ChangeNotifierProvider(create: (context)=> AddBankDetailViewModel()),
-          ChangeNotifierProvider(create: (context)=> ServiceGetBankDetailViewModel()),
-          ChangeNotifierProvider(create: (context)=> ServiceBankEditViewModel()),
-          ChangeNotifierProvider(create: (context)=> ServiceBankUpdateViewModel()),
-          ChangeNotifierProvider(create: (context)=> DeviceViewModel()),
-          ChangeNotifierProvider(create: (context)=> CategoriesViewModel()),
-          ChangeNotifierProvider(create: (context)=> CompleteBookingViewModel()),
-          ChangeNotifierProvider(create: (context)=> JobRequestViewModel()),
-          ChangeNotifierProvider(create: (context)=> CitiesViewModel()),
-          ChangeNotifierProvider(create: (context)=> AcceptOrderViewModel()),
-          ChangeNotifierProvider(create: (context)=> ChangeOrderStatusViewModel()),
-          ChangeNotifierProvider(create: (context)=> TransactionHistoryViewModel()),
-          ChangeNotifierProvider(create: (context)=> WithdrawRequestViewModel()),
-          ChangeNotifierProvider(create: (context)=> ServiceWithdrawHistoryViewModel()),
-          ChangeNotifierProvider(create: (context)=> PaymentViewModel()),
-          ChangeNotifierProvider(create: (context)=> CallBackViewModel()),
-          ChangeNotifierProvider(create: (context)=> ReviewViewModel()),
-          ChangeNotifierProvider(create: (context)=> ServicemanEarningViewModel()),
-          ChangeNotifierProvider(create: (context)=> ServiceInfoViewModel()),
-          ChangeNotifierProvider(create: (context)=> ZoneCitiesViewModel()),
-          ChangeNotifierProvider(create: (context)=> CabCancelReasonViewModel()),
-          ChangeNotifierProvider(create: (context)=> IgnoreServiceOrderViewModel()),
-          ChangeNotifierProvider(create: (context)=> ChangeServicePayModeVm()),
+          ChangeNotifierProvider(create: (context) => AuthViewModel()),
+          ChangeNotifierProvider(create: (context) => UserViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ServicemanRegisterViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ServicemanProfileViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ServiceOnlineStatusViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => AddBankDetailViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ServiceGetBankDetailViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ServiceBankEditViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ServiceBankUpdateViewModel()),
+          ChangeNotifierProvider(create: (context) => DeviceViewModel()),
+          ChangeNotifierProvider(create: (context) => CategoriesViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => CompleteBookingViewModel()),
+          ChangeNotifierProvider(create: (context) => JobRequestViewModel()),
+          ChangeNotifierProvider(create: (context) => CitiesViewModel()),
+          ChangeNotifierProvider(create: (context) => AcceptOrderViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ChangeOrderStatusViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => TransactionHistoryViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => WithdrawRequestViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ServiceWithdrawHistoryViewModel()),
+          ChangeNotifierProvider(create: (context) => PaymentViewModel()),
+          ChangeNotifierProvider(create: (context) => CallBackViewModel()),
+          ChangeNotifierProvider(create: (context) => ReviewViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ServicemanEarningViewModel()),
+          ChangeNotifierProvider(create: (context) => ServiceInfoViewModel()),
+          ChangeNotifierProvider(create: (context) => ZoneCitiesViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => CabCancelReasonViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => IgnoreServiceOrderViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ChangeServicePayModeVm()),
 
-          /// cab Driver
-          ChangeNotifierProvider(create: (context)=> VehicleViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverRegisterOneViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverRegisterTwoViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverRegisterThreeViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverRegisterFourViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverRegisterFiveViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverRegisterSixViewModel()),
-          ChangeNotifierProvider(create: (context)=> VehicleBrandViewModel()),
-          ChangeNotifierProvider(create: (context)=> VehicleModelViewModel()),
-          ChangeNotifierProvider(create: (context)=> VehicleColorsViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverProfileViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverOnlineStatusViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverCanDiscountViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverOfferViewModel()),
-          ChangeNotifierProvider(create: (context)=> ChangeCabOrderStatusViewModel()),
-          ChangeNotifierProvider(create: (context)=> CabEarningViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverTransactionViewModel()),
-          ChangeNotifierProvider(create: (context)=> CabHistoryViewModel()),
-          ChangeNotifierProvider(create: (context)=> ActiveRideViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverIgnoreOrderViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverWithdrawRequestViewModel()),
-          ChangeNotifierProvider(create: (context)=> DriverWithdrawHistoryViewModel()),
-          ChangeNotifierProvider(create: (context)=> AcceptLaterRideViewModel()),
-          ChangeNotifierProvider(create: (context)=> PartnerNotificationViewModel()),
-          ChangeNotifierProvider(create: (context)=> PolicyViewModel()),
-          ChangeNotifierProvider(create: (context)=> HelpSupportViewModel()),
-          ChangeNotifierProvider(create: (context)=> VehicleFuelViewModel()),
-          ChangeNotifierProvider(create: (context)=> ChangeCabPayModeViewModel()),
-
+          /// Cab Driver
+          ChangeNotifierProvider(create: (context) => VehicleViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverRegisterOneViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverRegisterTwoViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverRegisterThreeViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverRegisterFourViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverRegisterFiveViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverRegisterSixViewModel()),
+          ChangeNotifierProvider(create: (context) => VehicleBrandViewModel()),
+          ChangeNotifierProvider(create: (context) => VehicleModelViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => VehicleColorsViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverProfileViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverOnlineStatusViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverCanDiscountViewModel()),
+          ChangeNotifierProvider(create: (context) => DriverOfferViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ChangeCabOrderStatusViewModel()),
+          ChangeNotifierProvider(create: (context) => CabEarningViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverTransactionViewModel()),
+          ChangeNotifierProvider(create: (context) => CabHistoryViewModel()),
+          ChangeNotifierProvider(create: (context) => ActiveRideViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverIgnoreOrderViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverWithdrawRequestViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => DriverWithdrawHistoryViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => AcceptLaterRideViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => PartnerNotificationViewModel()),
+          ChangeNotifierProvider(create: (context) => PolicyViewModel()),
+          ChangeNotifierProvider(create: (context) => HelpSupportViewModel()),
+          ChangeNotifierProvider(create: (context) => VehicleFuelViewModel()),
+          ChangeNotifierProvider(
+              create: (context) => ChangeCabPayModeViewModel()),
+          ChangeNotifierProvider(create: (context) => CabPaymentViewmodel()),
         ],
         child: MaterialApp(
           navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
           initialRoute: RoutesName.splashScreen,
-          onGenerateRoute: (settings){
-            if (settings.name !=null){
-              return CupertinoPageRoute(builder: Routers.generateRoute(settings.name!),
+          onGenerateRoute: (settings) {
+            if (settings.name != null) {
+              return CupertinoPageRoute(
+                builder: Routers.generateRoute(settings.name!),
                 settings: settings,
               );
             }
             return null;
           },
-          title: 'rainboW Partner',
+          title: 'Rainbow Partner',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
@@ -362,5 +497,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-

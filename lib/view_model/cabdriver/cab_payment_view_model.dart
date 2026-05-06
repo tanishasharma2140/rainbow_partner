@@ -79,16 +79,22 @@ class CabPaymentViewmodel with ChangeNotifier {
 
         final orderId = body["data"]["order_id"];
         final txnToken = body["data"]["txnToken"];
-        final amountValue = body["data"]["amount"];
+        // API response doesn't have amount, so use the amount passed to this function
+        final amountValue = body["data"]["amount"] ?? amount;
+
+        if (orderId == null || txnToken == null || amountValue == null) {
+          Utils.showErrorMessage(context, "Payment details missing from server");
+          return;
+        }
 
         await _startPaytmTransaction(
-          mid: "IneuZB64959027148878",
+          mid: "FAEClA31908078249088",
           orderId: orderId.toString(),
           txnToken: txnToken.toString(),
           amount: amountValue.toString(),
           paymentType: paymentType,
           serviceOrderId: serviceOrderId,
-          callbackUrl: "https://admin.rainbowsenterprises.com/api/callback_paytm",
+          callbackUrl: "https://dev.rainbowsenterprises.com/api/callback_paytm",
           context: context,
         );
 
@@ -114,7 +120,14 @@ class CabPaymentViewmodel with ChangeNotifier {
     required dynamic serviceOrderId,
   }) async {
     try {
-      final formattedAmount = double.parse(amount).toStringAsFixed(2);
+      // Use tryParse to avoid FormatException if amount is still not a valid number
+      double? parsedAmount = double.tryParse(amount);
+      if (parsedAmount == null) {
+        Utils.showErrorMessage(context, "Invalid amount: $amount");
+        return;
+      }
+
+      final formattedAmount = parsedAmount.toStringAsFixed(2);
       debugPrint("MID => $mid");
       debugPrint("ORDERID => $orderId");
       debugPrint("TXNTOKEN => $txnToken");
@@ -137,8 +150,7 @@ class CabPaymentViewmodel with ChangeNotifier {
       debugPrint("PAYTM RESPONSE => $response");
 
       if (response != null &&
-          response["STATUS"] == "TXN_SUCCESS" &&
-          response["success"] == true) {
+          response["STATUS"] == "TXN_SUCCESS") {
 
         Utils.showSuccessMessage(context, "Payment Successful");
 
@@ -151,7 +163,6 @@ class CabPaymentViewmodel with ChangeNotifier {
         );
 
       } else {
-        /// ❌ FAILED
         Utils.showErrorMessage(
           context,
           response?["RESPMSG"] ?? "Payment Failed",

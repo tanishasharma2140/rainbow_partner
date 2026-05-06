@@ -1,5 +1,7 @@
 class ApiUrl {
-  static const String baseUrl ="https://admin.rainbowsenterprises.com/api/";
+  // static const String baseUrl ="https://admin.rainbowsenterprises.com/api/";
+  static const String baseUrl ="https://dev.rainbowsenterprises.com/api/";
+
   /// ServiceMan
   static const String servicemanLoginUrl ="${baseUrl}serviceman_login";
   static const String servicemanRegisterUrl ="${baseUrl}serviceman_register";
@@ -18,7 +20,8 @@ class ApiUrl {
   static const String transactionHistoryUrl ="${baseUrl}serviceman_transaction";
   static const String servicemanWithdrawUrl ="${baseUrl}serviceman-withdraw-request";
   static const String servicemanWithdrawHistoryUrl ="${baseUrl}serviceman-withdraw-history";
-  static const String paymentUrl ="${baseUrl}payment";
+  static const String paymentUrl ="${baseUrl}servicePayment";
+  static const String ridePaymentUrl ="${baseUrl}ridePayment";
   static const String callbackServiceUrl ="${baseUrl}callback_service";
   static const String reviewUrl ="${baseUrl}serviceman-ratings";
   static const String servicemanEarningUrl ="${baseUrl}serviceman-earnings";
@@ -59,8 +62,8 @@ class ApiUrl {
 
 
 
-  static const String sendOtpUrl ="https://admin.rainbowsenterprises.com/api/send_otp?mode=live&digit=4&mobile=";
-  static const String verifyOtpUrl ="https://admin.rainbowsenterprises.com/api/verifyotp?mobile=";
+  static const String sendOtpUrl ="https://dev.rainbowsenterprises.com/api/send_otp?mode=test&digit=4&mobile=";
+  static const String verifyOtpUrl ="https://dev.rainbowsenterprises.com/api/verifyotp?mobile=";
   static const String partnerNotificationUrl ="${baseUrl}user_notification/";
   static const String policyUrl ="${baseUrl}policy/";
   static const String helpSupportUrl ="${baseUrl}help-support";

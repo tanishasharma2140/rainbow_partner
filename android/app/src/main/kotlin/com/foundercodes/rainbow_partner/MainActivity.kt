@@ -5,9 +5,11 @@ import android.content.pm.PackageManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
+import android.view.WindowManager
 import androidx.annotation.UiThread
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -17,12 +19,31 @@ class MainActivity : FlutterActivity() {
     private val channelName = "rapido_background_button"
     private val tag = "RapidoOverlay"
     private var channel: MethodChannel? = null
+    // true if EITHER driver or serviceman is online
     private var isOnlineFromFlutter: Boolean = false
     private var pendingNotificationPermissionResult: MethodChannel.Result? = null
     private val REQUEST_CODE_POST_NOTIFICATIONS = 1001
 
     private val prefsName = "rapido_online_prefs"
     private val prefsKeyIsOnline = "is_online"
+    // track each panel independently so bubble shows when either is online
+    private var isDriverOnline: Boolean = false
+    private var isServicemanOnline: Boolean = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        // Remove setShowWhenLocked so it forces system unlock prompt when started from background
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setTurnScreenOn(true)
+        } else {
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+            )
+        }
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -34,6 +55,18 @@ class MainActivity : FlutterActivity() {
                 "setOnline" -> {
                     val online = (call.argument<Boolean>("online") ?: false)
                     setOnlineState(online)
+                    result.success(null)
+                }
+
+                "setDriverOnline" -> {
+                    isDriverOnline = call.argument<Boolean>("online") ?: false
+                    setOnlineState(isDriverOnline || isServicemanOnline)
+                    result.success(null)
+                }
+
+                "setServicemanOnline" -> {
+                    isServicemanOnline = call.argument<Boolean>("online") ?: false
+                    setOnlineState(isDriverOnline || isServicemanOnline)
                     result.success(null)
                 }
 
@@ -194,6 +227,15 @@ class MainActivity : FlutterActivity() {
             .apply()
     }
 
+    // Called by native overlay when user accepts/ignores from overlay card
+    fun dispatchOverlayEvent(method: String, data: Map<String, String>) {
+        try {
+            channel?.invokeMethod(method, data)
+        } catch (t: Throwable) {
+            Log.w(tag, "dispatchOverlayEvent $method failed", t)
+        }
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -216,23 +258,27 @@ class MainActivity : FlutterActivity() {
     private fun dispatchOverlayAcceptIgnore(route: String, intent: Intent) {
         val orderId = intent.getStringExtra(RapidoIncomingOrderOverlayService.EXTRA_ORDER_ID) ?: ""
         if (orderId.isBlank()) return
+        val panel = intent.getStringExtra("panel") ?: "driver"
 
         if (route == RapidoIncomingOrderOverlayService.ROUTE_ACCEPT_RIDE) {
             val pickup = intent.getStringExtra("pickup_address") ?: ""
             val drop = intent.getStringExtra("drop_address") ?: ""
             val distance = intent.getStringExtra("distance") ?: ""
             val amount = intent.getStringExtra("amount") ?: ""
+            val userId = intent.getStringExtra("user_id") ?: ""
 
-            val data = mapOf<String, String>(
+            val data = mapOf(
                 "id" to orderId,
                 "pickup_address" to pickup,
                 "drop_address" to drop,
                 "distance" to distance,
                 "amount" to amount,
+                "panel" to panel,
+                "user_id" to userId,
             )
             channel?.invokeMethod("onOverlayAcceptRide", data)
         } else {
-            val data = mapOf<String, String>("id" to orderId)
+            val data = mapOf("id" to orderId, "panel" to panel)
             channel?.invokeMethod("onOverlayIgnoreRide", data)
         }
     }
@@ -281,4 +327,3 @@ class MainActivity : FlutterActivity() {
         IncomingOrderNotification.cancel(this)
     }
 }
-

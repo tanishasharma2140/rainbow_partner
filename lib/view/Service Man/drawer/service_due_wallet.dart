@@ -109,8 +109,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                 payment.paymentApi(
                     dueAmount.toInt().toString(), // full due amount
                   5, // due wallet mode
-                  "", // order
-                  1, // module
+                  "", // order// module
                   context,
                 );
 

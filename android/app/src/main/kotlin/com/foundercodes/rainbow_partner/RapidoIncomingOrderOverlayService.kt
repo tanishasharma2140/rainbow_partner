@@ -37,7 +37,9 @@ class RapidoIncomingOrderOverlayService : Service() {
     private var drop: String = ""
     private var distance: String = ""
     private var id: String = ""
+    private var userId: String = ""
     private var amount: String = ""
+    private var panel: String = "driver"
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -51,12 +53,13 @@ class RapidoIncomingOrderOverlayService : Service() {
             ACTION_SCHEDULE_SHOW -> {
                 pickup   = intent.getStringExtra("pickup")   ?: ""
                 drop     = intent.getStringExtra("drop")     ?: ""
-                // Priority to pickup_distance_km for overlay
-                distance = intent.getStringExtra("pickup_distance_km") 
-                           ?: intent.getStringExtra("distance") 
-                           ?: ""
+                distance = intent.getStringExtra("pickup_distance_km") ?: intent.getStringExtra("distance") ?: "0.0"
                 id       = intent.getStringExtra("id")       ?: ""
+                userId   = intent.getStringExtra("user_id")  ?: ""
                 amount   = intent.getStringExtra("amount")   ?: ""
+                panel    = intent.getStringExtra("panel")    ?: "driver"
+                
+                Log.d(tag, "Action Schedule Show: ID=$id, Panel=$panel, Amount=$amount")
                 scheduleShow(intent.getLongExtra(EXTRA_DELAY_MS, DEFAULT_DELAY_MS))
             }
             ACTION_SHOW_NOW -> showNow()
@@ -65,20 +68,12 @@ class RapidoIncomingOrderOverlayService : Service() {
         return START_NOT_STICKY
     }
 
-    override fun onTaskRemoved(rootIntent: Intent?) {
-        super.onTaskRemoved(rootIntent)
-        hideAndStop()
-    }
-
-    override fun onDestroy() {
-        cancelScheduledShow()
-        removeOverlayIfPresent()
-        super.onDestroy()
-    }
-
     private fun scheduleShow(delayMs: Long) {
         val canDraw = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this)
-        if (!canDraw) { hideAndStop(); return }
+        if (!canDraw) { 
+            Log.e(tag, "Cannot draw overlay: Permission missing")
+            hideAndStop(); return 
+        }
         cancelScheduledShow()
         val runnable = Runnable { showNow() }
         scheduledShow = runnable
@@ -95,13 +90,7 @@ class RapidoIncomingOrderOverlayService : Service() {
         val canDraw = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this)
         if (!canDraw || overlayView != null) return
 
-        RapidoBubbleOverlayService.start(this, RapidoBubbleOverlayService.ACTION_HIDE)
-
-        val root = FrameLayout(this).apply {
-            isClickable = false
-            isFocusable = false
-        }
-
+        val root = FrameLayout(this).apply { isClickable = false; isFocusable = false }
         val expandedCard = buildExpandedCardView(
             onAccept = {
                 sendAcceptToFlutter(id)
@@ -112,25 +101,26 @@ class RapidoIncomingOrderOverlayService : Service() {
                 IncomingOrderFirebaseService.stopIncomingOrderAlert(this@RapidoIncomingOrderOverlayService)
             }
         )
-
         root.addView(expandedCard)
 
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                    else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE
 
-        val (screenW, _) = getScreenSizePx()
         layoutParams = WindowManager.LayoutParams(
-            screenW, WindowManager.LayoutParams.WRAP_CONTENT,
-            type, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT,
+            type, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-            x = 0
             y = dp(20)
         }
-
-        overlayView = root
-        windowManager?.addView(overlayView, layoutParams)
+        
+        try {
+            overlayView = root
+            windowManager?.addView(overlayView, layoutParams)
+        } catch (e: Exception) {
+            Log.e(tag, "Error adding overlay view", e)
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -138,120 +128,53 @@ class RapidoIncomingOrderOverlayService : Service() {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(20), dp(20), dp(20), dp(20))
-            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT).apply {
-                setMargins(dp(20), 0, dp(20), 0)
-            }
-            background = GradientDrawable().apply {
-                cornerRadius = dp(28).toFloat()
-                setColor(Color.WHITE)
-            }
+            background = GradientDrawable().apply { cornerRadius = dp(28).toFloat(); setColor(Color.WHITE) }
             elevation = dp(16).toFloat()
+            layoutParams = FrameLayout.LayoutParams(-1, -2).apply { setMargins(dp(20), 0, dp(20), 0) }
         }
 
-        // Close Button (Top Right)
-        val closeContainer = FrameLayout(this).apply {
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(24))
-        }
+        // Close icon
         val closeBtn = ImageView(this).apply {
-            setImageResource(android.R.drawable.ic_menu_close_clear_cancel)
-            setColorFilter(Color.GRAY)
-            layoutParams = FrameLayout.LayoutParams(dp(24), dp(24)).apply { gravity = Gravity.END }
+            setImageResource(android.R.drawable.ic_menu_close_clear_cancel); setColorFilter(Color.GRAY)
+            layoutParams = LinearLayout.LayoutParams(dp(24), dp(24)).apply { gravity = Gravity.END }
             setOnClickListener { onIgnore() }
         }
-        closeContainer.addView(closeBtn)
-        card.addView(closeContainer)
+        card.addView(closeBtn)
 
-        // Amount Section
         val amountTv = TextView(this).apply {
-            text = "₹$amount"
-            textSize = 34f
-            setTypeface(null, Typeface.BOLD)
-            setTextColor(Color.parseColor("#1A237E"))
-            gravity = Gravity.CENTER
+            text = "₹$amount"; textSize = 34f; setTypeface(null, Typeface.BOLD); setTextColor(Color.parseColor("#1A237E")); gravity = Gravity.CENTER
         }
         card.addView(amountTv)
 
-        // Distance Badge (Pickup Distance)
         val distanceBadge = TextView(this).apply {
-            text = "● Pickup $distance km away"
-            textSize = 14f
-            setTextColor(Color.parseColor("#2E7D32"))
-            setPadding(dp(14), dp(6), dp(14), dp(6))
-            gravity = Gravity.CENTER
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-                gravity = Gravity.CENTER
-                topMargin = dp(8)
-            }
-            background = GradientDrawable().apply {
-                setColor(Color.parseColor("#F5F5F5"))
-                cornerRadius = dp(20).toFloat()
-            }
+            val distText = if (panel == "serviceman") "● New Service Request" else "● Pickup $distance km away"
+            text = distText; textSize = 14f; setTextColor(Color.parseColor("#2E7D32"))
+            setPadding(dp(14), dp(6), dp(14), dp(6)); gravity = Gravity.CENTER
+            background = GradientDrawable().apply { setColor(Color.parseColor("#F5F5F5")); cornerRadius = dp(20).toFloat() }
+            layoutParams = LinearLayout.LayoutParams(-2, -2).apply { gravity = Gravity.CENTER; topMargin = dp(8) }
         }
-        card.addView(distanceBadge)
-        card.addView(spacer(dp(24)))
+        card.addView(distanceBadge); card.addView(spacer(dp(24)))
 
-        // Timeline Address Section (Match Lock Screen Style)
-        val addressRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
+        // Timeline Addresses
+        val texts = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(-1, -2); setPadding(dp(8), 0, 0, 0) }
+        texts.addView(TextView(this).apply { text = pickup; setTextColor(Color.BLACK); textSize = 15f; maxLines = 2; gravity = Gravity.CENTER })
+        texts.addView(spacer(dp(16)))
+        texts.addView(TextView(this).apply { text = drop; setTextColor(Color.DKGRAY); textSize = 15f; maxLines = 2; gravity = Gravity.CENTER })
+        card.addView(texts); card.addView(spacer(dp(24)))
 
-        val timeline = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(dp(30), LinearLayout.LayoutParams.WRAP_CONTENT)
-        }
-        val greenDot = View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(10), dp(10))
-            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.parseColor("#4CAF50")) }
-        }
-        val line = View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(2), dp(40))
-            setBackgroundColor(Color.LTGRAY)
-        }
-        val redDot = View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(10), dp(10))
-            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.parseColor("#F44336")) }
-        }
-        timeline.addView(greenDot); timeline.addView(line); timeline.addView(redDot)
-
-        val texts = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            setPadding(dp(8), 0, 0, 0)
-        }
-        texts.addView(TextView(this).apply { text = pickup; setTextColor(Color.BLACK); textSize = 15f; maxLines = 2 })
-        texts.addView(spacer(dp(30)))
-        texts.addView(TextView(this).apply { text = drop; setTextColor(Color.DKGRAY); textSize = 15f; maxLines = 2 })
-
-        addressRow.addView(timeline); addressRow.addView(texts)
-        card.addView(addressRow)
-        card.addView(spacer(dp(24)))
-
-        // SLIDER (YELLOW)
+        // SLIDER
         val slideContainer = FrameLayout(this).apply {
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(64))
-            background = GradientDrawable().apply { 
-                cornerRadius = dp(32).toFloat()
-                setColor(Color.parseColor("#FFD600")) 
-            }
+            layoutParams = LinearLayout.LayoutParams(-1, dp(64))
+            background = GradientDrawable().apply { cornerRadius = dp(32).toFloat(); setColor(Color.parseColor("#4169E1")) }
         }
-
         val slideText = TextView(this).apply {
-            text = "Slide to Accept"; gravity = Gravity.CENTER; textSize = 18f; setTypeface(null, Typeface.BOLD); setTextColor(Color.BLACK)
-            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+            text = "Accept for ₹$amount"; gravity = Gravity.CENTER; textSize = 17f; setTypeface(null, Typeface.BOLD); setTextColor(Color.WHITE)
         }
-        
         val knob = FrameLayout(this).apply {
             layoutParams = FrameLayout.LayoutParams(dp(56), dp(56)).apply { gravity = Gravity.START or Gravity.CENTER_VERTICAL; leftMargin = dp(4) }
             background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.WHITE) }
-            elevation = dp(4).toFloat()
-            addView(ImageView(this@RapidoIncomingOrderOverlayService).apply {
-                setImageResource(android.R.drawable.ic_media_play); setColorFilter(Color.BLACK)
-                layoutParams = FrameLayout.LayoutParams(dp(24), dp(24), Gravity.CENTER)
-            })
+            addView(ImageView(this@RapidoIncomingOrderOverlayService).apply { setImageResource(android.R.drawable.ic_media_play); setColorFilter(Color.parseColor("#4169E1")); layoutParams = FrameLayout.LayoutParams(dp(24), dp(24), Gravity.CENTER) })
         }
-
         slideContainer.addView(slideText); slideContainer.addView(knob)
 
         knob.setOnTouchListener(object : View.OnTouchListener {
@@ -259,27 +182,26 @@ class RapidoIncomingOrderOverlayService : Service() {
             override fun onTouch(v: View, event: MotionEvent): Boolean {
                 val maxSlide = slideContainer.width - v.width - dp(8)
                 when (event.action) {
-                    MotionEvent.ACTION_DOWN -> { dX = v.x - event.rawX }
+                    MotionEvent.ACTION_DOWN -> dX = v.x - event.rawX
                     MotionEvent.ACTION_MOVE -> {
                         var newX = event.rawX + dX
-                        if (newX < dp(4)) newX = dp(4).toFloat()
-                        if (newX > maxSlide) newX = maxSlide.toFloat()
-                        v.x = newX
+                        v.x = newX.coerceIn(dp(4).toFloat(), maxSlide.toFloat())
                     }
                     MotionEvent.ACTION_UP -> {
-                        if (v.x > maxSlide * 0.8) {
-                            v.x = maxSlide.toFloat(); slideText.text = "Accepted!"; v.visibility = View.GONE
-                            onAccept()
-                        } else {
-                            v.animate().x(dp(4).toFloat()).setDuration(200).start()
-                        }
+                        if (v.x > maxSlide * 0.8) { v.x = maxSlide.toFloat(); onAccept() }
+                        else v.animate().x(dp(4).toFloat()).setDuration(200).start()
                     }
                 }
                 return true
             }
         })
-
         card.addView(slideContainer)
+
+        val ignoreBtn = TextView(this).apply {
+            text = "Ignore Order"; textSize = 15f; setTextColor(Color.GRAY); gravity = Gravity.CENTER
+            setPadding(dp(16), dp(12), dp(16), dp(12)); setOnClickListener { onIgnore() }
+        }
+        card.addView(ignoreBtn)
         return card
     }
 
@@ -288,64 +210,36 @@ class RapidoIncomingOrderOverlayService : Service() {
     private fun sendAcceptToFlutter(id: String) {
         val i = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            putExtra(EXTRA_NAV_ROUTE, ROUTE_ACCEPT_RIDE); putExtra(EXTRA_ORDER_ID, id)
-            putExtra("pickup_address", pickup); putExtra("drop_address", drop)
-            putExtra("distance", distance); putExtra("amount", amount)
+            putExtra(EXTRA_NAV_ROUTE, ROUTE_ACCEPT_RIDE); putExtra(EXTRA_ORDER_ID, id); putExtra("user_id", userId)
+            putExtra("pickup_address", pickup); putExtra("drop_address", drop); putExtra("distance", distance)
+            putExtra("amount", amount); putExtra("panel", panel)
         }
-        startActivity(i)
-        hideAndStop()
+        startActivity(i); hideAndStop()
     }
 
     private fun sendIgnoreToFlutter(id: String) {
         val i = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            putExtra(EXTRA_NAV_ROUTE, ROUTE_IGNORE_RIDE); putExtra(EXTRA_ORDER_ID, id)
+            putExtra(EXTRA_NAV_ROUTE, ROUTE_IGNORE_RIDE); putExtra(EXTRA_ORDER_ID, id); putExtra("panel", panel)
         }
-        startActivity(i)
-        hideAndStop()
+        startActivity(i); hideAndStop()
     }
 
-    private fun hideAndStop() {
-        removeOverlayIfPresent()
-        stopSelf()
-    }
-
-    private fun removeOverlayIfPresent() {
-        overlayView?.let { try { windowManager?.removeView(it) } catch (_: Throwable) {} }
-        overlayView = null
-    }
-
+    private fun hideAndStop() { removeOverlayIfPresent(); stopSelf() }
+    private fun removeOverlayIfPresent() { overlayView?.let { try { windowManager?.removeView(it) } catch (_: Throwable) {} }; overlayView = null }
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
-    private fun getStatusBarHeightPx(): Int {
-        val id = resources.getIdentifier("status_bar_height", "dimen", "android")
-        return if (id > 0) resources.getDimensionPixelSize(id) else 0
-    }
-
-    private fun getScreenSizePx(): Pair<Int, Int> {
-        val wm = windowManager ?: return Pair(0,0)
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val b = wm.currentWindowMetrics.bounds
-            Pair(b.width(), b.height())
-        } else {
-            val p = Point()
-            @Suppress("DEPRECATION") wm.defaultDisplay.getRealSize(p)
-            Pair(p.x, p.y)
-        }
-    }
 
     companion object {
-        const val ACTION_SCHEDULE_SHOW = "com.fc.rapido_style.action.SCHEDULE_INCOMING_ORDER_OVERLAY"
-        const val ACTION_SHOW_NOW      = "com.fc.rapido_style.action.SHOW_INCOMING_ORDER_OVERLAY"
-        const val ACTION_HIDE          = "com.fc.rapido_style.action.HIDE_INCOMING_ORDER_OVERLAY"
-        const val EXTRA_NAV_ROUTE      = "com.fc.rapido_style.extra.NAV_ROUTE"
-        const val EXTRA_DELAY_MS       = "com.fc.rapido_style.extra.DELAY_MS"
-        const val EXTRA_ORDER_ID       = "com.fc.rapido_style.extra.ORDER_ID"
+        const val ACTION_SCHEDULE_SHOW = "com.foundercodes.rainbow_partner.action.SCHEDULE_INCOMING_ORDER_OVERLAY"
+        const val ACTION_SHOW_NOW      = "com.foundercodes.rainbow_partner.action.SHOW_INCOMING_ORDER_OVERLAY"
+        const val ACTION_HIDE          = "com.foundercodes.rainbow_partner.action.HIDE_INCOMING_ORDER_OVERLAY"
+        const val EXTRA_NAV_ROUTE      = "com.foundercodes.rainbow_partner.extra.NAV_ROUTE"
+        const val EXTRA_ORDER_ID       = "com.foundercodes.rainbow_partner.extra.ORDER_ID"
         const val ROUTE_ACCEPT_RIDE    = "accept_ride_action"
         const val ROUTE_IGNORE_RIDE    = "ignore_ride_action"
         const val ROUTE_LIVE_RIDE      = "live_ride_screen"
+        const val EXTRA_DELAY_MS       = "com.foundercodes.rainbow_partner.extra.DELAY_MS"
         const val DEFAULT_DELAY_MS     = 0L
-        fun start(context: Context, action: String) {
-            context.startService(Intent(context, RapidoIncomingOrderOverlayService::class.java).apply { this.action = action })
-        }
+        fun start(context: Context, action: String) { context.startService(Intent(context, RapidoIncomingOrderOverlayService::class.java).apply { this.action = action }) }
     }
 }

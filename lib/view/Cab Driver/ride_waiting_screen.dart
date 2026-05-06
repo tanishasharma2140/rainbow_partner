@@ -62,7 +62,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
     debugPrint("✅ Starting socket with driverId: $driverId");
 
     // Background service start
-    initializeBackgroundService();
+    // initializeBackgroundService();
   }
 
 

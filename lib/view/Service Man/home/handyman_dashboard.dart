@@ -1,4 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,9 +8,8 @@ import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/service_custom_drawer.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
-import 'package:rainbow_partner/service/background_service.dart';
-import 'package:rainbow_partner/service/socket_service.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
+import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/accepted_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/complete_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/service_total_booking.dart';
@@ -32,8 +30,8 @@ class HandymanDashboard extends StatefulWidget {
 }
 
 class _HandymanDashboardState extends State<HandymanDashboard> {
-  // List<double> animatedValues = List.filled(8, 0.0);
-  // List<double> finalValues = [10000, 5000, 8000];
+  static const _channel = MethodChannel('rapido_background_button');
+
   bool isStatusChanging = false;
 
   @override
@@ -74,6 +72,11 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
       final isOnline =
           profileVm.servicemanProfileModel?.data?.onlineStatus == 1;
+
+      // ✅ SYNC WITH NATIVE
+      if (isOnline) {
+        _channel.invokeMethod('setServicemanOnline', {'online': true});
+      }
 
       final hasBooking =
           completeVm.completeBookingModel?.data?.isNotEmpty == true;
@@ -182,6 +185,10 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       context.read<ReviewViewModel>().reviewApi(context),
       context.read<ServiceInfoViewModel>().serviceInfoApi(context),
     ]);
+
+    // ✅ Re-sync online status on refresh
+    final isOnline = context.read<ServicemanProfileViewModel>().servicemanProfileModel?.data?.onlineStatus == 1;
+    _channel.invokeMethod('setServicemanOnline', {'online': isOnline});
   }
 
   String formatDateTime(String? dateTimeString) {
@@ -254,8 +261,58 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     );
   }
 
-  // 🔥 Toggle Online/Offline Status
+  Future<bool> _maybeAskOverlayPermission() async {
+    bool hasPermission = false;
+
+    try {
+      final bool? platformValue =
+      await _channel.invokeMethod<bool>('hasOverlayPermission');
+
+      hasPermission = platformValue ?? false;
+    } catch (e) {
+      debugPrint("Overlay permission check error: $e");
+      hasPermission = false;
+    }
+
+    if (hasPermission) return true;
+
+    if (!mounted) return false;
+
+    final shouldOpenSettings = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Overlay Permission"),
+        content: Text("Enable display over other apps"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text("Allow"),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldOpenSettings == true) {
+      await _channel.invokeMethod('requestPermissions');
+
+      await Future.delayed(Duration(seconds: 2));
+    }
+
+    final bool? updated =
+    await _channel.invokeMethod<bool>('hasOverlayPermission');
+
+    return updated ?? false;
+  }
+
+
+
+
   Future<void> _toggleOnlineStatus(bool currentStatus) async {
+
     if (!mounted) return;
 
     setState(() {
@@ -263,18 +320,51 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     });
 
     final serviceOnlineVm =
-    Provider.of<ServiceOnlineStatusViewModel>(context, listen: false);
+    Provider.of<ServiceOnlineStatusViewModel>(
+      context,
+      listen: false,
+    );
+
     final profileVm =
-    Provider.of<ServicemanProfileViewModel>(context, listen: false);
+    Provider.of<ServicemanProfileViewModel>(
+      context,
+      listen: false,
+    );
 
     final newStatus = currentStatus == true ? 0 : 1;
 
     try {
+
+      /// ================= OVERLAY PERMISSION =================
+      if (newStatus == 1) {
+
+        final hasOverlayPermission =
+        await _maybeAskOverlayPermission();
+
+        if (!hasOverlayPermission) {
+
+          if (mounted) {
+            setState(() {
+              isStatusChanging = false;
+            });
+          }
+
+          Utils.showErrorMessage(
+            context,
+            "Overlay permission is required",
+          );
+
+          return;
+        }
+      }
+
+      /// ================= LOCATION =================
       final position = await _getCurrentLocation();
+
       final lat = position.latitude.toString();
       final lng = position.longitude.toString();
 
-      /// 🔥 UPDATE ONLINE STATUS API
+      /// ================= ONLINE STATUS API =================
       await serviceOnlineVm.serviceOnlineStatusApi(
         newStatus,
         lat,
@@ -282,29 +372,66 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
         context,
       );
 
-      /// 🔥 REFRESH PROFILE
-      await profileVm.servicemanProfileApi(lat, lng, context);
+      // ✅ INFORM NATIVE SIDE
+      await _channel.invokeMethod('setServicemanOnline', {'online': newStatus == 1});
 
-      /// 🔥 GET servicemanId (ASYNC)
+      /// ================= PROFILE REFRESH =================
+      await profileVm.servicemanProfileApi(
+        lat,
+        lng,
+        context,
+      );
+
+      /// ================= GET USER ID =================
       UserViewModel userViewModel = UserViewModel();
+
       String? userId = await userViewModel.getUser();
 
       if (userId == null || userId.isEmpty) {
         throw Exception("Serviceman ID not found");
       }
 
-      /// 🔥 SAVE serviceman_id FOR BACKGROUND
+      /// ================= SAVE USER ID =================
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('serviceman_id', userId);
 
-      /// 🔥 ONLINE → START BG SERVICE
+      await prefs.setString(
+        'serviceman_id',
+        userId,
+      );
+
+      /// ================= ONLINE =================
       if (newStatus == 1) {
+
         print("🟢 UI: Serviceman ONLINE → starting BG service");
-        await startServicemanBackgroundService();
-      } else {
+
+        /// 🔥 START SOCKET
+        // await ServicemanSocketService().connect();
+
+        /// 🔥 START BACKGROUND SERVICE
+        // await startServicemanBackgroundService();
+
+        Utils.showSuccessMessage(
+          context,
+          "You are online now",
+        );
+
+      }
+
+      /// ================= OFFLINE =================
+      else {
+
         print("🔴 UI: Serviceman OFFLINE → stopping BG service");
-        ServicemanSocketService().disconnect();
-        await stopServicemanBackgroundService();
+
+        /// 🔥 STOP SOCKET
+        // ServicemanSocketService().disconnect();
+
+        /// 🔥 STOP BG SERVICE
+        // await stopServicemanBackgroundService();
+
+        Utils.showSuccessMessage(
+          context,
+          "You are offline now",
+        );
       }
 
       if (mounted) {
@@ -312,8 +439,11 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
           isStatusChanging = false;
         });
       }
+
     } catch (e) {
+
       if (mounted) {
+
         setState(() {
           isStatusChanging = false;
         });
@@ -445,15 +575,19 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
         lng,
         context,
       );
+      
+      // ✅ Inform native
+      await _channel.invokeMethod('setServicemanOnline', {'online': false});
+      
     } catch (e) {
       debugPrint("Exit Offline API error: $e");
     }
 
     // 🔌 2️⃣ Disconnect socket (UI isolate)
-    ServicemanSocketService().disconnect();
+    // ServicemanSocketService().disconnect();
 
     // 📴 3️⃣ Stop background service
-    await stopServicemanBackgroundService();
+    // await stopServicemanBackgroundService();
 
     // 🚪 4️⃣ Close app
     SystemNavigator.pop();
@@ -519,6 +653,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 20),
+
 
                         // 🔥 HEADER WITH TOGGLE BUTTON
                         serviceProfileVm.loading ||
@@ -755,105 +890,6 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                             ),
                           ],
                         ),
-
-                        // const SizedBox(height: 20),
-                        //
-                        // TextConst(
-                        //   title: "Monthly Revenue USD",
-                        //   size: 18,
-                        //   fontWeight: FontWeight.w600,
-                        // ),
-                        // const SizedBox(height: 15),
-                        //
-                        // Container(
-                        //   height: 190,
-                        //   padding: const EdgeInsets.fromLTRB(12, 15, 12, 12),
-                        //   decoration: BoxDecoration(
-                        //     color: AppColor.whiteDark,
-                        //     borderRadius: BorderRadius.circular(12),
-                        //   ),
-                        //   child: BarChart(
-                        //     BarChartData(
-                        //       alignment: BarChartAlignment.spaceAround,
-                        //       maxY: 15000,
-                        //       minY: 0,
-                        //       barTouchData: BarTouchData(enabled: false),
-                        //       gridData: FlGridData(
-                        //         show: true,
-                        //         drawVerticalLine: false,
-                        //         horizontalInterval: 5000,
-                        //         getDrawingHorizontalLine: (value) => FlLine(
-                        //           color: Colors.grey.shade300,
-                        //           strokeWidth: 1,
-                        //         ),
-                        //       ),
-                        //       titlesData: FlTitlesData(
-                        //         leftTitles: AxisTitles(
-                        //           sideTitles: SideTitles(
-                        //             showTitles: true,
-                        //             interval: 5000,
-                        //             reservedSize: 40,
-                        //             getTitlesWidget: (v, meta) => Text(
-                        //               v.toInt().toString(),
-                        //               style: TextStyle(
-                        //                 fontSize: 11,
-                        //                 color: Colors.grey,
-                        //               ),
-                        //             ),
-                        //           ),
-                        //         ),
-                        //         bottomTitles: AxisTitles(
-                        //           sideTitles: SideTitles(
-                        //             showTitles: true,
-                        //             reservedSize: 30,
-                        //             getTitlesWidget: (value, meta) {
-                        //               const months = [
-                        //                 "Jan", "Feb", "Mar", "Apr",
-                        //                 "May", "Jun", "Jul", "Aug",
-                        //               ];
-                        //               return Padding(
-                        //                 padding: const EdgeInsets.only(top: 8),
-                        //                 child: Text(
-                        //                   months[value.toInt()],
-                        //                   style: TextStyle(
-                        //                     fontSize: 12,
-                        //                     color: Colors.grey.shade700,
-                        //                   ),
-                        //                 ),
-                        //               );
-                        //             },
-                        //           ),
-                        //         ),
-                        //         topTitles: AxisTitles(
-                        //           sideTitles: SideTitles(showTitles: false),
-                        //         ),
-                        //         rightTitles: AxisTitles(
-                        //           sideTitles: SideTitles(showTitles: false),
-                        //         ),
-                        //       ),
-                        //       barGroups: List.generate(8, (i) {
-                        //         return BarChartGroupData(
-                        //           x: i,
-                        //           barRods: [
-                        //             BarChartRodData(
-                        //               toY: animatedValues[i],
-                        //               width: 18,
-                        //               color: i < 3
-                        //                   ? AppColor.royalBlue
-                        //                   : const Color(0xFF2E5F4D),
-                        //               borderRadius: const BorderRadius.only(
-                        //                 topLeft: Radius.circular(6),
-                        //                 topRight: Radius.circular(6),
-                        //               ),
-                        //             ),
-                        //           ],
-                        //         );
-                        //       }),
-                        //     ),
-                        //     swapAnimationDuration: const Duration(milliseconds: 900),
-                        //     swapAnimationCurve: Curves.easeOutBack,
-                        //   ),
-                        // ),
 
                         const SizedBox(height: 25),
 

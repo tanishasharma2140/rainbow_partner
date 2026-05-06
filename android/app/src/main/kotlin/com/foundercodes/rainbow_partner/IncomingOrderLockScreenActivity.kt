@@ -12,6 +12,8 @@ import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
@@ -23,14 +25,14 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 class IncomingOrderLockScreenActivity : Activity() {
-
+    private val tag = "LockScreenActivity"
     private var removeReceiver: BroadcastReceiver? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Standard Lock Screen Flags
+        // Ensure activity shows over lockscreen
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
@@ -38,20 +40,14 @@ class IncomingOrderLockScreenActivity : Activity() {
             @Suppress("DEPRECATION")
             window.addFlags(
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-                        WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-                        WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
             )
         }
 
-        val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            keyguardManager?.requestDismissKeyguard(this, null)
-        }
-
-        // Close UI if remove_ride broadcast received
         removeReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
+                Log.d(tag, "Received remove UI broadcast")
                 finish()
             }
         }
@@ -59,37 +55,31 @@ class IncomingOrderLockScreenActivity : Activity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(removeReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
         } else {
+            @Suppress("UnspecifiedRegisterReceiverFlag")
             registerReceiver(removeReceiver, filter)
         }
 
         IncomingOrderNotification.cancel(this)
 
         val orderId = intent.getStringExtra(RapidoIncomingOrderOverlayService.EXTRA_ORDER_ID) ?: ""
+        val userId = intent.getStringExtra("user_id") ?: ""
         val pickupAddress = intent.getStringExtra("pickup_address") ?: "N/A"
         val dropAddress = intent.getStringExtra("drop_address") ?: "N/A"
-        val pickupDistanceKm = intent.getStringExtra("pickup_distance_km") 
-                                ?: intent.getStringExtra("distance") 
-                                ?: "N/A"
+        val pickupDistanceKm = intent.getStringExtra("pickup_distance_km") ?: "N/A"
         val amount = intent.getStringExtra("amount") ?: ""
-
-        // Root View with Dimmed Background
+        val panel = intent.getStringExtra("panel") ?: "driver"
 
         val root = FrameLayout(this).apply {
-            setBackgroundColor(Color.parseColor("#99000000")) // Semi-transparent black
+            setBackgroundColor(Color.parseColor("#99000000")) 
         }
 
-        // Centered Card Container
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(20), dp(20), dp(20), dp(20))
-            val lp = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
+            layoutParams = FrameLayout.LayoutParams(-1, -2).apply {
                 gravity = Gravity.CENTER
                 setMargins(dp(24), 0, dp(24), 0)
             }
-            layoutParams = lp
             background = GradientDrawable().apply {
                 setColor(Color.WHITE)
                 cornerRadius = dp(28).toFloat()
@@ -97,104 +87,46 @@ class IncomingOrderLockScreenActivity : Activity() {
             elevation = dp(16).toFloat()
         }
 
-        // Earnings
-        val earningsTv = TextView(this).apply {
-            text = "₹$amount"
-            textSize = 34f
-            setTypeface(null, Typeface.BOLD)
-            setTextColor(Color.parseColor("#1A237E"))
-            gravity = Gravity.CENTER
-        }
-        card.addView(earningsTv)
+        // Amount
+        card.addView(TextView(this).apply {
+            text = "₹$amount"; textSize = 34f; setTypeface(null, Typeface.BOLD)
+            setTextColor(Color.parseColor("#1A237E")); gravity = Gravity.CENTER
+        })
 
-        // Distance Pill
-        val distanceBadge = TextView(this).apply {
-            text = "● Pickup $pickupDistanceKm km away"
-            textSize = 14f
-            setTextColor(Color.parseColor("#2E7D32"))
-            setPadding(dp(14), dp(6), dp(14), dp(6))
-            gravity = Gravity.CENTER
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                gravity = Gravity.CENTER
-                topMargin = dp(8)
-            }
-            background = GradientDrawable().apply {
-                setColor(Color.parseColor("#F5F5F5"))
-                cornerRadius = dp(20).toFloat()
-            }
-        }
-        card.addView(distanceBadge)
+        // Distance
+        card.addView(TextView(this).apply {
+            text = "● Pickup $pickupDistanceKm km away"; textSize = 14f; setTextColor(Color.parseColor("#2E7D32"))
+            setPadding(dp(14), dp(6), dp(14), dp(6)); gravity = Gravity.CENTER
+            background = GradientDrawable().apply { setColor(Color.parseColor("#F5F5F5")); cornerRadius = dp(20).toFloat() }
+            layoutParams = LinearLayout.LayoutParams(-2, -2).apply { gravity = Gravity.CENTER; topMargin = dp(8) }
+        })
         card.addView(spacer(dp(24)))
 
-        // Timeline Address Section
-        val addressRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-
-        // Timeline indicators (line and dots)
-        val timeline = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(dp(30), LinearLayout.LayoutParams.WRAP_CONTENT)
-        }
-        val greenDot = View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(10), dp(10))
-            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.parseColor("#4CAF50")) }
-        }
-        val line = View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(2), dp(40))
-            setBackgroundColor(Color.LTGRAY)
-        }
-        val redDot = View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(10), dp(10))
-            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.parseColor("#F44336")) }
-        }
-        timeline.addView(greenDot); timeline.addView(line); timeline.addView(redDot)
-
-        val texts = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            setPadding(dp(8), 0, 0, 0)
-        }
+        // Pickup/Drop
+        val texts = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(8), 0, 0, 0) }
         texts.addView(TextView(this).apply { text = pickupAddress; setTextColor(Color.BLACK); textSize = 15f; maxLines = 2 })
-        texts.addView(spacer(dp(30)))
+        texts.addView(spacer(dp(24)))
         texts.addView(TextView(this).apply { text = dropAddress; setTextColor(Color.DKGRAY); textSize = 15f; maxLines = 2 })
+        card.addView(texts); card.addView(spacer(dp(30)))
 
-        addressRow.addView(timeline); addressRow.addView(texts)
-        card.addView(addressRow)
-        card.addView(spacer(dp(30)))
-
-        // --- YELLOW SLIDE TO ACCEPT ---
+        // SLIDER (Royal Blue)
         val slideContainer = FrameLayout(this).apply {
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(64))
+            layoutParams = LinearLayout.LayoutParams(-1, dp(64))
             background = GradientDrawable().apply {
-                setColor(Color.parseColor("#FFD600"))
+                setColor(Color.parseColor("#4169E1"))
                 cornerRadius = dp(32).toFloat()
             }
         }
 
         val slideText = TextView(this).apply {
-            text = "Slide to Accept"
-            gravity = Gravity.CENTER
-            setTextColor(Color.BLACK)
-            textSize = 18f
-            setTypeface(null, Typeface.BOLD)
-            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+            text = "Agree for ₹$amount"; gravity = Gravity.CENTER; setTextColor(Color.WHITE); textSize = 17f; setTypeface(null, Typeface.BOLD)
         }
 
         val knob = FrameLayout(this).apply {
-            layoutParams = FrameLayout.LayoutParams(dp(56), dp(56)).apply {
-                gravity = Gravity.START or Gravity.CENTER_VERTICAL
-                leftMargin = dp(4)
-            }
+            layoutParams = FrameLayout.LayoutParams(dp(56), dp(56)).apply { gravity = Gravity.START or Gravity.CENTER_VERTICAL; leftMargin = dp(4) }
             background = GradientDrawable().apply { setColor(Color.WHITE); shape = GradientDrawable.OVAL }
-            elevation = dp(4).toFloat()
             addView(ImageView(this@IncomingOrderLockScreenActivity).apply {
-                setImageResource(android.R.drawable.ic_media_play); setColorFilter(Color.BLACK)
+                setImageResource(android.R.drawable.ic_media_play); setColorFilter(Color.parseColor("#4169E1"))
                 layoutParams = FrameLayout.LayoutParams(dp(24), dp(24), Gravity.CENTER)
             })
         }
@@ -206,31 +138,15 @@ class IncomingOrderLockScreenActivity : Activity() {
             override fun onTouch(v: View, event: MotionEvent): Boolean {
                 val maxSlide = slideContainer.width - v.width - dp(8)
                 when (event.action) {
-                    MotionEvent.ACTION_DOWN -> { dX = v.x - event.rawX }
+                    MotionEvent.ACTION_DOWN -> dX = v.x - event.rawX
                     MotionEvent.ACTION_MOVE -> {
                         var newX = event.rawX + dX
-                        if (newX < dp(4)) newX = dp(4).toFloat()
-                        if (newX > maxSlide) newX = maxSlide.toFloat()
-                        v.x = newX
+                        v.x = newX.coerceIn(dp(4).toFloat(), maxSlide.toFloat())
                     }
                     MotionEvent.ACTION_UP -> {
                         if (v.x > maxSlide * 0.8) {
-                            v.x = maxSlide.toFloat(); slideText.text = "Accepted!"; v.visibility = View.GONE
-                            // 1) Open main Flutter task FIRST (same task as this Activity — no NEW_TASK).
-                            // NEW_TASK sent user to Launcher after lock screen finished; app/API never ran.
-                            // 2) stopIncomingOrderAlert sends finish-broadcast — must run AFTER startActivity.
-                            val mainIntent = Intent(this@IncomingOrderLockScreenActivity, MainActivity::class.java).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                                putExtra(RapidoIncomingOrderOverlayService.EXTRA_NAV_ROUTE, RapidoIncomingOrderOverlayService.ROUTE_ACCEPT_RIDE)
-                                putExtra(RapidoIncomingOrderOverlayService.EXTRA_ORDER_ID, orderId)
-                                putExtra("pickup_address", pickupAddress)
-                                putExtra("drop_address", dropAddress)
-                                putExtra("distance", pickupDistanceKm)
-                                putExtra("amount", amount)
-                            }
-                            startActivity(mainIntent)
-                            IncomingOrderFirebaseService.stopIncomingOrderAlert(this@IncomingOrderLockScreenActivity)
-                            finish()
+                            v.x = maxSlide.toFloat()
+                            handleAccept(orderId, userId, pickupAddress, dropAddress, pickupDistanceKm, amount, panel)
                         } else {
                             v.animate().x(dp(4).toFloat()).setDuration(200).start()
                         }
@@ -241,32 +157,57 @@ class IncomingOrderLockScreenActivity : Activity() {
         })
         card.addView(slideContainer)
 
-        // Dismiss text outside card
-        val dismiss = TextView(this).apply {
-            text = "Ignore Order"
-            setTextColor(Color.WHITE)
-            textSize = 14f
-            gravity = Gravity.CENTER
-            setPadding(0, dp(40), 0, 0)
-            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT).apply {
-                gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-                bottomMargin = dp(60)
+        // Ignore Order
+        card.addView(TextView(this).apply {
+            text = "Ignore Order"; textSize = 15f; setTextColor(Color.GRAY); gravity = Gravity.CENTER
+            setPadding(dp(16), dp(12), dp(16), dp(12)); setOnClickListener {
+                launchMain(orderId, userId, pickupAddress, dropAddress, pickupDistanceKm, amount, panel, isIgnore = true)
             }
-            setOnClickListener {
-                val ignoreIntent = Intent(this@IncomingOrderLockScreenActivity, MainActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                    putExtra(RapidoIncomingOrderOverlayService.EXTRA_NAV_ROUTE, RapidoIncomingOrderOverlayService.ROUTE_IGNORE_RIDE)
-                    putExtra(RapidoIncomingOrderOverlayService.EXTRA_ORDER_ID, orderId)
-                }
-                startActivity(ignoreIntent)
-                IncomingOrderFirebaseService.stopIncomingOrderAlert(this@IncomingOrderLockScreenActivity)
-                finish()
-            }
-        }
+        })
 
         root.addView(card)
-        root.addView(dismiss)
         setContentView(root)
+    }
+
+    private fun handleAccept(orderId: String, userId: String, pickup: String, drop: String, dist: String, amt: String, panel: String) {
+        val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            km.requestDismissKeyguard(this, object : KeyguardManager.KeyguardDismissCallback() {
+                override fun onDismissSucceeded() {
+                    Log.d(tag, "Keyguard dismiss succeeded")
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        launchMain(orderId, userId, pickup, drop, dist, amt, panel, isIgnore = false)
+                    }, 200)
+                }
+                override fun onDismissCancelled() {
+                    Log.d(tag, "Keyguard dismiss cancelled")
+                    finish()
+                }
+                override fun onDismissError() {
+                    Log.d(tag, "Keyguard dismiss error")
+                    launchMain(orderId, userId, pickup, drop, dist, amt, panel, isIgnore = false)
+                }
+            })
+        } else {
+            launchMain(orderId, userId, pickup, drop, dist, amt, panel, isIgnore = false)
+        }
+    }
+
+    private fun launchMain(orderId: String, userId: String, pickup: String, drop: String, dist: String, amt: String, panel: String, isIgnore: Boolean) {
+        val mainIntent = Intent(this, MainActivity::class.java).apply {
+            // Use existing task to avoid losing debugger connection
+            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            putExtra(RapidoIncomingOrderOverlayService.EXTRA_NAV_ROUTE, 
+                if (isIgnore) RapidoIncomingOrderOverlayService.ROUTE_IGNORE_RIDE 
+                else RapidoIncomingOrderOverlayService.ROUTE_ACCEPT_RIDE)
+            putExtra(RapidoIncomingOrderOverlayService.EXTRA_ORDER_ID, orderId)
+            putExtra("user_id", userId)
+            putExtra("pickup_address", pickup); putExtra("drop_address", drop)
+            putExtra("distance", dist); putExtra("amount", amt); putExtra("panel", panel)
+        }
+        startActivity(mainIntent)
+        IncomingOrderFirebaseService.stopIncomingOrderAlert(this)
+        finish()
     }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()

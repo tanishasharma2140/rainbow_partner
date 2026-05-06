@@ -7,7 +7,7 @@ class CabPaymentRepo {
   Future<dynamic> cabPaymentApi(dynamic data) async {
     try {
       final response =
-      await _apiServices.getPostApiResponse(ApiUrl.paymentUrl, data);
+      await _apiServices.getPostApiResponse(ApiUrl.ridePaymentUrl, data);
 
       return response;
     } catch (e) {

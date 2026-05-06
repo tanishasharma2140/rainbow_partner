@@ -441,10 +441,10 @@ Future<void> _handleLogout(BuildContext context) async {
   }
 
   // 🔌 3️⃣ Disconnect socket immediately
-  DriverSocketService().disconnect();
+  // DriverSocketService().disconnect();
 
   // 📴 4️⃣ Stop background service
-  await stopBackgroundService();
+  // await stopBackgroundService();
 
   // 🧹 5️⃣ Clear user data
   await UserViewModel().remove();
