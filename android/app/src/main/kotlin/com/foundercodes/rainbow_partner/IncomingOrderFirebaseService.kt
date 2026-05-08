@@ -111,6 +111,8 @@ class IncomingOrderFirebaseService : FirebaseMessagingService() {
                 putExtra("pickup", pickup); putExtra("drop", drop)
                 putExtra("pickup_distance_km", distance); putExtra("id", orderId)
                 putExtra("amount", amount); putExtra("panel", panel); putExtra("user_id", userId)
+                putExtra("order_type", payload["order_type"]?.toIntOrNull() ?: 1)
+                putExtra("schedule_time", payload["schedule_time"] ?: "")
             }
             startService(overlayIntent)
         }

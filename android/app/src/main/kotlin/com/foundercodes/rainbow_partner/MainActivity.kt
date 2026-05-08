@@ -26,6 +26,9 @@ class MainActivity : FlutterActivity() {
 
     private val prefsName = "rapido_online_prefs"
     private val prefsKeyIsOnline = "is_online"
+    private val prefsKeyDriverOnline = "is_driver_online"
+    private val prefsKeyServicemanOnline = "is_serviceman_online"
+    
     // track each panel independently so bubble shows when either is online
     private var isDriverOnline: Boolean = false
     private var isServicemanOnline: Boolean = false
@@ -33,10 +36,19 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // Restore online state from SharedPreferences
+        val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+        isOnlineFromFlutter = prefs.getBoolean(prefsKeyIsOnline, false)
+        isDriverOnline = prefs.getBoolean(prefsKeyDriverOnline, false)
+        isServicemanOnline = prefs.getBoolean(prefsKeyServicemanOnline, false)
+        
+        Log.d(tag, "onCreate: Restored status - Online: $isOnlineFromFlutter, Driver: $isDriverOnline, Serviceman: $isServicemanOnline")
+
         // Remove setShowWhenLocked so it forces system unlock prompt when started from background
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setTurnScreenOn(true)
         } else {
+            @Suppress("DEPRECATION")
             window.addFlags(
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
@@ -60,12 +72,14 @@ class MainActivity : FlutterActivity() {
 
                 "setDriverOnline" -> {
                     isDriverOnline = call.argument<Boolean>("online") ?: false
+                    getSharedPreferences(prefsName, Context.MODE_PRIVATE).edit().putBoolean(prefsKeyDriverOnline, isDriverOnline).apply()
                     setOnlineState(isDriverOnline || isServicemanOnline)
                     result.success(null)
                 }
 
                 "setServicemanOnline" -> {
                     isServicemanOnline = call.argument<Boolean>("online") ?: false
+                    getSharedPreferences(prefsName, Context.MODE_PRIVATE).edit().putBoolean(prefsKeyServicemanOnline, isServicemanOnline).apply()
                     setOnlineState(isDriverOnline || isServicemanOnline)
                     result.success(null)
                 }
@@ -225,6 +239,7 @@ class MainActivity : FlutterActivity() {
             .edit()
             .putBoolean(prefsKeyIsOnline, online)
             .apply()
+        Log.d(tag, "setOnlineState: $online")
     }
 
     // Called by native overlay when user accepts/ignores from overlay card
@@ -266,6 +281,8 @@ class MainActivity : FlutterActivity() {
             val distance = intent.getStringExtra("distance") ?: ""
             val amount = intent.getStringExtra("amount") ?: ""
             val userId = intent.getStringExtra("user_id") ?: ""
+            val orderType = intent.getIntExtra("order_type", 1)
+            val scheduleTime = intent.getStringExtra("schedule_time") ?: ""
 
             val data = mapOf(
                 "id" to orderId,
@@ -275,6 +292,8 @@ class MainActivity : FlutterActivity() {
                 "amount" to amount,
                 "panel" to panel,
                 "user_id" to userId,
+                "order_type" to orderType.toString(),
+                "schedule_time" to scheduleTime,
             )
             channel?.invokeMethod("onOverlayAcceptRide", data)
         } else {
@@ -304,10 +323,9 @@ class MainActivity : FlutterActivity() {
     override fun onPause() {
         super.onPause()
 
-        Log.d(tag, "onPause: canDrawOverlays=${Settings.canDrawOverlays(this)}")
+        Log.d(tag, "onPause: canDrawOverlays=${Settings.canDrawOverlays(this)}, isOnlineFromFlutter=$isOnlineFromFlutter")
 
         // If overlay permission is missing, do nothing here.
-        // Permission request should be user-driven (via in-app dialog -> requestPermissions).
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) return
 
         // Respect Flutter ONLINE/OFFLINE.

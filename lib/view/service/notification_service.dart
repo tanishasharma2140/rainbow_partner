@@ -397,20 +397,21 @@ class NotificationService {
 
   // function to show notification
   Future<void> showNotification(RemoteMessage massage) async {
-    // final player = FlutterRingtonePlayer();
-    // player.playRingtone();
+    // Data-only FCM (no notification block) — skip local notification
+    if (massage.notification == null) return;
+
+    final channelId = massage.notification?.android?.channelId ?? 'default_channel';
     AndroidNotificationChannel channel = AndroidNotificationChannel(
-      massage.notification!.android!.channelId.toString(),
-      massage.notification!.android!.channelId.toString(),
+      channelId,
+      channelId,
       importance: Importance.high,
       showBadge: true,
       playSound: true,
     );
-    // android setting
     AndroidNotificationDetails androidNotificationDetails =
     AndroidNotificationDetails(
-      channel.id.toString(),
-      channel.name.toString(),
+      channel.id,
+      channel.name,
       channelDescription: "Channel Description",
       importance: Importance.high,
       priority: Priority.high,
@@ -420,24 +421,19 @@ class NotificationService {
       playSound: true,
       sound: channel.sound,
     );
-    // ios setting
-    DarwinNotificationDetails darwinNotificationDetails =
-    DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-    // marge-setting
     NotificationDetails notificationDetails = NotificationDetails(
       android: androidNotificationDetails,
-      iOS: darwinNotificationDetails,
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
     );
-    //show notification
     Future.delayed(Duration.zero, () {
       _flutterLocalNotificationsPlugin.show(
         0,
-        massage.notification!.title.toString(),
-        massage.notification!.body.toString(),
+        massage.notification?.title ?? '',
+        massage.notification?.body ?? '',
         notificationDetails,
         payload: "send data",
       );
@@ -519,6 +515,14 @@ class NotificationService {
         );
         return;
       }
+      if ( type == 'notification') {
+        navigatorKey.currentState!.push(
+          MaterialPageRoute(
+            builder: (_) => DriverNotification(),
+          ),
+        );
+        return;
+      }
 
       // 👇 DEFAULT FOR SERVICEMAN
       navigatorKey.currentState!.push(
@@ -529,13 +533,6 @@ class NotificationService {
       return;
     }
 
-
-    /* ================= FALLBACK ================= */
-    // navigatorKey.currentState!.push(
-    //   MaterialPageRoute(
-    //     builder: (_) => HandymanDashboard(),
-    //   ),
-    // );
   }
 
   }

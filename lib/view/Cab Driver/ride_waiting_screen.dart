@@ -643,7 +643,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                   title: "Accept",
                   bgColor: AppColor.royalBlue,
                   onTap: () {
-                    acceptLaterRideVm.acceptLaterRideApi(orderId, data['user_id'],  _currentLatLng!.latitude,
+                    acceptLaterRideVm.acceptLaterRideApi(orderId,  _currentLatLng!.latitude,
                         _currentLatLng!.longitude, context);
                   },
                 ),
@@ -751,6 +751,44 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
               ),
             ],
           ),
+
+          if (data['user_comment'] != null &&
+              data['user_comment'].toString().trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.message_outlined,
+                  color: Colors.orange,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                       TextConst(
+                         title:
+                        "Passenger Note",
+                         size: 12,
+                         fontWeight: FontWeight.w600,
+                         color: Colors.orange,
+                      ),
+                      const SizedBox(height: 4),
+                      TextConst(
+                        title:
+                        data['user_comment'].toString(),
+                        size: 13,
+                        color: Colors.black87,
+                        fontFamily: AppFonts.kanitReg,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: 16),
 

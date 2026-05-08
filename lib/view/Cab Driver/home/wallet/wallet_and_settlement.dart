@@ -608,7 +608,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
       case 3:
         return Icons.account_balance_wallet;
       case 5:
-        return Icons.task_alt; // tick for cleared
+        return Icons.task_alt;
       default:
         return Icons.help;
     }
@@ -625,7 +625,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
       case 2:
         return payment.amount?.toString() ?? '0';
       case 3:
-        return payment.amount?.toString() ?? '0';
+        return payment.finalAmount?.toString() ?? '0';
       case 5:
         return payment.finalAmount?.toString() ?? payment.amount?.toString() ?? '0';
       default:

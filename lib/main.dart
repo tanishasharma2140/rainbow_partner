@@ -12,7 +12,9 @@ import 'package:rainbow_partner/service/ride_notification_helper.dart';
 import 'package:rainbow_partner/service/serviceman_notification_helper.dart';
 import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/home/ride%20history/cab_ride_history.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/ride_waiting_screen.dart';
+import 'package:rainbow_partner/view/Service%20Man/home/accepted_booking.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/service_total_booking.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
@@ -172,27 +174,42 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       FlutterBackgroundService().invoke('STOP_RINGTONE');
 
       final panel = data['panel'] as String? ?? 'driver';
+      final int orderType = int.tryParse(data['order_type']?.toString() ?? '1') ?? 1;
+
       if (panel == 'serviceman') {
-        navigatorKey.currentState
-            ?.push(MaterialPageRoute(builder: (_) => ServiceTotalBooking()));
+        final String orderId = data['id']?.toString() ?? '';
+        final String distance = data['distance']?.toString() ?? '';
+        if (orderId.isNotEmpty) {
+          await Provider.of<AcceptOrderViewModel>(ctx, listen: false)
+              .acceptOrderApiSilent(int.parse(orderId), distance);
+          navigatorKey.currentState?.pushReplacement(
+            CupertinoPageRoute(builder: (_) => const AcceptedBooking()),
+          );
+        }
       } else {
-        // 🔥 Hit driverOfferApi automatically on Accept
         final String orderId = data['id']?.toString() ?? '';
         final String userIdOrder = data['user_id']?.toString() ?? '';
         final int amount = int.tryParse(data['amount']?.toString() ?? '0') ?? 0;
 
-        if (orderId.isNotEmpty && userIdOrder.isNotEmpty) {
-          Provider.of<DriverOfferViewModel>(ctx, listen: false).driverOfferApi(
-            userIdOrder,
-            orderId,
-            amount,
-            amount,
-            ctx,
-          );
+        if (orderType == 2) {
+          // Schedule ride — acceptLaterRideApi
+          if (orderId.isNotEmpty) {
+            await Provider.of<AcceptLaterRideViewModel>(ctx, listen: false)
+                .acceptLaterRideApiSilent(orderId);
+            navigatorKey.currentState?.push(
+              MaterialPageRoute(builder: (_) => const CabRideHistory()),
+            );
+          }
+        } else {
+          // Normal ride
+          if (orderId.isNotEmpty && userIdOrder.isNotEmpty) {
+            Provider.of<DriverOfferViewModel>(ctx, listen: false).driverOfferApi(
+              userIdOrder, orderId, amount, amount, ctx,
+            );
+          }
+          navigatorKey.currentState
+              ?.push(MaterialPageRoute(builder: (_) => RideWaitingScreen()));
         }
-
-        navigatorKey.currentState
-            ?.push(MaterialPageRoute(builder: (_) => RideWaitingScreen()));
       }
     } finally {
       _overlayAcceptBusy = false;
@@ -268,9 +285,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     if (context != null) {
       final driverProfile =
       Provider.of<DriverProfileViewModel>(context, listen: false);
-      final bool isOnline =
+      final bool isDriverOnline =
           driverProfile.driverProfileModel?.data?.onlineStatus.toString() ==
               "1";
+
+      final servicemanProfile =
+      Provider.of<ServicemanProfileViewModel>(context, listen: false);
+      final bool isServicemanOnline =
+          servicemanProfile.servicemanProfileModel?.data?.onlineStatus == 1;
+
+      final bool isOnline = isDriverOnline || isServicemanOnline;
 
       if (state == AppLifecycleState.paused ||
           state == AppLifecycleState.hidden) {

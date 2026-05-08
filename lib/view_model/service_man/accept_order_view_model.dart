@@ -14,6 +14,32 @@ class AcceptOrderViewModel with ChangeNotifier {
   /// Check if specific order is loading
   bool isLoading(int orderId) => _loadingOrders.contains(orderId);
 
+  Future<bool> acceptOrderApiSilent(int orderId, dynamic distance) async {
+    _loadingOrders.add(orderId);
+    notifyListeners();
+
+    UserViewModel userViewModel = UserViewModel();
+    String? userId = await userViewModel.getUser();
+
+    final data = {
+      "order_id": orderId,
+      "serviceman_id": userId,
+      "distance": distance,
+    };
+
+    try {
+      final response = await _acceptOrderRepo.acceptOrderApi(data);
+      final int statusCode = response['statusCode'] ?? 0;
+      return statusCode == 200 || statusCode == 201;
+    } catch (e) {
+      if (kDebugMode) print("❌ acceptOrderApiSilent Error → $e");
+      return false;
+    } finally {
+      _loadingOrders.remove(orderId);
+      notifyListeners();
+    }
+  }
+
   Future<void> acceptOrderApi(
       int orderId,
       dynamic distance,

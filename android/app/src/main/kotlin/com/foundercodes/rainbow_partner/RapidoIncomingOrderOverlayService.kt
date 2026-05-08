@@ -40,6 +40,8 @@ class RapidoIncomingOrderOverlayService : Service() {
     private var userId: String = ""
     private var amount: String = ""
     private var panel: String = "driver"
+    private var orderType: Int = 1
+    private var scheduleTime: String = ""
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -58,6 +60,8 @@ class RapidoIncomingOrderOverlayService : Service() {
                 userId   = intent.getStringExtra("user_id")  ?: ""
                 amount   = intent.getStringExtra("amount")   ?: ""
                 panel    = intent.getStringExtra("panel")    ?: "driver"
+                orderType = intent.getIntExtra("order_type", 1)
+                scheduleTime = intent.getStringExtra("schedule_time") ?: ""
                 
                 Log.d(tag, "Action Schedule Show: ID=$id, Panel=$panel, Amount=$amount")
                 scheduleShow(intent.getLongExtra(EXTRA_DELAY_MS, DEFAULT_DELAY_MS))
@@ -147,13 +151,36 @@ class RapidoIncomingOrderOverlayService : Service() {
         card.addView(amountTv)
 
         val distanceBadge = TextView(this).apply {
-            val distText = if (panel == "serviceman") "● New Service Request" else "● Pickup $distance km away"
+            val distText = when {
+                panel == "serviceman" -> "● New Service Request"
+                orderType == 2       -> "● Scheduled Ride"
+                else                 -> "● Pickup $distance km away"
+            }
             text = distText; textSize = 14f; setTextColor(Color.parseColor("#2E7D32"))
             setPadding(dp(14), dp(6), dp(14), dp(6)); gravity = Gravity.CENTER
             background = GradientDrawable().apply { setColor(Color.parseColor("#F5F5F5")); cornerRadius = dp(20).toFloat() }
             layoutParams = LinearLayout.LayoutParams(-2, -2).apply { gravity = Gravity.CENTER; topMargin = dp(8) }
         }
-        card.addView(distanceBadge); card.addView(spacer(dp(24)))
+        card.addView(distanceBadge)
+
+        // Schedule time banner for order_type=2
+        if (orderType == 2 && scheduleTime.isNotEmpty()) {
+            val scheduleBanner = TextView(this).apply {
+                text = "Scheduled: $scheduleTime"
+                textSize = 14f
+                setTextColor(Color.WHITE)
+                setPadding(dp(14), dp(10), dp(14), dp(10))
+                gravity = Gravity.CENTER
+                background = GradientDrawable().apply {
+                    setColor(Color.parseColor("#1A237E"))
+                    cornerRadius = dp(12).toFloat()
+                }
+                layoutParams = LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(10) }
+            }
+            card.addView(scheduleBanner)
+        }
+
+        card.addView(spacer(dp(24)))
 
         // Timeline Addresses
         val texts = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(-1, -2); setPadding(dp(8), 0, 0, 0) }
@@ -168,7 +195,9 @@ class RapidoIncomingOrderOverlayService : Service() {
             background = GradientDrawable().apply { cornerRadius = dp(32).toFloat(); setColor(Color.parseColor("#4169E1")) }
         }
         val slideText = TextView(this).apply {
-            text = "Accept for ₹$amount"; gravity = Gravity.CENTER; textSize = 17f; setTypeface(null, Typeface.BOLD); setTextColor(Color.WHITE)
+            text = if (orderType == 2) "Accept Schedule ₹$amount" else "Accept for ₹$amount"
+            gravity = Gravity.CENTER; textSize = 17f; setTypeface(null, Typeface.BOLD); setTextColor(Color.WHITE)
+            setPadding(dp(70), 0, dp(16), 0)
         }
         val knob = FrameLayout(this).apply {
             layoutParams = FrameLayout.LayoutParams(dp(56), dp(56)).apply { gravity = Gravity.START or Gravity.CENTER_VERTICAL; leftMargin = dp(4) }
@@ -213,6 +242,7 @@ class RapidoIncomingOrderOverlayService : Service() {
             putExtra(EXTRA_NAV_ROUTE, ROUTE_ACCEPT_RIDE); putExtra(EXTRA_ORDER_ID, id); putExtra("user_id", userId)
             putExtra("pickup_address", pickup); putExtra("drop_address", drop); putExtra("distance", distance)
             putExtra("amount", amount); putExtra("panel", panel)
+            putExtra("order_type", orderType); putExtra("schedule_time", scheduleTime)
         }
         startActivity(i); hideAndStop()
     }

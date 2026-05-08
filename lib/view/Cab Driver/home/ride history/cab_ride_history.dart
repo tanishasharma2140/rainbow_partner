@@ -4,7 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/home/driver_home_page.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_history_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../model/cab_history_model.dart' show Data;
 
@@ -16,13 +19,12 @@ class CabRideHistory extends StatefulWidget {
 }
 
 class _CabRideHistoryState extends State<CabRideHistory> {
-  int _selectedTab = 0; // 0 for Now, 1 for Later
+  int _selectedTab = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Load Now rides (order_type = 1)
       Provider.of<CabHistoryViewModel>(
         context,
         listen: false,
@@ -31,13 +33,15 @@ class _CabRideHistoryState extends State<CabRideHistory> {
   }
 
   // Color scheme
-  final Color secondaryColor = Color(0xFF34C759); // Green
-  final Color accentColor = Color(0xFFFF9500); // Orange
-  final Color backgroundColor = Color(0xFFF8F9FA); // Light Grey
+  final Color secondaryColor = Color(0xFF34C759);
+  final Color accentColor = Color(0xFFFF9500);
+  final Color backgroundColor = Color(0xFFF8F9FA);
   final Color cardColor = Colors.white;
   final Color textPrimary = Color(0xFF1C1C1E);
   final Color textSecondary = Color(0xFF8E8E93);
   final Color textTertiary = Color(0xFFC7C7CC);
+
+  final List<int> laterValidStatuses = [1, 2, 4, 5, 6, 7, 8];
 
   @override
   Widget build(BuildContext context) {
@@ -78,9 +82,14 @@ class _CabRideHistoryState extends State<CabRideHistory> {
               );
             }
 
+            final allRides = viewModel.cabHistoryModel?.data ?? [];
+
             final rides = _selectedTab == 0
-                ? (viewModel.cabHistoryModel?.data ?? [])
-                : (viewModel.cabHistoryModel?.data ?? []);
+                ? allRides
+                : allRides
+                .where((ride) =>
+                laterValidStatuses.contains(ride.orderStatus))
+                .toList();
 
             if (rides.isEmpty) {
               return Center(
@@ -94,7 +103,9 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      'No rides found',
+                      _selectedTab == 0
+                          ? 'No rides found'
+                          : 'No scheduled rides found',
                       style: TextStyle(
                         fontSize: 16,
                         color: textSecondary,
@@ -108,41 +119,6 @@ class _CabRideHistoryState extends State<CabRideHistory> {
 
             return Column(
               children: [
-                // Ride Count
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _selectedTab == 0
-                            ? '${rides.length} Rides'
-                            : '${rides.length} Scheduled Rides',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: textPrimary,
-                        ),
-                      ),
-                      Container(
-                        padding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColor.royalBlue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          _selectedTab == 0 ? 'Today' : 'Upcoming',
-                          style: TextStyle(
-                            color: AppColor.royalBlue,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 // Ride List
                 Expanded(
                   child: ListView.builder(
@@ -167,13 +143,9 @@ class _CabRideHistoryState extends State<CabRideHistory> {
       padding: EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Expanded(
-            child: _buildTabButton('Now', 0),
-          ),
+          Expanded(child: _buildTabButton('Now', 0)),
           SizedBox(width: 16),
-          Expanded(
-            child: _buildTabButton('Later', 1),
-          ),
+          Expanded(child: _buildTabButton('Later', 1)),
         ],
       ),
     );
@@ -186,7 +158,6 @@ class _CabRideHistoryState extends State<CabRideHistory> {
         setState(() {
           _selectedTab = index;
         });
-        // Load appropriate data based on tab
         Provider.of<CabHistoryViewModel>(context, listen: false)
             .cabHistoryApi(index == 0 ? 1 : 2, context);
       },
@@ -214,14 +185,19 @@ class _CabRideHistoryState extends State<CabRideHistory> {
   }
 
   Widget _buildRideCard(Data ride, bool isNowTab) {
-    Color statusColor = _getStatusColor(ride.orderStatus);
-    String statusText = _getStatusText(ride.orderStatus);
+    Color statusColor = isNowTab
+        ? _getStatusColor(ride.orderStatus)
+        : _getLaterStatusColor(ride.orderStatus);
+    String statusText = isNowTab
+        ? _getStatusText(ride.orderStatus)
+        : _getLaterStatusText(ride.orderStatus);
     String payModeText = _getPayModeText(ride.payMode);
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
         color: cardColor,
+        border: Border.all(color: AppColor.royalBlue),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -239,7 +215,6 @@ class _CabRideHistoryState extends State<CabRideHistory> {
             // Header Row
             Row(
               children: [
-                // Profile Image with border
                 Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -248,19 +223,15 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                   ),
                   child: CircleAvatar(
                     radius: 24,
-                    backgroundImage: ride.profilePhoto != null &&
-                        ride.profilePhoto.toString().isNotEmpty
-                        ? NetworkImage(ride.profilePhoto.toString())
-                        : null,
                     backgroundColor: Color(0xFFF2F2F7),
-                    child: ride.profilePhoto == null ||
-                        ride.profilePhoto.toString().isEmpty
-                        ? Icon(Icons.person, color: textSecondary)
-                        : null,
+                    child: Icon(
+                      Icons.person,
+                      color: textSecondary,
+                      size: 28,
+                    ),
                   ),
                 ),
                 SizedBox(width: 12),
-                // User Details
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,28 +252,45 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                     ],
                   ),
                 ),
-                // Ride ID
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Color(0xFFF2F2F7),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: TextConst(
-                    title: '#${ride.id?.toString() ?? 'N/A'}',
-                    size: 11,
-                    fontWeight: FontWeight.w600,
-                    color: textSecondary,
-                  ),
-                ),
+                // Later tab + status 1 = Call button
+                if (!isNowTab && ride.orderStatus == 1)
+                  _buildCallButton(ride.userMobile?.toString()),
               ],
             ),
+
+            // // Later tab + status 1: Ride ID + extra user info row
+            // if (!isNowTab && ride.orderStatus == 1) ...[
+            //   SizedBox(height: 10),
+            //   Row(
+            //     children: [
+            //       Container(
+            //         padding:
+            //         EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            //         decoration: BoxDecoration(
+            //           color: Color(0xFFF2F2F7),
+            //           borderRadius: BorderRadius.circular(8),
+            //         ),
+            //         child: TextConst(
+            //           title: '#${ride.id?.toString() ?? 'N/A'}',
+            //           size: 11,
+            //           fontWeight: FontWeight.w600,
+            //           color: textSecondary,
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ],
+
             SizedBox(height: 16),
-            // Divider
             Divider(height: 1, color: Color(0xFFE5E5EA)),
             SizedBox(height: 16),
 
-            // Vehicle Info
+            // ── LATER TAB: Schedule Date/Time Banner ──
+            if (!isNowTab && ride.scheduleTime != null)
+              _buildScheduleBanner(ride.scheduleTime.toString()),
+
+            SizedBox(height: isNowTab ? 0 : 12),
+
             // Pickup Location
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,9 +310,12 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                       SizedBox(height: 2),
                       Text(
                         ride.pickupLocation ?? "N/A",
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 13, color: Colors.black54,fontFamily: AppFonts.kanitReg),
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.black54,
+                            fontFamily: AppFonts.kanitReg),
                       ),
                     ],
                   ),
@@ -350,16 +341,18 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                       SizedBox(height: 2),
                       Text(
                         ride.dropLocation ?? "N/A",
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 13, color: Colors.black54,fontFamily: AppFonts.kanitReg),
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.black54,
+                            fontFamily: AppFonts.kanitReg),
                       ),
                     ],
                   ),
                 )
               ],
             ),
-
 
             SizedBox(height: 16),
 
@@ -394,19 +387,22 @@ class _CabRideHistoryState extends State<CabRideHistory> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Status Chip
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                  EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: statusColor.withOpacity(0.2)),
+                    border:
+                    Border.all(color: statusColor.withOpacity(0.2)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        _getStatusIcon(ride.orderStatus),
+                        isNowTab
+                            ? _getStatusIcon(ride.orderStatus)
+                            : _getLaterStatusIcon(ride.orderStatus),
                         size: 14,
                         color: statusColor,
                       ),
@@ -422,10 +418,10 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                     ],
                   ),
                 ),
-                // Date Time
-                if (ride.scheduleTime != null)
+                if (isNowTab && ride.scheduleTime != null)
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding:
+                    EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: AppColor.royalBlue.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(8),
@@ -442,7 +438,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
               ],
             ),
 
-            // Cancel Reason (if applicable)
+            // Cancel Reason
             if ((ride.orderStatus == 6 || ride.orderStatus == 7) &&
                 ride.cancelReason != null &&
                 ride.cancelReason.toString().isNotEmpty) ...[
@@ -452,8 +448,8 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                 decoration: BoxDecoration(
                   color: Color(0xFFFF3B30).withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border:
-                  Border.all(color: Color(0xFFFF3B30).withOpacity(0.1)),
+                  border: Border.all(
+                      color: Color(0xFFFF3B30).withOpacity(0.1)),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -489,68 +485,48 @@ class _CabRideHistoryState extends State<CabRideHistory> {
               ),
             ],
 
-            // Additional info for "Later" tab
-            if (!isNowTab && ride.scheduleTime != null) ...[
+            // User comment for Later tab
+            if (!isNowTab &&
+                ride.userComment != null &&
+                ride.userComment.toString().isNotEmpty) ...[
               SizedBox(height: 12),
               Container(
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: accentColor.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: accentColor.withOpacity(0.1)),
+                  border:
+                  Border.all(color: accentColor.withOpacity(0.1)),
                 ),
-                child: Column(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Icon(Icons.access_time_filled_rounded,
-                            size: 16, color: accentColor),
-                        SizedBox(width: 8),
-                        Text(
-                          'Scheduled Time: ${ride.scheduleTime}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: accentColor,
-                            fontSize: 13,
-                          ),
+                    Icon(Icons.note_rounded,
+                        size: 14, color: textSecondary),
+                    SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        ride.userComment.toString(),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: textSecondary,
                         ),
-                      ],
-                    ),
-                    if (ride.userComment != null &&
-                        ride.userComment.toString().isNotEmpty) ...[
-                      SizedBox(height: 8),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(Icons.note_rounded,
-                              size: 14, color: textSecondary),
-                          SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              ride.userComment.toString(),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: textSecondary,
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),
             ],
 
-            // Rating for completed rides
+            // Rating for completed rides (Now & Later dono)
             if (ride.orderStatus == 5 &&
                 ride.rating != null &&
                 ride.rating.toString() != '0') ...[
               SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.star_rounded, color: Color(0xFFFFCC00), size: 18),
+                  Icon(Icons.star_rounded,
+                      color: Color(0xFFFFCC00), size: 18),
                   SizedBox(width: 6),
                   Text(
                     ride.rating.toString(),
@@ -572,14 +548,429 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                 ],
               ),
             ],
+
+            if (!isNowTab && ride.orderStatus == 1) ...[
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  // Navigate to Pickup
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        final lat = ride.pickupLatitude;
+                        final lng = ride.pickupLongitude;
+                        if (lat != null && lng != null) {
+                          final uri = Uri.parse(
+                              'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving');
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.green.shade300),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.navigation_rounded, size: 16, color: Colors.green),
+                            SizedBox(width: 6),
+                            Text('Navigate',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.green,
+                                )),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  // OTP + Start Ride
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _showOtpDialog(ride),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColor.royalBlue,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.play_arrow_rounded, size: 16, color: Colors.white),
+                            SizedBox(width: 6),
+                            Text('Start Ride',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                )),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
     );
   }
 
+  void _showOtpDialog(Data ride) {
+    final otpController = TextEditingController();
+
+    final cabOrderStatusVm =
+    Provider.of<ChangeCabOrderStatusViewModel>(
+      context,
+      listen: false,
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(24),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              // top handle
+              Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: AppColor.royalBlue.withOpacity(0.1),
+                child: Icon(
+                  Icons.lock_outline,
+                  color: AppColor.royalBlue,
+                  size: 30,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              const TextConst(
+                title:
+                "Verify Ride OTP",
+                size: 20,
+                fontWeight: FontWeight.bold,
+              ),
+
+              const SizedBox(height: 8),
+
+              TextConst(
+                title:
+                "Enter customer OTP to start the ride",
+                textAlign: TextAlign.center,
+                size: 14,
+                color: Colors.grey.shade600,
+              ),
+
+              const SizedBox(height: 20),
+
+              TextField(
+                controller: otpController,
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 12,
+                ),
+                decoration: InputDecoration(
+                  counterText: "",
+                  hintText: "----",
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade400,
+                    letterSpacing: 12,
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child:  TextConst(title: "Back"),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        if (otpController.text.trim().isEmpty) return;
+
+                        bool success = await cabOrderStatusVm.changeCabOrderApi(
+                          ride.id,
+                          3,
+                          otpController.text.trim(),
+                          "",
+                          context,
+                        );
+
+                        if (success) {
+                          Navigator.pop(ctx);
+
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DriverHomePage(),
+                            ),
+                                (route) => false,
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: AppColor.royalBlue,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColor.royalBlue.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Text(
+                            "Start Ride",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Schedule Date/Time Banner ──
+  Widget _buildScheduleBanner(String scheduleTimeRaw) {
+    String formattedDate = '';
+    String formattedTime = '';
+    String dayLabel = '';
+
+    try {
+      // Try parsing ISO or common formats
+      DateTime dt = DateTime.parse(scheduleTimeRaw);
+      formattedDate =
+          DateFormat('dd MMM yyyy').format(dt); // e.g. 09 May 2026
+      formattedTime = DateFormat('hh:mm a').format(dt); // e.g. 03:30 PM
+
+      final today = DateTime.now();
+      final tomorrow = today.add(Duration(days: 1));
+      if (dt.year == today.year &&
+          dt.month == today.month &&
+          dt.day == today.day) {
+        dayLabel = 'Today';
+      } else if (dt.year == tomorrow.year &&
+          dt.month == tomorrow.month &&
+          dt.day == tomorrow.day) {
+        dayLabel = 'Tomorrow';
+      } else {
+        dayLabel = DateFormat('EEEE').format(dt); // Day name
+      }
+    } catch (_) {
+      // If parsing fails, show raw
+      formattedDate = scheduleTimeRaw;
+      formattedTime = '';
+      dayLabel = '';
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColor.royalBlue.withOpacity(0.9),
+            AppColor.royalBlue.withOpacity(0.7),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.calendar_today_rounded,
+                color: Colors.white, size: 18),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextConst(
+                  title:
+                  'Scheduled Ride',
+                  color: Colors.white.withOpacity(0.8),
+                  size: 11,
+                  fontFamily: AppFonts.kanitReg,
+                  fontWeight: FontWeight.w500,
+                ),
+                SizedBox(height: 2),
+                Row(
+                  children: [
+                    if (dayLabel.isNotEmpty) ...[
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          dayLabel,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                    ],
+                    Text(
+                      formattedDate,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          if (formattedTime.isNotEmpty)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  'Time',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 10,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Container(
+                  padding:
+                  EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    formattedTime,
+                    style: TextStyle(
+                      color: AppColor.royalBlue,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCallButton(String? mobile) {
+    return GestureDetector(
+      onTap: () async {
+        if (mobile != null && mobile.isNotEmpty) {
+          final uri = Uri(scheme: 'tel', path: mobile);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri);
+          }
+        }
+      },
+      child: Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColor.royalBlue,
+          shape: BoxShape.circle,
+          // borderRadius: BorderRadius.circular(10),
+        ),
+        child:  Icon(Icons.phone_rounded, color: Colors.white, size: 18),
+      ),
+    );
+  }
+
   Widget _buildAmountStatItem(Data ride) {
-    // wallet_apply 1 aur payMode 1 = dono amount dikhega
     bool showBothAmounts = ride.walletApply == 1 && ride.payMode == 1;
 
     if (showBothAmounts) {
@@ -632,7 +1023,6 @@ class _CabRideHistoryState extends State<CabRideHistory> {
         ],
       );
     } else {
-      // Baaki sab cases me sirf final_amount
       return _buildStatItem(
         'Fare',
         '₹${ride.finalAmount ?? '0'}',
@@ -686,6 +1076,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
     }
   }
 
+  // Now tab statuses
   String _getStatusText(dynamic status) {
     switch (status?.toString()) {
       case '5':
@@ -702,11 +1093,11 @@ class _CabRideHistoryState extends State<CabRideHistory> {
   Color _getStatusColor(dynamic status) {
     switch (status?.toString()) {
       case '5':
-        return secondaryColor; // Green - Completed
+        return secondaryColor;
       case '6':
-        return accentColor; // Orange - Cancelled by User
+        return accentColor;
       case '7':
-        return Color(0xFFFF3B30); // Red - Cancelled by Driver
+        return Color(0xFFFF3B30);
       default:
         return textSecondary;
     }
@@ -720,6 +1111,70 @@ class _CabRideHistoryState extends State<CabRideHistory> {
         return Icons.person_remove_rounded;
       case '7':
         return Icons.cancel_rounded;
+      default:
+        return Icons.help_rounded;
+    }
+  }
+
+  // Later tab statuses: [1,2,4,5,6,7,8]
+  String _getLaterStatusText(dynamic status) {
+    switch (status?.toString()) {
+      case '1':
+        return 'Booking Confirmed';
+      case '2':
+        return 'Driver On Way';
+      case '4':
+        return 'Ride In Progress';
+      case '5':
+        return 'Completed';
+      case '6':
+        return 'Cancelled by User';
+      case '7':
+        return 'Cancelled by Driver';
+      case '8':
+        return 'Pending / Waiting';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  Color _getLaterStatusColor(dynamic status) {
+    switch (status?.toString()) {
+      case '1':
+        return Color(0xFF007AFF); // Blue - Confirmed
+      case '2':
+        return accentColor;       // Orange - On the way
+      case '4':
+        return Color(0xFF5856D6); // Purple - In progress
+      case '5':
+        return secondaryColor;    // Green - Completed
+      case '6':
+        return accentColor;       // Orange - Cancelled by User
+      case '7':
+        return Color(0xFFFF3B30); // Red - Cancelled by Driver
+      case '8':
+        return Color(0xFF8E8E93); // Grey - Pending
+      default:
+        return textSecondary;
+    }
+  }
+
+  IconData _getLaterStatusIcon(dynamic status) {
+    switch (status?.toString()) {
+      case '1':
+        return Icons.check_circle_rounded;
+      case '2':
+        return Icons.directions_car_rounded;
+      case '4':
+        return Icons.play_circle_rounded;
+      case '5':
+        return Icons.verified_rounded;
+      case '6':
+        return Icons.person_remove_rounded;
+      case '7':
+        return Icons.cancel_rounded;
+      case '8':
+        return Icons.hourglass_empty_rounded;
       default:
         return Icons.help_rounded;
     }

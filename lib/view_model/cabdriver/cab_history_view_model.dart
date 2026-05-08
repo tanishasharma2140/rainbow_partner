@@ -23,16 +23,24 @@ class CabHistoryViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> cabHistoryApi(dynamic orderType,context) async {
+  Future<void> cabHistoryApi(dynamic orderType, context) async {
     setLoading(true);
+
     UserViewModel userViewModel = UserViewModel();
     String? driverId = await userViewModel.getUser();
+
+    // order type ke according status set karo
+    List<int> orderStatus = orderType == 1
+        ? [5, 6, 7]          // Now rides
+        : [1, 2, 5, 6, 7];   // Later rides
+
     Map data = {
-      "user_type": 2, // 1 pe user 2 pe driver
+      "user_type": 2,
       "driver_id": driverId,
-      "order_type": orderType, // 1 pe now 2 pe later
-      "order_status": [5, 6, 8]
+      "order_type": orderType,
+      "order_status": orderStatus,
     };
+
     try {
       final response = await _cabHistoryRepo.cabHistoryApi(data);
 
@@ -44,7 +52,9 @@ class CabHistoryViewModel with ChangeNotifier {
         setCabHistoryModelData(model);
         debugPrint(body["message"]);
       } else {
-        if (kDebugMode) print("❌ Error Status: $statusCode → $body");
+        if (kDebugMode) {
+          print("❌ Error Status: $statusCode → $body");
+        }
         Utils.showErrorMessage(context, body["message"]);
       }
     } catch (e) {

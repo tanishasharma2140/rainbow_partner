@@ -1319,6 +1319,56 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                           ],
                         ),
                       ),
+                      // ── User Comment ──
+                      if ((orderData!['user_comment'] ?? '').toString().trim().isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF8E1),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.amber.shade200),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(7),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.shade100,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.chat_bubble_outline_rounded,
+                                    size: 16, color: Colors.amber),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                     TextConst(
+                                       title:
+                                      "Passenger Note",
+                                       size: 12,
+                                       fontWeight: FontWeight.w600,
+                                       color: Colors.amber,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    TextConst(
+                                      title:
+                                      orderData!['user_comment'].toString(),
+                                      size: 14,
+                                      color: Colors.black87,
+                                      fontFamily: AppFonts.kanitReg,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
 
                       const SizedBox(height: 16),
 

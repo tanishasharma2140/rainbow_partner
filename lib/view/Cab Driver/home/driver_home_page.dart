@@ -457,7 +457,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                             ),
                             _actionItem(
                               Icons.local_taxi,
-                              "Ride History",
+                              "Ride History & Schedule Booking",
                               onTap: () {
                                 Navigator.push(
                                   context,

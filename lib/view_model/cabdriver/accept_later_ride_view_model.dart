@@ -25,9 +25,28 @@ class AcceptLaterRideViewModel with ChangeNotifier {
     }
   }
 
+  Future<bool> acceptLaterRideApiSilent(dynamic orderId) async {
+    setLoading(true);
+    try {
+      UserViewModel userViewModel = UserViewModel();
+      String? driverId = await userViewModel.getUser();
+      final data = {
+        "order_id": safeInt(orderId),
+        "driver_id": safeInt(driverId),
+      };
+      final response = await _acceptLaterRideRepo.acceptLaterRideApi(data);
+      final int statusCode = response['statusCode'] ?? 0;
+      return statusCode == 200 || statusCode == 201;
+    } catch (e) {
+      if (kDebugMode) print("❌ acceptLaterRideApiSilent → $e");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   Future<void> acceptLaterRideApi(
       dynamic orderId,
-      dynamic userId,
       double driverLat,
       double driverLng,
       BuildContext context,
@@ -42,7 +61,6 @@ class AcceptLaterRideViewModel with ChangeNotifier {
       if (kDebugMode) {
         print("----- DEBUG ACCEPT RIDE INPUT -----");
         print("orderId → $orderId | type: ${orderId.runtimeType}");
-        print("userId → $userId | type: ${userId.runtimeType}");
         print("driverId → $driverId | type: ${driverId.runtimeType}");
         print("----------------------------------");
       }
@@ -50,7 +68,6 @@ class AcceptLaterRideViewModel with ChangeNotifier {
       final Map<String, dynamic> data = {
         "order_id": safeInt(orderId),
         "driver_id": safeInt(driverId),
-        "user_id": safeInt(userId),
       };
 
       if (kDebugMode) print("📦 Sending API DATA → $data");
