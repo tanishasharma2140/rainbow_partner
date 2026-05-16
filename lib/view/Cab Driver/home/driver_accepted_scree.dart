@@ -2006,6 +2006,7 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
 
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -2032,12 +2033,11 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
 
                   const SizedBox(height: 16),
 
-                  const Text(
+                  const TextConst(
+                    title:
                     "Change Payment Mode",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    size: 16,
+                    fontWeight: FontWeight.bold,
                   ),
 
                   const SizedBox(height: 16),
@@ -2523,7 +2523,6 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
                           context,
                           listen: false,
                         );
-                        // selectedMode is int: 1, 2, or 3
                         await changePayMode.changeCabPayModeApi(
                           widget.orderId,
                           selectedMode,

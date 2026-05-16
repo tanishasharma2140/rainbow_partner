@@ -1,246 +1,24 @@
-// import 'package:flutter/foundation.dart';
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import 'package:rainbow_partner/main.dart';
-// import 'package:rainbow_partner/model/auth_model.dart';
-// import 'package:rainbow_partner/repo/auth_repo.dart';
-// import 'package:rainbow_partner/utils/utils.dart';
-// import 'package:rainbow_partner/view/Cab%20Driver/home/document_verified.dart';
-// import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
-// import 'package:rainbow_partner/view_model/device_view_model.dart';
-// import 'package:rainbow_partner/view_model/user_view_model.dart';
-//
-// import '../utils/routes/routes_name.dart' show RoutesName;
-//
-// class AuthViewModel with ChangeNotifier {
-//   final _authRepo = AuthRepo();
-//
-//   // ---------------- LOADING STATES ----------------
-//   bool _loading = false;
-//   bool get loading => _loading;
-//
-//   bool _sendingOtp = false;
-//   bool get sendingOtp => _sendingOtp;
-//
-//   bool _verifyingOtp = false;
-//   bool get verifyingOtp => _verifyingOtp;
-//
-//   // ---------------- SETTERS ----------------
-//   void setLoginLoading(bool value) {
-//     _loading = value;
-//     notifyListeners();
-//   }
-//
-//   void setSendingOtp(bool value) {
-//     _sendingOtp = value;
-//     notifyListeners();
-//   }
-//
-//   void setVerifyingOtp(bool value) {
-//     _verifyingOtp = value;
-//     notifyListeners();
-//   }
-//
-//   // =======================================================================
-//   //                           LOGIN API
-//   // =======================================================================
-//
-//   Future<void> loginApi(dynamic phone, BuildContext context) async {
-//     setLoginLoading(true);
-//
-//     final deviceVm = Provider.of<DeviceViewModel>(context, listen: false);
-//     await deviceVm.fetchDeviceId();
-//     final deviceId = deviceVm.deviceId ??"unknown";
-//
-//     Map<String, dynamic> data = {
-//       "phone": phone,
-//       "device_id": deviceId,
-//       "fcm_token": fcmToken,
-//     };
-//
-//     try {
-//       final response = await _authRepo.loginApi(data);
-//
-//       setLoginLoading(false);
-//
-//       final int statusCode = response['statusCode'] ?? 0;
-//       final Map<String, dynamic> body = response['body'] ?? {};
-//
-//       // ---------------- SUCCESS ----------------
-//       if (statusCode == 200 || statusCode == 201) {
-//         final authModel = AuthModel.fromJson(body);
-//         UserViewModel userViewModel = UserViewModel();
-//         int role = await userViewModel.getRole() ?? 0;
-//          // int platformType = await userViewModel.getPlatformType();
-//
-//         final userPref = Provider.of<UserViewModel>(context, listen: false);
-//         userPref.saveUser(authModel.servicemanId.toString(),role);
-//
-//         Utils.showSuccessMessage(context, authModel.message ?? 'Login Successful');
-//
-//         Navigator.pushNamed(
-//           context,
-//           RoutesName.otpScreen,
-//           arguments: {
-//             "mobileNumber": phone,
-//             "userId": authModel.servicemanId,
-//           },
-//         );
-//       }
-//
-//       else {
-//         Navigator.pushNamed(
-//           context,
-//           RoutesName.onboardingScreen,
-//           arguments: {'mobileNumber': phone},
-//         );
-//
-//         Utils.showErrorMessage(
-//           context,
-//           body["message"] ?? "User not found",
-//         );
-//       }
-//     }
-//
-//     // =======================================================================
-//     //                           CATCH BLOCK (404 ALSO)
-//     // =======================================================================
-//     catch (e) {
-//       setLoginLoading(false);
-//
-//       if (kDebugMode) print("❌ Login API Error → $e");
-//
-//       // 404 or any exception → REDIRECT TO REGISTER
-//       Navigator.pushNamed(
-//         context,
-//         RoutesName.onboardingScreen,
-//         arguments: {'mobileNumber': phone},
-//       );
-//
-//       Utils.showErrorMessage(
-//         context,
-//         "User not found. Please register.",
-//       );
-//     }
-//   }
-//
-//   // =======================================================================
-//   //                           SEND OTP API
-//   // =======================================================================
-//
-//   // Future<void> sendOtpApi(dynamic mobile, BuildContext context) async {
-//   //   setSendingOtp(true);
-//   //
-//   //   try {
-//   //     final response = await _authRepo.sendOtpApi(mobile.toString());
-//   //     setSendingOtp(false);
-//   //
-//   //     // FIX: Read from body (NOT response)
-//   //     final Map<String, dynamic> body = response["body"] ?? {};
-//   //
-//   //     final String errorCode = body['error']?.toString() ?? "";
-//   //     final String msg = body['msg'] ?? "Something went wrong";
-//   //
-//   //     if (errorCode == "200") {
-//   //       Utils.showSuccessMessage(context, msg);
-//   //     } else {
-//   //       Utils.showErrorMessage(context, msg);
-//   //     }
-//   //   } catch (e) {
-//   //     setSendingOtp(false);
-//   //     if (kDebugMode) print("❌ Send OTP Error → $e");
-//   //     Utils.showErrorMessage(context, "OTP sending failed. Try again.");
-//   //   }
-//   // }
-//
-//
-//   // =======================================================================
-//   //                           VERIFY OTP API
-//   // =======================================================================
-//
-//   // Future<void> verifyOtpApi(
-//   //     dynamic phone,
-//   //     dynamic otp,
-//   //     dynamic userId,
-//   //     BuildContext context,
-//   //     ) async {
-//   //   setVerifyingOtp(true);
-//   //
-//   //   try {
-//   //     final response = await _authRepo.verifyOtpApi(phone, otp);
-//   //     setVerifyingOtp(false);
-//   //
-//   //     final Map<String, dynamic> body = response["body"] ?? {};
-//   //
-//   //     final String errorCode = body['error']?.toString() ?? "";
-//   //     final String msg = body['msg'] ?? "Error verifying OTP";
-//   //
-//   //     if (errorCode == "200") {
-//   //
-//   //       // ✅ AuthModel se data lo
-//   //       final authModel = AuthModel.fromJson(body);
-//   //       final int platformType = authModel.platformType ?? 0;
-//   //
-//   //       print("platformType = $platformType");
-//   //
-//   //       final userVM = Provider.of<UserViewModel>(context, listen: false);
-//   //
-//   //       // ================= PLATFORM BASED NAVIGATION =================
-//   //
-//   //       if (platformType == 1) {
-//   //         // 🧑‍🔧 HANDYMAN
-//   //         userVM.saveUser(userId.toString(), 2);
-//   //
-//   //         Utils.showSuccessMessage(context, msg);
-//   //
-//   //         Navigator.pushAndRemoveUntil(
-//   //           context,
-//   //           MaterialPageRoute(builder: (_) => const HandymanDashboard()),
-//   //               (route) => false,
-//   //         );
-//   //       }
-//   //       else if (platformType == 0) {
-//   //         // 🚕 CAB DRIVER
-//   //         userVM.saveUser(userId.toString(), 1);
-//   //
-//   //         Utils.showSuccessMessage(context, msg);
-//   //
-//   //         Navigator.pushAndRemoveUntil(
-//   //           context,
-//   //           MaterialPageRoute(builder: (_) => const DocumentVerified()),
-//   //               (route) => false,
-//   //         );
-//   //       }
-//   //       else {
-//   //         Utils.showErrorMessage(context, "Invalid platform type");
-//   //       }
-//   //     }
-//   //     else {
-//   //       Utils.showErrorMessage(context, msg);
-//   //     }
-//   //   } catch (e) {
-//   //     setVerifyingOtp(false);
-//   //     if (kDebugMode) print("❌ Verify OTP Error → $e");
-//   //     Utils.showErrorMessage(context, "OTP verification failed. Try again.");
-//   //   }
-//   // }
-//
-//
-//
-//
-// }
-
-
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/auth/onboarding_screen.dart';
 import 'package:rainbow_partner/auth/otp_screen.dart';
 import 'package:rainbow_partner/repo/auth_repo.dart';
+import 'package:rainbow_partner/utils/location_utils.dart';
+import 'package:rainbow_partner/utils/routes/routes_name.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/document_verified.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/register/aadhaar_info.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/register/driving_license.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/register/personal_information.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/register/required_certificate.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/register/vehicle_document.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/register/vehicle_information.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
+import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 import '../model/auth_model.dart' show AuthModel;
 
@@ -301,33 +79,25 @@ class AuthViewModel with ChangeNotifier {
     }
   }
 
-  // Future<void> otpReSentApi(String phoneNumber, BuildContext context) async {
-  //   setLoading(true);
-  //   try {
-  //     final response = await _authRepo.otpSent(phoneNumber);
-  //
-  //     setLoading(false);
-  //     Map<String, dynamic> body = response['body'] ?? {};
-  //
-  //     if (body['error'] == "200") {
-  //       UtilsMessage.show(
-  //         context,
-  //         message: body['msg'] ?? 'OTP resent successfully',
-  //         type: MessageType.success,
-  //       );
-  //     } else {
-  //       UtilsMessage.show(
-  //         context,
-  //         message: body['msg'] ?? 'Failed to resend OTP',
-  //         type: MessageType.error,
-  //       );
-  //     }
-  //   } catch (e) {
-  //     setLoading(false);
-  //     if (kDebugMode) print('otpReSentApi error: $e');
-  //     UtilsMessage.show(context, message: 'Something went wrong', type: MessageType.error);
-  //   }
-  // }
+  Future<void> otpReSentApi(String phoneNumber, BuildContext context) async {
+    setLoading(true);
+    try {
+      final response = await _authRepo.sendOtpApi(phoneNumber);
+
+      setLoading(false);
+      Map<String, dynamic> body = response['body'] ?? {};
+
+      if (body['error'] == "200") {
+        Utils.showSuccessMessage(context,  body['msg'] ?? 'OTP sent successfully');
+      } else {
+        Utils.showErrorMessage(context, body['msg'] ?? 'Failed to send OTP');
+      }
+    } catch (e) {
+      setLoading(false);
+      if (kDebugMode) print('otpReSentApi error: $e');
+      Utils.showErrorMessage(context, 'Something went wrong');
+    }
+  }
 
   Future<void> verifySentApi(String phone, String otp, BuildContext context) async {
     setLoading(true);
@@ -403,8 +173,7 @@ class AuthViewModel with ChangeNotifier {
           break;
 
         case 2:
-        Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (_) => DocumentVerified()));
+          await handleDriverFlow(context);
           break;
 
         case 3:
@@ -420,6 +189,8 @@ class AuthViewModel with ChangeNotifier {
       }
       return;
     }
+
+
 
     // ---------------- USER NOT FOUND ----------------
     if (statusCode == 404) {
@@ -450,6 +221,112 @@ class AuthViewModel with ChangeNotifier {
       body['message'] ?? "Login failed",
     );
   }
+
+  Future<void> handleDriverFlow(BuildContext context) async {
+    try {
+      final driverProfileVm =
+      Provider.of<DriverProfileViewModel>(context, listen: false);
+
+      final position = await LocationUtils.getLocation();
+
+      await driverProfileVm.driverProfileApi(
+        position.latitude.toString(),
+        position.longitude.toString(),
+        context,
+      );
+
+      if (!context.mounted) return;
+
+      final data = driverProfileVm.driverProfileModel?.data;
+
+      if (data == null) {
+        Navigator.pushReplacementNamed(context, RoutesName.login);
+        return;
+      }
+
+      // ✅ Personal Info
+      if (data.personalInformationStatus == 0) {
+        Navigator.pushReplacement(
+          context,
+          CupertinoPageRoute(
+            builder: (_) => PersonalInformation(
+              vehicleId: data.vehicleType?.toString() ?? "",
+              vehicleName: data.vehicleName?.toString() ?? "",
+              mobileNumber: data.mobile?.toString() ?? "", profileId: 1,
+            ),
+          ),
+        );
+        return;
+      }
+
+      if (data.driverLicenceStatus == 0) {
+        Navigator.pushReplacement(
+          context,
+          CupertinoPageRoute(
+            builder: (_) => const DrivingLicense(),
+          ),
+        );
+        return;
+      }
+
+      if (data.aadhaarPanStatus == 0) {
+        Navigator.pushReplacement(
+          context,
+          CupertinoPageRoute(
+            builder: (_) => const AadhaarInfo(),
+          ),
+        );
+        return;
+      }
+
+      if (data.requiredCertificatesStatus == 0) {
+        Navigator.pushReplacement(
+          context,
+          CupertinoPageRoute(
+            builder: (_) => const RequiredCertificates(),
+          ),
+        );
+        return;
+      }
+
+      if (data.vehicleInfoStatus == 0) {
+        Navigator.pushReplacement(
+          context,
+          CupertinoPageRoute(
+            builder: (_) => const VehicleInformation(),
+          ),
+        );
+        return;
+      }
+
+      if (data.vehicleDocumentsStatus == 0) {
+
+        Navigator.pushReplacement(
+          context,
+          CupertinoPageRoute(builder: (_) => const VehicleDocument()),
+        );
+        return;
+      }
+
+      /// ✅ ALL DONE → DOCUMENT VERIFIED
+      Navigator.pushReplacement(
+        context,
+        CupertinoPageRoute(
+          builder: (_) => const DocumentVerified(),
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) print('handleDriverFlow error: $e');
+      if (e.toString().contains("Location services are disabled")) {
+        Utils.showErrorMessage(context, "Please enable your GPS/Location services");
+        // Optionally redirect back to PermissionScreen or show settings
+        await Geolocator.openLocationSettings();
+      } else {
+        Utils.showErrorMessage(context, "An error occurred: $e");
+      }
+    }
+  }
+
   @override
   void dispose() {
     phoneController.clear();

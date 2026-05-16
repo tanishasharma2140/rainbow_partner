@@ -8,7 +8,6 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
 import 'package:rainbow_partner/res/text_const.dart';
-import 'package:rainbow_partner/service/background_service.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view_model/cabdriver/accept_later_ride_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/delete_expired_order_view_model.dart';

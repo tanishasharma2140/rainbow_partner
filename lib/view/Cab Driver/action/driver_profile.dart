@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/auth/splash.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
+import 'package:rainbow_partner/res/pdf_view_screen.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/res/app_color.dart';
-import 'package:rainbow_partner/service/background_service.dart';
-import 'package:rainbow_partner/service/driver_socket_service.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/driver_online_status_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
@@ -47,6 +46,18 @@ class _DriverProfileState extends State<DriverProfile> {
     );
   }
 
+  void _openFile(String fileUrl) {
+    if (fileUrl.toLowerCase().endsWith(".pdf")) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PdfViewScreen(url: fileUrl),
+        ),
+      );
+    } else {
+      _openFullImage(fileUrl);
+    }
+  }
 
 
   @override
@@ -313,21 +324,30 @@ class _DriverProfileState extends State<DriverProfile> {
   }
 
   Widget viewImageBox(String label, String? imageUrl) {
+    final bool isPdf =
+        imageUrl != null &&
+            imageUrl.isNotEmpty &&
+            imageUrl.toLowerCase().endsWith(".pdf");
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
           onTap: imageUrl != null && imageUrl.isNotEmpty
-              ? () => _openFullImage(imageUrl)
+              ? () => _openFile(imageUrl)
               : null,
           child: Container(
             height: 120,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
-              image: imageUrl != null && imageUrl.isNotEmpty
+              image: !isPdf &&
+                  imageUrl != null &&
+                  imageUrl.isNotEmpty
                   ? DecorationImage(
-                  image: NetworkImage(imageUrl), fit: BoxFit.cover)
+                image: NetworkImage(imageUrl),
+                fit: BoxFit.cover,
+              )
                   : null,
               boxShadow: const [
                 BoxShadow(
@@ -337,10 +357,29 @@ class _DriverProfileState extends State<DriverProfile> {
                 )
               ],
             ),
+
             child: imageUrl == null || imageUrl.isEmpty
                 ? const Center(
-              child: Icon(Icons.image_not_supported,
-                  size: 35, color: Colors.grey),
+              child: Icon(
+                Icons.image_not_supported,
+                size: 35,
+                color: Colors.grey,
+              ),
+            )
+                : isPdf
+                ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.picture_as_pdf,
+                    size: 45,
+                    color: Colors.red,
+                  ),
+                  SizedBox(height: 6),
+                  Text("View PDF")
+                ],
+              ),
             )
                 : null,
           ),

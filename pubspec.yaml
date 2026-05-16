@@ -3,7 +3,7 @@ description: "A new Flutter project."
 publish_to: 'none'
 
 
-version: 1.0.20+21
+version: 1.0.22+23
 
 environment:
   sdk: ^3.10.0
@@ -38,17 +38,15 @@ dependencies:
   geocoding: ^2.1.0
   socket_io_client: ^2.0.3+1
   audioplayers: ^5.2.1
-#  flutter_cashfree_pg_sdk:
   url_launcher: ^6.2.5
   intl:
   google_maps_flutter: ^2.9.0
   flutter_widget_from_html:
-  flutter_background_service: ^5.0.5
   just_audio: ^0.9.36
   audio_session: ^0.1.18
   in_app_update: ^4.2.5
   paytmpayments_allinonesdk:
-
+  syncfusion_flutter_pdfviewer: ^27.1.48
 
 
 dev_dependencies:

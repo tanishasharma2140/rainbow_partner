@@ -130,7 +130,7 @@ class RapidoBubbleOverlayService : Service() {
 
             background = GradientDrawable().apply {
                 shape = GradientDrawable.OVAL
-                setColor(0xff4169E1.toInt())
+                setColor(0xff0843a3.toInt())
             }
             elevation = dp(6).toFloat()
         }

@@ -9,8 +9,6 @@ import 'package:rainbow_partner/res/gradient_circle_pro.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/main.dart';
-import 'package:rainbow_partner/service/background_service.dart';
-import 'package:rainbow_partner/service/driver_socket_service.dart';
 import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/action/driver_profile.dart';

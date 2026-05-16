@@ -46,13 +46,18 @@ class _WalletSettlementState extends State<WalletSettlement> {
   }
 
   Future<void> _refreshWalletData() async {
-    final profileVm = Provider.of<DriverProfileViewModel>(context, listen: false);
-    final transactionVm = Provider.of<DriverTransactionViewModel>(context, listen: false);
-    final bankVm = Provider.of<ServiceGetBankDetailViewModel>(context, listen: false);
+    final profileVm =
+    Provider.of<DriverProfileViewModel>(context, listen: false);
+    final transactionVm =
+    Provider.of<DriverTransactionViewModel>(context, listen: false);
+    final bankVm =
+    Provider.of<ServiceGetBankDetailViewModel>(context, listen: false);
+
+    final position = await LocationUtils.getLocation();
 
     await profileVm.driverProfileApi(
-      (await LocationUtils.getLocation()).latitude.toString(),
-      (await LocationUtils.getLocation()).longitude.toString(),
+      position.latitude.toString(),
+      position.longitude.toString(),
       context,
     );
 
@@ -101,6 +106,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
           backgroundColor: AppColor.white,
           onRefresh: _refreshWalletData,
           child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
               children: [
                 SizedBox(
@@ -131,70 +137,50 @@ class _WalletSettlementState extends State<WalletSettlement> {
           Colors.transparent,
           AppColor.royalBlue,
         ],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          margin: EdgeInsets.all(4),
-          padding: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(4),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 20,
+          ),
           decoration: BoxDecoration(
             color: AppColor.white,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: AppColor.royalBlue.withOpacity(0.3),
-                blurRadius: 15,
-                offset: Offset(0, 6),
+                color: AppColor.royalBlue.withOpacity(0.12),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Column(
+          child: Row(
             children: [
-              SizedBox(height: 8),
-              // Total Balance
-              Text(
-                '₹${profileVm.driverProfileModel?.data?.wallet??"0"}',
-                style: TextStyle(
-                  color: AppColor.black,
-                  fontFamily: AppFonts.kanitReg,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withOpacity(0.25),
-                      offset: Offset(2, 2),
-                      blurRadius: 4,
-                    ),
-                  ],
+              Expanded(
+                child: _buildWalletCard(
+                  title: "Wallet",
+                  amount:
+                  "₹${profileVm.driverProfileModel?.data?.wallet ?? "0"}",
+                  icon: Icons.account_balance_wallet_rounded,
+                  iconColor: Colors.green,
                 ),
               ),
-              SizedBox(height: 4),
-              TextConst(
-                title:
-                'Total Balance',
 
+              Container(
+                height: 60,
+                width: 1,
+                color: Colors.grey.shade300,
               ),
-              SizedBox(height: 20),
-              // Two wallets
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: _buildWalletItem(
-                      'Main Wallet',
-                      '₹${profileVm.driverProfileModel?.data?.wallet??"0"}',
-                      Icons.account_balance_wallet,
-                      Colors.green,
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: _buildWalletItem(
-                      'Due Wallet',
-                      '₹${profileVm.driverProfileModel?.data?.dueWallet??"0"}',
-                      Icons.pending,
-                      Colors.orange,
-                    ),
-                  ),
-                ],
+
+              Expanded(
+                child: _buildWalletCard(
+                  title: "Due Wallet",
+                  amount:
+                  "₹${profileVm.driverProfileModel?.data?.dueWallet ?? "0"}",
+                  icon: Icons.pending_actions_rounded,
+                  iconColor: Colors.orange,
+                ),
               ),
             ],
           ),
@@ -203,44 +189,47 @@ class _WalletSettlementState extends State<WalletSettlement> {
     );
   }
 
-  Widget _buildWalletItem(
-      String title,
-      String amount,
-      IconData icon,
-      Color color,
-      ) {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 20),
-          SizedBox(height: 6),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColor.black,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
+  Widget _buildWalletCard({
+    required String title,
+    required String amount,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.12),
+            shape: BoxShape.circle,
           ),
-          SizedBox(height: 4),
-          Text(
-            amount,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColor.blackLight,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
+          child: Icon(
+            icon,
+            color: iconColor,
+            size: 28,
           ),
-        ],
-      ),
+        ),
+
+        const SizedBox(height: 10),
+
+        Text(
+          amount,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+            fontFamily: AppFonts.kanitReg
+          ),
+        ),
+
+        const SizedBox(height: 4),
+
+        TextConst(
+          title: title,
+          color: Colors.grey,
+          size: 14,
+        ),
+      ],
     );
   }
 
@@ -623,7 +612,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
       case 1:
         return payment.finalAmount?.toString() ?? '0';
       case 2:
-        return payment.amount?.toString() ?? '0';
+        return payment.finalAmount?.toString() ?? '0';
       case 3:
         return payment.finalAmount?.toString() ?? '0';
       case 5:

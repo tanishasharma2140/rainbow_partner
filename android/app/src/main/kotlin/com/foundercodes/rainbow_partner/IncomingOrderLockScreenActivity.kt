@@ -66,6 +66,7 @@ class IncomingOrderLockScreenActivity : Activity() {
         val pickupAddress = intent.getStringExtra("pickup_address") ?: "N/A"
         val dropAddress = intent.getStringExtra("drop_address") ?: "N/A"
         val pickupDistanceKm = intent.getStringExtra("pickup_distance_km") ?: "N/A"
+        val rideDistance = intent.getStringExtra("distance_km") ?: "0.0"
         val amount = intent.getStringExtra("amount") ?: ""
         val panel = intent.getStringExtra("panel") ?: "driver"
 
@@ -93,21 +94,68 @@ class IncomingOrderLockScreenActivity : Activity() {
             setTextColor(Color.parseColor("#1A237E")); gravity = Gravity.CENTER
         })
 
-        // Distance
+        // Pickup Distance Badge
         card.addView(TextView(this).apply {
             text = "● Pickup $pickupDistanceKm km away"; textSize = 14f; setTextColor(Color.parseColor("#2E7D32"))
             setPadding(dp(14), dp(6), dp(14), dp(6)); gravity = Gravity.CENTER
             background = GradientDrawable().apply { setColor(Color.parseColor("#F5F5F5")); cornerRadius = dp(20).toFloat() }
             layoutParams = LinearLayout.LayoutParams(-2, -2).apply { gravity = Gravity.CENTER; topMargin = dp(8) }
         })
+
+        // Ride Distance if available
+        if (rideDistance.isNotEmpty() && rideDistance != "0.0") {
+            card.addView(TextView(this).apply {
+                text = "User Travelling distance: $rideDistance km"; textSize = 14f; setTypeface(null, Typeface.BOLD)
+                setTextColor(Color.parseColor("#424242")); gravity = Gravity.CENTER
+                layoutParams = LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8) }
+            })
+        }
+
         card.addView(spacer(dp(24)))
 
-        // Pickup/Drop
-        val texts = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(8), 0, 0, 0) }
-        texts.addView(TextView(this).apply { text = pickupAddress; setTextColor(Color.BLACK); textSize = 15f; maxLines = 2 })
-        texts.addView(spacer(dp(24)))
-        texts.addView(TextView(this).apply { text = dropAddress; setTextColor(Color.DKGRAY); textSize = 15f; maxLines = 2 })
-        card.addView(texts); card.addView(spacer(dp(30)))
+        // Pickup/Drop section with indicators
+        val locationContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(-1, -2)
+        }
+
+        val indicatorColumn = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(dp(20), -2).apply { topMargin = dp(6) }
+        }
+        
+        val greenCircle = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(dp(10), dp(10))
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.parseColor("#4CAF50")) }
+        }
+        val line = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(dp(2), dp(48))
+            background = GradientDrawable().apply { setColor(Color.LTGRAY) }
+        }
+        val redCircle = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(dp(10), dp(10))
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.parseColor("#F44336")) }
+        }
+        indicatorColumn.addView(greenCircle); indicatorColumn.addView(line); indicatorColumn.addView(redCircle)
+
+        val addressColumn = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, -2, 1f).apply { marginStart = dp(12) }
+        }
+        
+        addressColumn.addView(TextView(this).apply {
+            text = pickupAddress; setTextColor(Color.BLACK); textSize = 14f; maxLines = 2; setTypeface(null, Typeface.BOLD)
+        })
+        addressColumn.addView(TextView(this).apply {
+            text = dropAddress; setTextColor(Color.parseColor("#616161")); textSize = 14f; maxLines = 2; setTypeface(null, Typeface.BOLD)
+            layoutParams = LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(32) }
+        })
+        
+        locationContainer.addView(indicatorColumn); locationContainer.addView(addressColumn)
+        card.addView(locationContainer)
+
+        card.addView(spacer(dp(30)))
 
         // SLIDER (Royal Blue)
         val slideContainer = FrameLayout(this).apply {
@@ -146,7 +194,7 @@ class IncomingOrderLockScreenActivity : Activity() {
                     MotionEvent.ACTION_UP -> {
                         if (v.x > maxSlide * 0.8) {
                             v.x = maxSlide.toFloat()
-                            handleAccept(orderId, userId, pickupAddress, dropAddress, pickupDistanceKm, amount, panel)
+                            handleAccept(orderId, userId, pickupAddress, dropAddress, pickupDistanceKm, rideDistance, amount, panel)
                         } else {
                             v.animate().x(dp(4).toFloat()).setDuration(200).start()
                         }
@@ -161,7 +209,7 @@ class IncomingOrderLockScreenActivity : Activity() {
         card.addView(TextView(this).apply {
             text = "Ignore Order"; textSize = 15f; setTextColor(Color.GRAY); gravity = Gravity.CENTER
             setPadding(dp(16), dp(12), dp(16), dp(12)); setOnClickListener {
-                launchMain(orderId, userId, pickupAddress, dropAddress, pickupDistanceKm, amount, panel, isIgnore = true)
+                launchMain(orderId, userId, pickupAddress, dropAddress, pickupDistanceKm, rideDistance, amount, panel, isIgnore = true)
             }
         })
 
@@ -169,14 +217,14 @@ class IncomingOrderLockScreenActivity : Activity() {
         setContentView(root)
     }
 
-    private fun handleAccept(orderId: String, userId: String, pickup: String, drop: String, dist: String, amt: String, panel: String) {
+    private fun handleAccept(orderId: String, userId: String, pickup: String, drop: String, dist: String, rideDist: String, amt: String, panel: String) {
         val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             km.requestDismissKeyguard(this, object : KeyguardManager.KeyguardDismissCallback() {
                 override fun onDismissSucceeded() {
                     Log.d(tag, "Keyguard dismiss succeeded")
                     Handler(Looper.getMainLooper()).postDelayed({
-                        launchMain(orderId, userId, pickup, drop, dist, amt, panel, isIgnore = false)
+                        launchMain(orderId, userId, pickup, drop, dist, rideDist, amt, panel, isIgnore = false)
                     }, 200)
                 }
                 override fun onDismissCancelled() {
@@ -185,17 +233,16 @@ class IncomingOrderLockScreenActivity : Activity() {
                 }
                 override fun onDismissError() {
                     Log.d(tag, "Keyguard dismiss error")
-                    launchMain(orderId, userId, pickup, drop, dist, amt, panel, isIgnore = false)
+                    launchMain(orderId, userId, pickup, drop, dist, rideDist, amt, panel, isIgnore = false)
                 }
             })
         } else {
-            launchMain(orderId, userId, pickup, drop, dist, amt, panel, isIgnore = false)
+            launchMain(orderId, userId, pickup, drop, dist, rideDist, amt, panel, isIgnore = false)
         }
     }
 
-    private fun launchMain(orderId: String, userId: String, pickup: String, drop: String, dist: String, amt: String, panel: String, isIgnore: Boolean) {
+    private fun launchMain(orderId: String, userId: String, pickup: String, drop: String, dist: String, rideDist: String, amt: String, panel: String, isIgnore: Boolean) {
         val mainIntent = Intent(this, MainActivity::class.java).apply {
-            // Use existing task to avoid losing debugger connection
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
             putExtra(RapidoIncomingOrderOverlayService.EXTRA_NAV_ROUTE, 
                 if (isIgnore) RapidoIncomingOrderOverlayService.ROUTE_IGNORE_RIDE 
@@ -203,7 +250,8 @@ class IncomingOrderLockScreenActivity : Activity() {
             putExtra(RapidoIncomingOrderOverlayService.EXTRA_ORDER_ID, orderId)
             putExtra("user_id", userId)
             putExtra("pickup_address", pickup); putExtra("drop_address", drop)
-            putExtra("distance", dist); putExtra("amount", amt); putExtra("panel", panel)
+            putExtra("distance", dist); putExtra("distance_km", rideDist)
+            putExtra("amount", amt); putExtra("panel", panel)
         }
         startActivity(mainIntent)
         IncomingOrderFirebaseService.stopIncomingOrderAlert(this)

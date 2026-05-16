@@ -3,19 +3,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/service/internet_checker_service.dart';
-import 'package:rainbow_partner/service/ride_notification_helper.dart';
-import 'package:rainbow_partner/service/serviceman_notification_helper.dart';
 import 'package:rainbow_partner/utils/routes/routes.dart';
 import 'package:rainbow_partner/utils/routes/routes_name.dart';
-import 'package:rainbow_partner/view/Cab%20Driver/home/ride%20history/cab_ride_history.dart';
-import 'package:rainbow_partner/view/Cab%20Driver/ride_waiting_screen.dart';
-import 'package:rainbow_partner/view/Service%20Man/home/accepted_booking.dart';
-import 'package:rainbow_partner/view/Service%20Man/home/service_total_booking.dart';
 import 'package:rainbow_partner/view/service/notification_service.dart';
 import 'package:rainbow_partner/view_model/auth_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/accept_later_ride_view_model.dart';
@@ -133,16 +126,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   InternetCheckerService();
   final notificationService = NotificationService(navigatorKey: navigatorKey);
 
-  // ── Pending overlay intents (for when navigator isn't ready yet) ──────────
   Map<String, dynamic>? _pendingOverlayAccept;
   Map<String, dynamic>? _pendingOverlayIgnore;
   bool _overlayAcceptBusy = false;
   bool _overlayIgnoreBusy = false;
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Waits up to ~4 s for the navigator context to become available.
-  // Useful on cold-start / keyguard scenarios.
-  // ─────────────────────────────────────────────────────────────────────────
   Future<BuildContext?> _waitForNavigatorContext() async {
     for (var i = 0; i < 80; i++) {
       final ctx = navigatorKey.currentContext;
@@ -154,9 +142,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return null;
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Overlay: Accept ride
-  // ─────────────────────────────────────────────────────────────────────────
   Future<void> _handleOverlayAcceptRide(Map<String, dynamic> data) async {
     if (_overlayAcceptBusy) return;
     _overlayAcceptBusy = true;
@@ -171,8 +156,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         return;
       }
 
-      FlutterBackgroundService().invoke('STOP_RINGTONE');
-
       final panel = data['panel'] as String? ?? 'driver';
       final int orderType = int.tryParse(data['order_type']?.toString() ?? '1') ?? 1;
 
@@ -182,9 +165,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         if (orderId.isNotEmpty) {
           await Provider.of<AcceptOrderViewModel>(ctx, listen: false)
               .acceptOrderApiSilent(int.parse(orderId), distance);
-          navigatorKey.currentState?.pushReplacement(
-            CupertinoPageRoute(builder: (_) => const AcceptedBooking()),
-          );
+          navigatorKey.currentState?.pushReplacementNamed(RoutesName.acceptedBooking);
         }
       } else {
         final String orderId = data['id']?.toString() ?? '';
@@ -192,23 +173,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         final int amount = int.tryParse(data['amount']?.toString() ?? '0') ?? 0;
 
         if (orderType == 2) {
-          // Schedule ride — acceptLaterRideApi
           if (orderId.isNotEmpty) {
             await Provider.of<AcceptLaterRideViewModel>(ctx, listen: false)
                 .acceptLaterRideApiSilent(orderId);
-            navigatorKey.currentState?.push(
-              MaterialPageRoute(builder: (_) => const CabRideHistory()),
-            );
+            navigatorKey.currentState?.pushNamed(RoutesName.cabRideHistory);
           }
         } else {
-          // Normal ride
           if (orderId.isNotEmpty && userIdOrder.isNotEmpty) {
             Provider.of<DriverOfferViewModel>(ctx, listen: false).driverOfferApi(
               userIdOrder, orderId, amount, amount, ctx,
             );
           }
-          navigatorKey.currentState
-              ?.push(MaterialPageRoute(builder: (_) => RideWaitingScreen()));
+          navigatorKey.currentState?.pushNamed(RoutesName.rideWaiting);
         }
       }
     } finally {
@@ -216,9 +192,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Overlay: Ignore ride
-  // ─────────────────────────────────────────────────────────────────────────
   Future<void> _handleOverlayIgnoreRide(Map<String, dynamic> data) async {
     if (_overlayIgnoreBusy) return;
     _overlayIgnoreBusy = true;
@@ -232,8 +205,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         debugPrint('overlay ignore: navigator not ready, will retry on resume');
         return;
       }
-
-      FlutterBackgroundService().invoke('STOP_RINGTONE');
 
       final panel = data['panel'] as String? ?? 'driver';
       final orderId = (data['id'] as String? ?? '').isNotEmpty
@@ -254,10 +225,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Flush any overlay intents that arrived before the navigator was ready.
-  // Called every time the app resumes.
-  // ─────────────────────────────────────────────────────────────────────────
   Future<void> _flushPendingOverlayIntents() async {
     final accept = _pendingOverlayAccept;
     if (accept != null) {
@@ -271,12 +238,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // App lifecycle: show/hide background floating button based on online status
-  // ─────────────────────────────────────────────────────────────────────────
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Flush pending intents when app comes back to foreground
     if (state == AppLifecycleState.resumed) {
       unawaited(_flushPendingOverlayIntents());
     }
@@ -316,13 +279,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     try {
       await overlayChannel.invokeMethod<void>(method);
     } catch (_) {
-      // Silently ignore if native side doesn't support the method
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Cold-start: check if the app was launched via a notification/overlay route
-  // ─────────────────────────────────────────────────────────────────────────
   Future<void> _tryHandleLaunchRoute() async {
     try {
       final String? route =
@@ -331,13 +290,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         navigatorKey.currentState?.pushNamed(route);
       }
     } catch (_) {
-      // Ignore if not supported on platform
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Overlay channel setup
-  // ─────────────────────────────────────────────────────────────────────────
   void _setupOverlayChannel() {
     overlayChannel.setMethodCallHandler((call) async {
       debugPrint("🔥 MethodChannel call received: ${call.method}");
@@ -362,7 +317,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // <-- lifecycle observer
+    WidgetsBinding.instance.addObserver(this);
 
     _setupOverlayChannel();
 
@@ -374,8 +329,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       _internetCheckerService.startMonitoring(navigatorKey.currentContext!);
     });
 
-    // Two-frame delay so getLaunchRoute runs after the navigator has consumed
-    // any initial intent (same pattern as yoyomiles_partner).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _tryHandleLaunchRoute();
@@ -385,7 +338,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // <-- cleanup
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -448,8 +401,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               create: (context) => IgnoreServiceOrderViewModel()),
           ChangeNotifierProvider(
               create: (context) => ChangeServicePayModeVm()),
-
-          /// Cab Driver
           ChangeNotifierProvider(create: (context) => VehicleViewModel()),
           ChangeNotifierProvider(
               create: (context) => DriverRegisterOneViewModel()),

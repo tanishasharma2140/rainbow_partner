@@ -26,8 +26,8 @@ class CabPaymentViewmodel with ChangeNotifier {
   }
 
   /// Paytm config (default)
-  bool isStaging = true;
-  bool restrictAppInvoke = true;
+  bool isStaging = false;
+  bool restrictAppInvoke = false;
   bool enableAssist = true;
 
   String result = '';
@@ -88,13 +88,13 @@ class CabPaymentViewmodel with ChangeNotifier {
         }
 
         await _startPaytmTransaction(
-          mid: "FAEClA31908078249088",
+          mid: "RAINBO91883332558800",
           orderId: orderId.toString(),
           txnToken: txnToken.toString(),
           amount: amountValue.toString(),
           paymentType: paymentType,
           serviceOrderId: serviceOrderId,
-          callbackUrl: "https://dev.rainbowsenterprises.com/api/callback_paytm",
+          callbackUrl: "https://admin.rainbowsenterprises.com/api/callback_paytm",
           context: context,
         );
 

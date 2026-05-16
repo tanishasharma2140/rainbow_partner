@@ -93,7 +93,7 @@ class PaymentViewModel with ChangeNotifier {
           amount: amountValue.toString(),
           paymentType: paymentType,
           serviceOrderId: serviceOrderId,
-          callbackUrl: "https://dev.rainbowsenterprises.com/api/callback_paytm",
+          callbackUrl: "https://admin.rainbowsenterprises.com/api/callback_paytm",
           context: context,
         );
 

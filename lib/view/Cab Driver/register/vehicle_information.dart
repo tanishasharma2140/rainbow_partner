@@ -77,9 +77,9 @@ class _VehicleInformationState extends State<VehicleInformation> {
     vehicleColorVm.vehicleColorsApi(context);
   }
 
-  final RegExp vehicleNumberRegex = RegExp(
-      r'^([A-Z]{2}\s[0-9]{2}\s[A-Z]{2}\s[0-9]{4})$|^([A-Z]{2}\s[0-9]{2}\s[0-9]{4})$'
-  );
+  // final RegExp vehicleNumberRegex = RegExp(
+  //     r'^([A-Z]{2}\s[0-9]{2}\s[A-Z]{2}\s[0-9]{4})$|^([A-Z]{2}\s[0-9]{2}\s[0-9]{4})$'
+  // );
   String? vehicleNumberError;
 
   bool _validateVehicleInfo() {
@@ -107,10 +107,11 @@ class _VehicleInformationState extends State<VehicleInformation> {
       _showError("Please enter vehicle plate number");
       return false;
     }
-    if (vehicleNumberError != null) {
+    if (!isValidIndianVehicle(plateController.text.trim())) {
       _showError("Please enter valid vehicle number");
       return false;
     }
+
 
 
     if (yearController.text.trim().isEmpty) {
@@ -136,6 +137,21 @@ class _VehicleInformationState extends State<VehicleInformation> {
       vehiclePhoto = File(file.path);
       setState(() {});
     }
+  }
+
+  bool isValidIndianVehicle(String input) {
+    final reg = RegExp(
+        r'(^[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{4}$)' // Normal
+        r'|(^[0-9]{2}BH[0-9]{4}[A-Z]{1,2}$)'        // BH Series
+        r'|(^TR[0-9]{2}[A-Z]{2}[0-9]{4}$)'          // Trade
+        r'|(^[A-Z]{2}TC[0-9]{4}[A-Z]{1,2}$)'        // Temporary
+        r'|((CD|CC)[0-9]{4}$)'                      // Diplomatic
+        r'|(^[A-Z]{2}VA[0-9]{4}$)'                  // Vintage
+    );
+
+    return reg.hasMatch(
+      input.toUpperCase().replaceAll(" ", ""),
+    );
   }
 
   Future<void> _selectYear(BuildContext context) async {
@@ -807,9 +823,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
             ? (value) {
           if (value.isEmpty) {
             setState(() => vehicleNumberError = null);
-          } else if (!vehicleNumberRegex.hasMatch(value)) {
-            setState(() => vehicleNumberError =
-            "Enter valid vehicle number (e.g. KA01AB1234)");
+          } else if (!isValidIndianVehicle(value)) {
+            setState(() => vehicleNumberError = "Enter valid vehicle number");
           } else {
             setState(() => vehicleNumberError = null);
           }
@@ -825,8 +840,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
           ),
           border: InputBorder.none,
           suffixIcon: readOnly
-              ? const Icon(Icons.calendar_today,
-              size: 20, color: Colors.grey)
+              ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey)
               : null,
         ),
       ),
@@ -896,3 +910,4 @@ class VehicleNumberFormatter extends TextInputFormatter {
     );
   }
 }
+

@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.PixelFormat
-import android.graphics.Point
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
@@ -36,6 +35,7 @@ class RapidoIncomingOrderOverlayService : Service() {
     private var pickup: String = ""
     private var drop: String = ""
     private var distance: String = ""
+    private var rideDistance: String = ""
     private var id: String = ""
     private var userId: String = ""
     private var amount: String = ""
@@ -48,6 +48,10 @@ class RapidoIncomingOrderOverlayService : Service() {
     override fun onCreate() {
         super.onCreate()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        // Start as foreground service to ensure it runs even when app is killed
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForeground(9301, IncomingOrderNotification.createForegroundNotification(this))
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -56,6 +60,7 @@ class RapidoIncomingOrderOverlayService : Service() {
                 pickup   = intent.getStringExtra("pickup")   ?: ""
                 drop     = intent.getStringExtra("drop")     ?: ""
                 distance = intent.getStringExtra("pickup_distance_km") ?: intent.getStringExtra("distance") ?: "0.0"
+                rideDistance = intent.getStringExtra("distance_km") ?: "0.0"
                 id       = intent.getStringExtra("id")       ?: ""
                 userId   = intent.getStringExtra("user_id")  ?: ""
                 amount   = intent.getStringExtra("amount")   ?: ""
@@ -63,13 +68,13 @@ class RapidoIncomingOrderOverlayService : Service() {
                 orderType = intent.getIntExtra("order_type", 1)
                 scheduleTime = intent.getStringExtra("schedule_time") ?: ""
                 
-                Log.d(tag, "Action Schedule Show: ID=$id, Panel=$panel, Amount=$amount")
+                Log.d(tag, "Action Schedule Show: ID=$id, Panel=$panel, Amount=$amount, RideDist=$rideDistance")
                 scheduleShow(intent.getLongExtra(EXTRA_DELAY_MS, DEFAULT_DELAY_MS))
             }
             ACTION_SHOW_NOW -> showNow()
             ACTION_HIDE -> hideAndStop()
         }
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     private fun scheduleShow(delayMs: Long) {
@@ -131,19 +136,23 @@ class RapidoIncomingOrderOverlayService : Service() {
     private fun buildExpandedCardView(onAccept: () -> Unit, onIgnore: () -> Unit): View {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(20), dp(20), dp(20), dp(20))
+            setPadding(dp(20), dp(16), dp(20), dp(20))
             background = GradientDrawable().apply { cornerRadius = dp(28).toFloat(); setColor(Color.WHITE) }
             elevation = dp(16).toFloat()
             layoutParams = FrameLayout.LayoutParams(-1, -2).apply { setMargins(dp(20), 0, dp(20), 0) }
         }
 
-        // Close icon
+        val headerRow = FrameLayout(this).apply {
+            layoutParams = LinearLayout.LayoutParams(-1, -2)
+        }
+        
         val closeBtn = ImageView(this).apply {
             setImageResource(android.R.drawable.ic_menu_close_clear_cancel); setColorFilter(Color.GRAY)
-            layoutParams = LinearLayout.LayoutParams(dp(24), dp(24)).apply { gravity = Gravity.END }
+            layoutParams = FrameLayout.LayoutParams(dp(24), dp(24)).apply { gravity = Gravity.END }
             setOnClickListener { onIgnore() }
         }
-        card.addView(closeBtn)
+        headerRow.addView(closeBtn)
+        card.addView(headerRow)
 
         val amountTv = TextView(this).apply {
             text = "₹$amount"; textSize = 34f; setTypeface(null, Typeface.BOLD); setTextColor(Color.parseColor("#1A237E")); gravity = Gravity.CENTER
@@ -163,7 +172,14 @@ class RapidoIncomingOrderOverlayService : Service() {
         }
         card.addView(distanceBadge)
 
-        // Schedule time banner for order_type=2
+        if (rideDistance.isNotEmpty() && rideDistance != "0.0") {
+            val rideDistTv = TextView(this).apply {
+                text = "User Travelling distance: $rideDistance km"; textSize = 14f; setTypeface(null, Typeface.BOLD); setTextColor(Color.parseColor("#424242"))
+                gravity = Gravity.CENTER; layoutParams = LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8) }
+            }
+            card.addView(rideDistTv)
+        }
+
         if (orderType == 2 && scheduleTime.isNotEmpty()) {
             val scheduleBanner = TextView(this).apply {
                 text = "Scheduled: $scheduleTime"
@@ -180,16 +196,56 @@ class RapidoIncomingOrderOverlayService : Service() {
             card.addView(scheduleBanner)
         }
 
+        card.addView(spacer(dp(20)))
+
+        // Pickup and Drop section with Green/Red indicators
+        val locationContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(-1, -2)
+        }
+
+        val indicatorColumn = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(dp(20), -2).apply { topMargin = dp(6) }
+        }
+        
+        val greenCircle = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(dp(10), dp(10))
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.parseColor("#4CAF50")) }
+        }
+        val line = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(dp(2), dp(50)) // height kam ki
+            background = GradientDrawable().apply {
+                setColor(Color.LTGRAY)
+            }
+        }
+        val redCircle = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(dp(10), dp(10))
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.parseColor("#F44336")) }
+        }
+        indicatorColumn.addView(greenCircle); indicatorColumn.addView(line); indicatorColumn.addView(redCircle)
+
+        val addressColumn = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, -2, 1f).apply { marginStart = dp(12) }
+        }
+        
+        val pickupTv = TextView(this).apply {
+            text = pickup; setTextColor(Color.BLACK); textSize = 14f; maxLines = 2; setTypeface(null, Typeface.BOLD)
+        }
+        val dropTv = TextView(this).apply {
+            text = drop; setTextColor(Color.parseColor("#616161")); textSize = 14f; maxLines = 2; setTypeface(null, Typeface.BOLD)
+            layoutParams = LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(20) }
+        }
+        
+        addressColumn.addView(pickupTv); addressColumn.addView(dropTv)
+        
+        locationContainer.addView(indicatorColumn); locationContainer.addView(addressColumn)
+        card.addView(locationContainer)
+
         card.addView(spacer(dp(24)))
 
-        // Timeline Addresses
-        val texts = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(-1, -2); setPadding(dp(8), 0, 0, 0) }
-        texts.addView(TextView(this).apply { text = pickup; setTextColor(Color.BLACK); textSize = 15f; maxLines = 2; gravity = Gravity.CENTER })
-        texts.addView(spacer(dp(16)))
-        texts.addView(TextView(this).apply { text = drop; setTextColor(Color.DKGRAY); textSize = 15f; maxLines = 2; gravity = Gravity.CENTER })
-        card.addView(texts); card.addView(spacer(dp(24)))
-
-        // SLIDER
         val slideContainer = FrameLayout(this).apply {
             layoutParams = LinearLayout.LayoutParams(-1, dp(64))
             background = GradientDrawable().apply { cornerRadius = dp(32).toFloat(); setColor(Color.parseColor("#4169E1")) }
@@ -241,6 +297,7 @@ class RapidoIncomingOrderOverlayService : Service() {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             putExtra(EXTRA_NAV_ROUTE, ROUTE_ACCEPT_RIDE); putExtra(EXTRA_ORDER_ID, id); putExtra("user_id", userId)
             putExtra("pickup_address", pickup); putExtra("drop_address", drop); putExtra("distance", distance)
+            putExtra("distance_km", rideDistance)
             putExtra("amount", amount); putExtra("panel", panel)
             putExtra("order_type", orderType); putExtra("schedule_time", scheduleTime)
         }
@@ -270,6 +327,13 @@ class RapidoIncomingOrderOverlayService : Service() {
         const val ROUTE_LIVE_RIDE      = "live_ride_screen"
         const val EXTRA_DELAY_MS       = "com.foundercodes.rainbow_partner.extra.DELAY_MS"
         const val DEFAULT_DELAY_MS     = 0L
-        fun start(context: Context, action: String) { context.startService(Intent(context, RapidoIncomingOrderOverlayService::class.java).apply { this.action = action }) }
+        fun start(context: Context, action: String) { 
+            val intent = Intent(context, RapidoIncomingOrderOverlayService::class.java).apply { this.action = action }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+        }
     }
 }

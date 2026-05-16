@@ -9,6 +9,7 @@ import android.os.PowerManager
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
+import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import java.util.Locale
@@ -25,14 +26,13 @@ class IncomingOrderFirebaseService : FirebaseMessagingService() {
         val rawType = payload["type"]?.toString()
         val type = rawType?.trim()?.lowercase(Locale.US)
 
-        // Flexible Order ID detection
         val orderId = payload["ride_id"]?.toString()
             ?: payload["rideId"]?.toString()
             ?: payload["order_id"]?.toString()
             ?: payload["booking_id"]?.toString()
             ?: payload["id"]?.toString()
             ?: ""
-            
+
         val userId = payload["user_id"]?.toString() ?: ""
 
         if (type == "remove_ride" || type == "remove_order" || type == "cancel_order") {
@@ -40,46 +40,45 @@ class IncomingOrderFirebaseService : FirebaseMessagingService() {
             return
         }
 
-        // Broad detection for Driver and Serviceman
         val isDriverNotification = type == "incoming_order" || payload["incoming_order"] == "1"
-        val isServicemanNotification = type == "incoming_service_order" || 
-                                      type == "new_service" || 
-                                      type == "service_order" || 
-                                      type == "service_booking" ||
-                                      payload["incoming_service_order"] == "1"
-        
+        val isServicemanNotification = type == "incoming_service_order" ||
+                type == "new_service" ||
+                type == "service_order" ||
+                type == "service_booking" ||
+                payload["incoming_service_order"] == "1"
+
         if (!isDriverNotification && !isServicemanNotification) {
             Log.d(tag, "Ignoring: Not a recognized order type ($type)")
             return
         }
 
-        // Check Online Status from SharedPrefs
         val prefs = getSharedPreferences("rapido_online_prefs", Context.MODE_PRIVATE)
         val isOnline = prefs.getBoolean("is_online", false)
-        
+
         if (!isOnline) {
             Log.d(tag, "Ignoring: User is OFFLINE in system prefs")
             return
         }
 
-        // Handle Addresses and Info for Serviceman
-        var pickup = payload["pickup_address"]?.toString() 
-            ?: payload["service_address"]?.toString() 
-            ?: payload["address"]?.toString() 
+        var pickup = payload["pickup_address"]?.toString()
+            ?: payload["service_address"]?.toString()
+            ?: payload["address"]?.toString()
             ?: ""
-            
-        var drop = payload["drop_address"]?.toString() 
-            ?: payload["service_name"]?.toString() 
-            ?: payload["category_name"]?.toString() 
+
+        var drop = payload["drop_address"]?.toString()
+            ?: payload["service_name"]?.toString()
+            ?: payload["category_name"]?.toString()
             ?: "New Service Request"
 
-        val distance = payload["pickup_distance_km"]?.toString() 
-            ?: payload["distance"]?.toString() 
+        val distance = payload["pickup_distance_km"]?.toString()
+            ?: payload["distance"]?.toString()
             ?: "0.0"
 
-        val amount = payload["amount"]?.toString() 
-            ?: payload["final_amount"]?.toString() 
-            ?: payload["total_amount"]?.toString() 
+        val rideDistance = payload["distance_km"]?.toString() ?: "0.0"
+
+        val amount = payload["amount"]?.toString()
+            ?: payload["final_amount"]?.toString()
+            ?: payload["total_amount"]?.toString()
             ?: "0"
 
         val panel = if (isServicemanNotification) "serviceman" else "driver"
@@ -102,6 +101,7 @@ class IncomingOrderFirebaseService : FirebaseMessagingService() {
                 putExtra(RapidoIncomingOrderOverlayService.EXTRA_ORDER_ID, orderId)
                 putExtra("user_id", userId); putExtra("pickup_address", pickup)
                 putExtra("drop_address", drop); putExtra("pickup_distance_km", distance)
+                putExtra("distance_km", rideDistance)
                 putExtra("amount", amount); putExtra("panel", panel)
             }
             startActivity(lockIntent)
@@ -110,11 +110,17 @@ class IncomingOrderFirebaseService : FirebaseMessagingService() {
                 action = RapidoIncomingOrderOverlayService.ACTION_SCHEDULE_SHOW
                 putExtra("pickup", pickup); putExtra("drop", drop)
                 putExtra("pickup_distance_km", distance); putExtra("id", orderId)
+                putExtra("distance_km", rideDistance)
                 putExtra("amount", amount); putExtra("panel", panel); putExtra("user_id", userId)
                 putExtra("order_type", payload["order_type"]?.toIntOrNull() ?: 1)
                 putExtra("schedule_time", payload["schedule_time"] ?: "")
             }
-            startService(overlayIntent)
+            // Use helper or ContextCompat for foreground service start
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                startForegroundService(overlayIntent)
+            } else {
+                startService(overlayIntent)
+            }
         }
     }
 

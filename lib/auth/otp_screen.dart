@@ -62,14 +62,22 @@ class _OtpScreenState extends State<OtpScreen> {
     });
   }
 
-  void _onResend() {
+  void _onResend() async {
     if (!_canResend) return;
 
-    _startTimer();
+    final authVm = context.read<AuthViewModel>();
 
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   const SnackBar(content: Text("OTP resent")),
-    // );
+    await authVm.otpReSentApi(
+      widget.phoneNumber,
+      context,
+    );
+
+    setState(() {
+      _canResend = false;
+      _secondsLeft = 60;
+    });
+
+    _startTimer();
   }
 
   void _verifyOtp(String pin) {

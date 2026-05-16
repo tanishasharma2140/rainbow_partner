@@ -75,14 +75,13 @@ class SplashServices {
 
     final position = await LocationUtils.getLocation();
 
-    // 🔥 await MANDATORY
     await driverProfileVm.driverProfileApi(
       position.latitude.toString(),
       position.longitude.toString(),
       context,
     );
 
-    if (!context.mounted) return; // 🛑 SAFETY
+    if (!context.mounted) return;
 
     final data = driverProfileVm.driverProfileModel?.data;
 
