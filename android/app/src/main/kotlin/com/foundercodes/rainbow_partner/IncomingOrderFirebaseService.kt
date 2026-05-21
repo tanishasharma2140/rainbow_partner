@@ -35,7 +35,7 @@ class IncomingOrderFirebaseService : FirebaseMessagingService() {
 
         val userId = payload["user_id"]?.toString() ?: ""
 
-        if (type == "remove_ride" || type == "remove_order" || type == "cancel_order") {
+        if (type == "remove_ride" || type == "remove_order" || type == "cancel_order" || type == "remove_service") {
             stopIncomingOrderAlert(this@IncomingOrderFirebaseService)
             return
         }

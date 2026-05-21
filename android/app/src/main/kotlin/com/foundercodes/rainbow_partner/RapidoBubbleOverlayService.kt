@@ -83,7 +83,7 @@ class RapidoBubbleOverlayService : Service() {
 
     private fun startForegroundService() {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Yoyomiles Partner")
+            .setContentTitle("Rainbow Partner")
             .setContentText("Online - Bubble Overlay Active")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setPriority(NotificationCompat.PRIORITY_LOW)

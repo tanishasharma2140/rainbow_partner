@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/animated_gradient_border.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
@@ -43,9 +44,10 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<CabEarningViewModel>();
+    final loc = AppLocalizations.of(context)!;
 
     if (vm.loading) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
@@ -83,8 +85,8 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
               Navigator.pop(context);
             },
             child: Icon(Icons.arrow_back,color: AppColor.white,)),
-        title: const TextConst(
-          title: "Earnings Report",
+        title: TextConst(
+          title: loc.earnings_report,
           size: 17,
           fontWeight: FontWeight.w700,
           color: AppColor.white,
@@ -93,21 +95,22 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
       ),
       body: Column(
         children: [
-          _buildTabSelector(),
+          _buildTabSelector(loc),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(14),
               child: Column(
                 children: [
-                  _buildEarningsCard(total: totalEarning),
+                  _buildEarningsCard(loc, total: totalEarning),
                   const SizedBox(height: 16),
                   _buildStatsGrid(
+                    loc,
                     totalTrips: totalTrips,
                     hours: hours,
                     minutes: minutes,
                   ),
                   const SizedBox(height: 20),
-                  _buildTripDetails(completedTrips),
+                  _buildTripDetails(loc, completedTrips),
                 ],
               ),
             ),
@@ -119,7 +122,7 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
 
   // ---------------- TAB SELECTOR ----------------
 
-  Widget _buildTabSelector() {
+  Widget _buildTabSelector(AppLocalizations loc) {
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -130,14 +133,14 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
         children: [
           Expanded(
             child: _tabButton(
-              "Today",
+              loc.today,
               _selectedTab == 0,
                   () => _onTabChange(0),
             ),
           ),
           Expanded(
             child: _tabButton(
-              "Weekly",
+              loc.weekly,
               _selectedTab == 1,
                   () => _onTabChange(1),
             ),
@@ -175,7 +178,7 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
 
   // ---------------- EARNINGS CARD ----------------
 
-  Widget _buildEarningsCard({required double total}) {
+  Widget _buildEarningsCard(AppLocalizations loc, {required double total}) {
     return AnimatedGradientBorder(
       borderSize: 2,
       glowSize: 0,
@@ -194,7 +197,7 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
         ),
         child: Column(
           children: [
-            const Text("Total Earnings"),
+            Text(loc.total_earnings),
             const SizedBox(height: 8),
             Text(
               "₹${total.toStringAsFixed(2)}",
@@ -211,7 +214,8 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
 
   // ---------------- STATS ----------------
 
-  Widget _buildStatsGrid({
+  Widget _buildStatsGrid(
+      AppLocalizations loc, {
     required int totalTrips,
     required int hours,
     required int minutes,
@@ -224,13 +228,13 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
       mainAxisSpacing: 12,
       children: [
         _statCard(
-          "Trips Completed",
+          loc.trips_completed,
           "$totalTrips",
           Icons.local_taxi,
           Colors.blue,
         ),
         _statCard(
-          "Online Hours",
+          loc.online_hours,
           "${hours}h ${minutes}m",
           Icons.timer,
           Colors.green,
@@ -264,14 +268,14 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
 
   // ---------------- TRIP LIST ----------------
 
-  Widget _buildTripDetails(List<TripDetails> trips) {
+  Widget _buildTripDetails(AppLocalizations loc, List<TripDetails> trips) {
     if (trips.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.only(top: 40),
+      return Padding(
+        padding: const EdgeInsets.only(top: 40),
         child: Center(
           child: Text(
-            "No trips found",
-            style: TextStyle(color: Colors.grey),
+            loc.no_trips_found,
+            style: const TextStyle(color: Colors.grey),
           ),
         ),
       );
@@ -280,19 +284,19 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Trip Details",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        Text(
+          loc.trip_details,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
-        ...trips.map(_buildTripItem),
+        ...trips.map((trip) => _buildTripItem(loc, trip)),
       ],
     );
   }
 
   // ---------------- SINGLE TRIP CARD ----------------
 
-  Widget _buildTripItem(TripDetails trip) {
+  Widget _buildTripItem(AppLocalizations loc, TripDetails trip) {
     final double distance =
     (trip.distanceKm is num) ? (trip.distanceKm as num).toDouble() : 0.0;
 
@@ -321,7 +325,7 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Trip #${trip.id ?? "-"}",
+                "${loc.trip} #${trip.id ?? "-"}",
                 style: const TextStyle(
                     fontWeight: FontWeight.w700, fontSize: 14),
               ),
@@ -335,7 +339,7 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  isOnline ? "ONLINE" : "CASH",
+                  isOnline ? loc.online : loc.cash,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -351,9 +355,9 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
             children: [
               Column(
                 children: [
-                  Icon(Icons.circle, size: 12, color: Colors.green),
+                  const Icon(Icons.circle, size: 12, color: Colors.green),
                   Container(height: 30, width: 1, color: Colors.grey.shade300),
-                  Icon(Icons.location_on, size: 16, color: Colors.red),
+                  const Icon(Icons.location_on, size: 16, color: Colors.red),
                 ],
               ),
               const SizedBox(width: 10),
@@ -361,8 +365,8 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Pickup",
-                        style: TextStyle(
+                    Text(loc.pickup,
+                        style: const TextStyle(
                             fontSize: 11,
                             color: Colors.grey,
                             fontWeight: FontWeight.w600)),
@@ -370,8 +374,8 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
                         style: const TextStyle(
                             fontSize: 14, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 10),
-                    const Text("Drop",
-                        style: TextStyle(
+                    Text(loc.drop,
+                        style: const TextStyle(
                             fontSize: 11,
                             color: Colors.grey,
                             fontWeight: FontWeight.w600)),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/no_data_found.dart';
@@ -26,7 +27,7 @@ class _DriverPrivacyPolicyState extends State<DriverPrivacyPolicy> {
   @override
   Widget build(BuildContext context) {
     final privacyVm = Provider.of<PolicyViewModel>(context);
-
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       bottom: true,
@@ -36,8 +37,8 @@ class _DriverPrivacyPolicyState extends State<DriverPrivacyPolicy> {
           backgroundColor: AppColor.royalBlue,
           elevation: 0,
           centerTitle: true,
-          title: const Text(
-            "Privacy Policy",
+          title:  Text(
+           loc.privacy_policy,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,

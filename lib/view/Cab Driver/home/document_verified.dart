@@ -1,198 +1,8 @@
-// import 'package:flutter/cupertino.dart';
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import 'package:rainbow_partner/res/app_color.dart';
-// import 'package:rainbow_partner/res/app_fonts.dart';
-// import 'package:rainbow_partner/res/constant_appbar.dart';
-// import 'package:rainbow_partner/res/custom_button.dart';
-// import 'package:rainbow_partner/res/sizing_const.dart';
-// import 'package:rainbow_partner/res/text_const.dart';
-// import 'package:rainbow_partner/utils/location_utils.dart';
-// import 'package:rainbow_partner/view/Cab%20Driver/home/document_verification_steps.dart';
-// import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
-//
-// class DocumentVerified extends StatefulWidget {
-//   const DocumentVerified({super.key});
-//
-//   @override
-//   State<DocumentVerified> createState() => _DocumentVerifiedState();
-// }
-//
-// class _DocumentVerifiedState extends State<DocumentVerified> {
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//
-//     WidgetsBinding.instance.addPostFrameCallback((_) async {
-//       final driverProfileVm = Provider.of<DriverProfileViewModel>(context, listen: false);
-//       final position = await LocationUtils.getLocation(
-//       );
-//
-//       final lat = position.latitude.toString();
-//       final lng = position.longitude.toString();
-//       driverProfileVm.driverProfileApi(lat, lng, context);
-//
-//       });
-//
-//   }
-//
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return SafeArea(
-//       top: false,
-//       bottom: true,
-//       child: Scaffold(
-//         backgroundColor: AppColor.white,
-//         appBar: ConstantAppbar(
-//           onBack: () => Navigator.pop(context),
-//           onClose: () => Navigator.pop(context),
-//         ),
-//
-//         body: Padding(
-//           padding: const EdgeInsets.symmetric(horizontal: 22),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               const SizedBox(height: 20),
-//
-//                TextConst(
-//                  title:
-//                 "Set up access to ride\nrequests",
-//                  size: 25,
-//                  fontWeight: FontWeight.w700,
-//               ),
-//
-//               const SizedBox(height: 35),
-//
-//               // -------------------------
-//               // TIMELINE
-//               // -------------------------
-//               Row(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   // ICONS + LINES
-//                   Column(
-//                     children: [
-//                       // Green Tick
-//                       CircleAvatar(
-//                         radius: 15,
-//                         backgroundColor: Colors.green,
-//                         child: const Icon(Icons.check, color: Colors.white),
-//                       ),
-//
-//                       // Green Line
-//                       Container(
-//                         height: 70,
-//                         width: 3,
-//                         color: Colors.green,
-//                       ),
-//
-//                       // Black Icon
-//                       CircleAvatar(
-//                         radius: 15,
-//                         backgroundColor: Colors.black,
-//                         child: const Icon(Icons.credit_card,
-//                             color: Colors.white, size: 20),
-//                       ),
-//
-//                       Container(
-//                         height: 70,
-//                         width: 3,
-//                         color: Colors.grey.shade300,
-//                       ),
-//
-//                       // Grey Icon
-//                       CircleAvatar(
-//                         radius: 15,
-//                         backgroundColor: Colors.grey.shade200,
-//                         child: const Icon(Icons.directions_car,
-//                             color: Colors.grey, size: 22),
-//                       ),
-//                     ],
-//                   ),
-//
-//                   const SizedBox(width: 18),
-//
-//                   // TEXT BLOCK
-//                   Expanded(
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         // STEP 1
-//                          TextConst(
-//                            title:
-//                           "Documents submitted",
-//                              size: 18, fontWeight: FontWeight.w600
-//                         ),
-//                         const SizedBox(height: 4),
-//                         TextConst(
-//                           title:
-//                           "We have all the info we need to verify you",
-//                           size: 15,
-//                           fontFamily: AppFonts.poppinsReg,
-//                           color: Colors.grey.shade700,
-//                         ),
-//
-//                         const SizedBox(height: 30),
-//
-//                          TextConst(
-//                            title:
-//                           "Set up access to ride requests",
-//                              size: 18, fontWeight: FontWeight.w600
-//                         ),
-//                         const SizedBox(height: 4),
-//                         TextConst(
-//                           title:
-//                           "You'll be ready to accept ride requests right after verification",
-//                           size: 15,
-//                           fontFamily: AppFonts.poppinsReg,
-//                           color: Colors.grey.shade700,
-//                         ),
-//                         const SizedBox(height: 30),
-//                          TextConst(
-//                            title:
-//                           "Wait for verification result",
-//                              size: 18, fontWeight: FontWeight.w600),
-//                         const SizedBox(height: 4),
-//                         TextConst(
-//                           title:
-//                           "We'll notify you within 24 hours",
-//                           size: 15,
-//                           fontFamily: AppFonts.poppinsReg,
-//                           color: Colors.grey.shade700,
-//                         ),
-//                       ],
-//                     ),
-//                   )
-//                 ],
-//               ),
-//
-//               const SizedBox(height: 35),
-//               const Spacer(),
-//
-//               // -------------------------
-//               // BOTTOM BUTTON
-//               // -------------------------
-//               CustomButton(
-//                   bgColor: AppColor.royalBlue,
-//                   title: "Go to setup", onTap: (){
-//                     Navigator.push(context, CupertinoPageRoute(builder: (context)=>DocumentVerificationSteps()));
-//               }),
-//               SizedBox(height: Sizes.screenHeight*0.025,)
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
@@ -299,11 +109,13 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
 
   // ================= UI STATES =================
   Widget pendingWidget() {
+    final loc = AppLocalizations.of(context)!;
+
     return statusLayout(
       icon: Icons.access_time_rounded,
       iconColor: Colors.orange,
-      title: "Verification in Progress",
-      subTitle: "We're currently reviewing your documents.\nYou'll be notified once completed.",
+      title: loc.verification_in_progress,
+      subTitle: loc.verification_in_progress_description,
       customTop: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
@@ -312,11 +124,11 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             Icon(Icons.hourglass_bottom, size: 18, color: Colors.orange),
             SizedBox(width: 6),
             Text(
-              "Pending Verification",
+              loc.pending_verification,
               style: TextStyle(
                 color: Colors.orange,
                 fontWeight: FontWeight.w600,
@@ -331,11 +143,12 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
 
 
   Widget verifiedWidget() {
+    final loc = AppLocalizations.of(context)!;
     return statusLayout(
       icon: Icons.check_circle,
       iconColor: Colors.green,
-      title: "Documents Verified",
-      subTitle: "You are ready to accept ride requests",
+      title: loc.documents_verified,
+      subTitle: loc.documents_verified_description,
       showButton: true,
       onButtonTap: () {
         Navigator.push(context, CupertinoPageRoute(builder: (context)=>DriverHomePage()));
@@ -344,11 +157,12 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
   }
 
   Widget rejectedWidget(DriverProfileViewModel vm) {
+    final loc = AppLocalizations.of(context)!;
     return statusLayout(
       icon: Icons.cancel,
       iconColor: Colors.red,
-      title: "Verification Rejected",
-      subTitle: "Some documents were rejected. Please fix them to continue.",
+      title: loc.verification_rejected,
+      subTitle: loc.verification_rejected_description,
       showButton: true,
       isRejected: true,
       onButtonTap: () {
@@ -373,6 +187,7 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
     VoidCallback? onButtonTap,
     Widget? customTop,
   }) {
+    final loc = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 22),
       child: Column(
@@ -426,7 +241,7 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
                   ),
                 ),
                 child: Text(
-                  isRejected ? "Fix Documents" : "Go to setup",
+                  isRejected ? loc.fix_documents : loc.go_to_setup,
                   style: TextStyle(
                     color: AppColor.royalBlue,
                     fontSize: 16,
@@ -497,5 +312,3 @@ class _DocumentVerifiedState extends State<DocumentVerified> {
     );
   }
 }
-
-

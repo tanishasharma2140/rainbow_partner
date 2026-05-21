@@ -6,7 +6,6 @@ import 'package:rainbow_partner/view_model/user_view_model.dart';
 class IgnoreServiceOrderViewModel with ChangeNotifier {
   final _ignoreServiceOrderRepo = IgnoreServiceOrderRepo();
 
-  /// 🔥 per-order loading tracker
   final Set<int> _loadingOrderIds = {};
 
   bool loading(int orderId) => _loadingOrderIds.contains(orderId);
@@ -32,6 +31,7 @@ class IgnoreServiceOrderViewModel with ChangeNotifier {
         "order_id": orderId,
         "serviceman_id": servicemanId,
       };
+      print('ignoredata: $data');
 
       final response =
       await _ignoreServiceOrderRepo.ignoreServiceOrderApi(data);

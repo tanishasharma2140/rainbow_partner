@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
@@ -33,7 +34,7 @@ class _DriverNotificationState extends State<DriverNotification> {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<PartnerNotificationViewModel>(context);
-
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       bottom: true,
@@ -44,7 +45,7 @@ class _DriverNotificationState extends State<DriverNotification> {
           elevation: 0,
           centerTitle: true,
           title: TextConst(
-            title: 'Notifications',
+            title: loc.notifications,
             size: 18,
             color: AppColor.white,
             fontWeight: FontWeight.bold,
@@ -96,11 +97,12 @@ class _DriverNotificationState extends State<DriverNotification> {
   }
 
   Widget _buildEmptyState() {
+    final loc = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: const [
+        children:  [
           SizedBox(
             width: 180,
             height: 180,
@@ -111,14 +113,14 @@ class _DriverNotificationState extends State<DriverNotification> {
           ),
           SizedBox(height: 24),
           TextConst(
-            title: "You are all up to date",
+            title: loc.you_are_all_up_to_date,
             size: 20,
             fontWeight: FontWeight.w700,
             fontFamily: AppFonts.poppinsReg,
             textAlign: TextAlign.center,
           ),
           TextConst(
-            title: "No new notifications — come back soon",
+            title: loc.no_new_notifications_come_back_soon,
             size: 15,
             color: Colors.black54,
             textAlign: TextAlign.center,

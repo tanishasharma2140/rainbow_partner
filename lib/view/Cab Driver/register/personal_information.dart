@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
@@ -55,6 +56,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
   }
 
   void showImagePickerOptions() {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -69,7 +71,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
             children: [
               ListTile(
                 leading: Icon(Icons.photo, color: AppColor.royalBlue),
-                title: Text("Select from Gallery"),
+                title: Text(loc.select_from_gallery),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(false);
@@ -78,7 +80,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
 
               ListTile(
                 leading: Icon(Icons.camera_alt, color: AppColor.royalBlue),
-                title: Text("Take Photo"),
+                title: Text(loc.take_photo),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(true);
@@ -93,6 +95,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final driverRegOneVm = Provider.of<DriverRegisterOneViewModel>(context);
     return WillPopScope(
       onWillPop: () async {
@@ -127,7 +130,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
                               SizedBox(height: topPadding),
 
                               TextConst(
-                                title: "Personal information",
+                                title: loc.personal_information,
                                 size: 25,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -194,8 +197,8 @@ class _PersonalInformationState extends State<PersonalInformation> {
                                     ),
 
                                     const SizedBox(height: 8),
-                                    const TextConst(
-                                      title: "Personal picture",
+                                    TextConst(
+                                      title: loc.personal_picture,
                                       size: 14,
                                     ),
                                   ],
@@ -216,7 +219,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
                                     ),
                                   ],
                                   decoration: InputDecoration(
-                                    hintText: "Name",
+                                    hintText: loc.name,
                                     counterText: "",
                                     border: InputBorder.none,
                                   ),
@@ -237,7 +240,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
                                     ),
                                   ],
                                   decoration: InputDecoration(
-                                    hintText: "Surname",
+                                    hintText: loc.surname,
                                     counterText: "",
                                     border: InputBorder.none,
                                   ),
@@ -270,7 +273,7 @@ class _PersonalInformationState extends State<PersonalInformation> {
                                   controller: dobController,
                                   readOnly: true,
                                   decoration: InputDecoration(
-                                    hintText: "Date of birth",
+                                    hintText: loc.date_of_birth,
                                     border: InputBorder.none,
                                   ),
                                   onTap: () => _selectDate(context),
@@ -317,25 +320,25 @@ class _PersonalInformationState extends State<PersonalInformation> {
                                     child: CustomButton(
                                       bgColor: AppColor.royalBlue,
                                       textColor: AppColor.white,
-                                      title: "Next",
+                                      title: loc.next,
                                       onTap: () {
                                         if (selectedImage == null) {
-                                         Utils.showErrorMessage(context, "Please select personal picture");
+                                         Utils.showErrorMessage(context, loc.please_select_personal_picture);
                                           return;
                                         }
 
                                         if (nameController.text.trim().isEmpty) {
-                                          Utils.showErrorMessage(context, "Please enter name");
+                                          Utils.showErrorMessage(context, loc.please_enter_name);
                                           return;
                                         }
 
                                         if (surnameController.text.trim().isEmpty) {
-                                          Utils.showErrorMessage(context, "Please enter surname");
+                                          Utils.showErrorMessage(context, loc.please_enter_surname);
                                           return;
                                         }
 
                                         if (dobController.text.trim().isEmpty) {
-                                          Utils.showErrorMessage(context, "Please select date of birth");
+                                          Utils.showErrorMessage(context, loc.please_select_date_of_birth);
                                           return;
                                         }
                                         driverRegOneVm.driverRegisterOneApi(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -45,6 +46,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       bottom: true,
@@ -54,7 +56,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
           backgroundColor: cardColor,
           elevation: 0.5,
           title: Text(
-            'Ride History',
+            loc.ride_history,
             style: TextStyle(
               color: textPrimary,
               fontSize: 20,
@@ -104,8 +106,8 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                     SizedBox(height: 16),
                     Text(
                       _selectedTab == 0
-                          ? 'No rides found'
-                          : 'No scheduled rides found',
+                          ? loc.no_rides_found
+                          : loc.no_scheduled_rides_found,
                       style: TextStyle(
                         fontSize: 16,
                         color: textSecondary,
@@ -138,14 +140,15 @@ class _CabRideHistoryState extends State<CabRideHistory> {
   }
 
   Widget _buildTabBar() {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       height: 50,
       padding: EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Expanded(child: _buildTabButton('Now', 0)),
+          Expanded(child: _buildTabButton(loc.now, 0)),
           SizedBox(width: 16),
-          Expanded(child: _buildTabButton('Later', 1)),
+          Expanded(child: _buildTabButton(loc.later, 1)),
         ],
       ),
     );
@@ -185,6 +188,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
   }
 
   Widget _buildRideCard(Data ride, bool isNowTab) {
+    final loc = AppLocalizations.of(context)!;
     Color statusColor = isNowTab
         ? _getStatusColor(ride.orderStatus)
         : _getLaterStatusColor(ride.orderStatus);
@@ -237,14 +241,14 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextConst(
-                        title: ride.userName?.toString() ?? 'Unknown User',
+                        title: ride.userName?.toString() ?? loc.unknown_user,
                         size: 16,
                         fontWeight: FontWeight.w700,
                         color: textPrimary,
                       ),
                       SizedBox(height: 2),
                       TextConst(
-                        title: ride.userMobile?.toString() ?? 'N/A',
+                        title: ride.userMobile?.toString() ?? loc.na,
                         size: 13,
                         color: textSecondary,
                         fontWeight: FontWeight.w500,
@@ -302,14 +306,14 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextConst(
-                        title: "Pickup",
+                        title: loc.pickup,
                         size: 12,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
                       SizedBox(height: 2),
                       Text(
-                        ride.pickupLocation ?? "N/A",
+                        ride.pickupLocation ?? loc.na,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -333,14 +337,14 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextConst(
-                        title: "Drop",
+                        title: loc.drop,
                         size: 12,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
                       SizedBox(height: 2),
                       Text(
-                        ride.dropLocation ?? "N/A",
+                        ride.dropLocation ?? loc.na,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -367,13 +371,13 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildStatItem(
-                    'Distance',
+                    loc.distance,
                     '${ride.distanceKm ?? '0'} km',
                     Icons.rocket,
                   ),
                   _buildAmountStatItem(ride),
                   _buildStatItem(
-                    'Payment',
+                    loc.payment,
                     payModeText,
                     Icons.payment,
                   ),
@@ -462,7 +466,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Cancellation Reason',
+                            loc.cancellation_reason,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               color: Color(0xFFFF3B30),
@@ -538,7 +542,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                   ),
                   SizedBox(width: 4),
                   Text(
-                    'Rating',
+                    loc.rating,
                     style: TextStyle(
                       color: textSecondary,
                       fontSize: 12,
@@ -576,10 +580,10 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             Icon(Icons.navigation_rounded, size: 16, color: Colors.green),
                             SizedBox(width: 6),
-                            Text('Navigate',
+                            Text(loc.navigate,
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -603,10 +607,10 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             Icon(Icons.play_arrow_rounded, size: 16, color: Colors.white),
                             SizedBox(width: 6),
-                            Text('Start Ride',
+                            Text(loc.start_ride,
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -627,6 +631,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
   }
 
   void _showOtpDialog(Data ride) {
+    final loc = AppLocalizations.of(context)!;
     final otpController = TextEditingController();
 
     final cabOrderStatusVm =
@@ -681,9 +686,8 @@ class _CabRideHistoryState extends State<CabRideHistory> {
 
               const SizedBox(height: 16),
 
-              const TextConst(
-                title:
-                "Verify Ride OTP",
+              TextConst(
+                title: loc.verify_ride_otp,
                 size: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -691,8 +695,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
               const SizedBox(height: 8),
 
               TextConst(
-                title:
-                "Enter customer OTP to start the ride",
+                title: loc.enter_customer_otp_start_ride,
                 textAlign: TextAlign.center,
                 size: 14,
                 color: Colors.grey.shade600,
@@ -741,7 +744,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child:  TextConst(title: "Back"),
+                      child:  TextConst(title: loc.back),
                     ),
                   ),
 
@@ -785,9 +788,9 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                             ),
                           ],
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            "Start Ride",
+                            loc.start_ride,
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -808,6 +811,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
 
   // ── Schedule Date/Time Banner ──
   Widget _buildScheduleBanner(String scheduleTimeRaw) {
+    final loc = AppLocalizations.of(context)!;
     String formattedDate = '';
     String formattedTime = '';
     String dayLabel = '';
@@ -824,11 +828,11 @@ class _CabRideHistoryState extends State<CabRideHistory> {
       if (dt.year == today.year &&
           dt.month == today.month &&
           dt.day == today.day) {
-        dayLabel = 'Today';
+        dayLabel = loc.today;
       } else if (dt.year == tomorrow.year &&
           dt.month == tomorrow.month &&
           dt.day == tomorrow.day) {
-        dayLabel = 'Tomorrow';
+        dayLabel = loc.tomorrow;
       } else {
         dayLabel = DateFormat('EEEE').format(dt); // Day name
       }
@@ -870,8 +874,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextConst(
-                  title:
-                  'Scheduled Ride',
+                  title: loc.scheduled_ride,
                   color: Colors.white.withOpacity(0.8),
                   size: 11,
                   fontFamily: AppFonts.kanitReg,
@@ -917,7 +920,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  'Time',
+                  loc.time,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.7),
                     fontSize: 10,
@@ -971,6 +974,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
   }
 
   Widget _buildAmountStatItem(Data ride) {
+    final loc = AppLocalizations.of(context)!;
     bool showBothAmounts = ride.walletApply == 1 && ride.payMode == 1;
 
     if (showBothAmounts) {
@@ -1013,7 +1017,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
           ),
           SizedBox(height: 2),
           Text(
-            'Fare',
+            loc.fare,
             style: TextStyle(
               fontSize: 11,
               color: textSecondary,
@@ -1024,7 +1028,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
       );
     } else {
       return _buildStatItem(
-        'Fare',
+        loc.fare,
         '₹${ride.finalAmount ?? '0'}',
         Icons.currency_rupee,
       );
@@ -1064,29 +1068,31 @@ class _CabRideHistoryState extends State<CabRideHistory> {
   }
 
   String _getPayModeText(dynamic payMode) {
+    final loc = AppLocalizations.of(context)!;
     switch (payMode?.toString()) {
       case '1':
-        return 'Online';
+        return loc.online;
       case '2':
-        return 'Offline';
+        return loc.offline;
       case '3':
-        return 'Wallet';
+        return loc.wallet;
       default:
-        return 'N/A';
+        return loc.na;
     }
   }
 
   // Now tab statuses
   String _getStatusText(dynamic status) {
+    final loc = AppLocalizations.of(context)!;
     switch (status?.toString()) {
       case '5':
-        return 'Completed';
+        return loc.completed;
       case '6':
-        return 'Cancelled by User';
+        return loc.cancelled_by_user;
       case '7':
-        return 'Cancelled by Me';
+        return loc.cancelled_by_me;
       default:
-        return 'Unknown';
+        return loc.unknown;
     }
   }
 
@@ -1118,23 +1124,24 @@ class _CabRideHistoryState extends State<CabRideHistory> {
 
   // Later tab statuses: [1,2,4,5,6,7,8]
   String _getLaterStatusText(dynamic status) {
+    final loc = AppLocalizations.of(context)!;
     switch (status?.toString()) {
       case '1':
-        return 'Booking Confirmed';
+        return loc.booking_confirmed;
       case '2':
-        return 'Driver On Way';
+        return loc.driver_on_way;
       case '4':
-        return 'Ride In Progress';
+        return loc.ride_in_progress;
       case '5':
-        return 'Completed';
+        return loc.completed;
       case '6':
-        return 'Cancelled by User';
+        return loc.cancelled_by_user;
       case '7':
-        return 'Cancelled by Driver';
+        return loc.cancelled_by_driver;
       case '8':
-        return 'Pending / Waiting';
+        return loc.pending_waiting;
       default:
-        return 'Unknown';
+        return loc.unknown;
     }
   }
 

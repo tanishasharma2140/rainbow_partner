@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/auth/splash.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/pdf_view_screen.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
@@ -62,11 +63,12 @@ class _DriverProfileState extends State<DriverProfile> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const TextConst(
-          title: "Driver Profile",
+        title: TextConst(
+          title: loc.driver_profile,
           size: 18,
           color: Colors.white,
           fontWeight: FontWeight.w600,
@@ -89,8 +91,8 @@ class _DriverProfileState extends State<DriverProfile> {
                   },
                 );
               },
-              child: Icon(Icons.logout)),
-          SizedBox(width: 13,)
+              child: const Icon(Icons.logout)),
+          const SizedBox(width: 13,)
         ],
       ),
 
@@ -128,8 +130,8 @@ class _DriverProfileState extends State<DriverProfile> {
                             : null,
                       ),
                       const SizedBox(height: 8),
-                      const TextConst(
-                        title: "Driver Photo",
+                      TextConst(
+                        title: loc.driver_photo,
                         size: 13,
                         color: Colors.grey,
                       )
@@ -140,101 +142,101 @@ class _DriverProfileState extends State<DriverProfile> {
                 const SizedBox(height: 30),
 
                 // ---------------- PERSONAL DETAILS ----------------
-                sectionTitle("Personal Details"),
+                sectionTitle(loc.personal_details),
                 infoTile(
-                  "Name",
+                  loc.name,
                   [
                     data.firstName,
                     data.lastName,
                   ].where((e) => e != null && e.toString().isNotEmpty).join(" "),
                 ),
-                infoTile("Mobile Number", data.mobile?.toString() ?? "--"),
-                infoTile("Date of Birth", data.dateOfBirth?.toString() ?? "--"),
+                infoTile(loc.mobile_number, data.mobile?.toString() ?? "--"),
+                infoTile(loc.date_of_birth, data.dateOfBirth?.toString() ?? "--"),
 
                 const SizedBox(height: 30),
 
                 // ---------------- DRIVING LICENSE ----------------
-                sectionTitle("Driving License"),
+                sectionTitle(loc.driving_license),
                 Row(
                   children: [
                     Expanded(
                         child: viewImageBox(
-                            "Front Side", data.driverLicenceFront)),
+                            loc.front_side, data.driverLicenceFront)),
                     const SizedBox(width: 14),
                     Expanded(
                         child: viewImageBox(
-                            "Back Side", data.driverLicenceBack)),
+                            loc.back_side, data.driverLicenceBack)),
                   ],
                 ),
                 const SizedBox(height: 12),
-                infoTile("License Number",
+                infoTile(loc.license_number,
                     data.driverLicenceNumber?.toString() ?? "--"),
 
                 const SizedBox(height: 30),
 
                 // ---------------- AADHAAR ----------------
-                sectionTitle("Aadhaar Card"),
+                sectionTitle(loc.aadhaar_card),
                 Row(
                   children: [
                     Expanded(
                         child: viewImageBox(
-                            "Front Side", data.aadhaarFront)),
+                            loc.front_side, data.aadhaarFront)),
                     const SizedBox(width: 14),
                     Expanded(
                         child:
-                        viewImageBox("Back Side", data.aadhaarBack)),
+                        viewImageBox(loc.back_side, data.aadhaarBack)),
                   ],
                 ),
-                SizedBox(height: 12,),
+                const SizedBox(height: 12,),
                 infoTile(
-                    "Aadhaar Number", data.aadhaarNumber?.toString() ?? "--"),
+                    loc.aadhaar_number, data.aadhaarNumber?.toString() ?? "--"),
 
                 const SizedBox(height: 30),
 
                 // ---------------- PAN ----------------
-                sectionTitle("PAN Card"),
+                sectionTitle(loc.pan_card),
                 Row(
                   children: [
                     Expanded(
                         child:
-                        viewImageBox("Front Side", data.panCardFront)),
+                        viewImageBox(loc.front_side, data.panCardFront)),
                     const SizedBox(width: 14),
 
                   ],
                 ),
-                SizedBox(height: 12,),
-                infoTile("PAN Number",
+                const SizedBox(height: 12,),
+                infoTile(loc.pan_number,
                     data.panCardNumber?.toString() ?? "--"),
 
                 const SizedBox(height: 20),
 
                 // ---------------- VEHICLE DETAILS ----------------
-                sectionTitle("Vehicle Details"),
-                infoTile("Brand", data.brandName?.toString() ?? "--"),
-                infoTile("Model", data.modelName?.toString() ?? "--"),
-                infoTile("Color", data.vehicleColor?.toString() ?? "--"),
-                infoTile("Plate Number",
+                sectionTitle(loc.vehicle_details),
+                infoTile(loc.brand, data.brandName?.toString() ?? "--"),
+                infoTile(loc.model, data.modelName?.toString() ?? "--"),
+                infoTile(loc.color, data.vehicleColor?.toString() ?? "--"),
+                infoTile(loc.plate_number,
                     data.vehiclePlateNumber?.toString() ?? "--"),
-                infoTile("Production Year",
+                infoTile(loc.production_year,
                     data.vehicleProductionYear?.toString() ?? "--"),
 
                 const SizedBox(height: 20),
-                viewImageBox("Vehicle Photo", data.vehiclePhoto),
+                viewImageBox(loc.vehicle_photo, data.vehiclePhoto),
 
                 const SizedBox(height: 30),
 
                 // ---------------- VEHICLE DOCUMENTS ----------------
                 if (data.vehicleCategory != 2) ...[
-                  sectionTitle("Vehicle Documents"),
+                  sectionTitle(loc.vehicle_documents),
                   Row(
                     children: [
                       Expanded(
                           child: viewImageBox(
-                              "RC Front", data.vehicleRegistrationFront)),
+                              loc.rc_front, data.vehicleRegistrationFront)),
                       const SizedBox(width: 14),
                       Expanded(
                           child: viewImageBox(
-                              "RC Back", data.vehicleRegistrationBack)),
+                              loc.rc_back, data.vehicleRegistrationBack)),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -242,11 +244,11 @@ class _DriverProfileState extends State<DriverProfile> {
                     children: [
                       Expanded(
                           child: viewImageBox(
-                              "Permit Part A", data.vehiclePermitPartA)),
+                              loc.permit_part_a, data.vehiclePermitPartA)),
                       const SizedBox(width: 14),
                       Expanded(
                           child: viewImageBox(
-                              "Permit Part B", data.vehiclePermitPartB)),
+                              loc.permit_part_b, data.vehiclePermitPartB)),
                     ],
                   ),
                 ],
@@ -254,21 +256,21 @@ class _DriverProfileState extends State<DriverProfile> {
                 const SizedBox(height: 30),
 
                 // ---------------- CERTIFICATES ----------------
-                sectionTitle("Certificates"),
+                sectionTitle(loc.certificates),
 
                 if (data.fitnessCertificate != null && data.fitnessCertificate.toString().isNotEmpty) ...[
-                  viewImageBox("RC Certificate", data.fitnessCertificate),
+                  viewImageBox(loc.rc_certificate, data.fitnessCertificate),
                   const SizedBox(height: 12),
                 ],
 
-                viewImageBox("Insurance Certificate", data.insuranceCertificate),
+                viewImageBox(loc.insurance_certificate, data.insuranceCertificate),
                 const SizedBox(height: 12),
 
-                viewImageBox("Pollution Certificate", data.pollutionCertificate),
+                viewImageBox(loc.pollution_certificate, data.pollutionCertificate),
                 const SizedBox(height: 12),
 
                 if (data.policeCertificate != null && data.policeCertificate.toString().isNotEmpty) ...[
-                  viewImageBox("Police Verification", data.policeCertificate),
+                  viewImageBox(loc.police_verification, data.policeCertificate),
                   const SizedBox(height: 12),
                 ],
 
@@ -324,6 +326,7 @@ class _DriverProfileState extends State<DriverProfile> {
   }
 
   Widget viewImageBox(String label, String? imageUrl) {
+    final loc = AppLocalizations.of(context)!;
     final bool isPdf =
         imageUrl != null &&
             imageUrl.isNotEmpty &&
@@ -367,17 +370,17 @@ class _DriverProfileState extends State<DriverProfile> {
               ),
             )
                 : isPdf
-                ? const Center(
+                ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.picture_as_pdf,
                     size: 45,
                     color: Colors.red,
                   ),
-                  SizedBox(height: 6),
-                  Text("View PDF")
+                  const SizedBox(height: 6),
+                  Text(loc.view_pdf)
                 ],
               ),
             )
@@ -390,6 +393,7 @@ class _DriverProfileState extends State<DriverProfile> {
     );
   }
   Widget logoutBottomSheet(context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       bottom: true,
       child: Padding(
@@ -399,7 +403,7 @@ class _DriverProfileState extends State<DriverProfile> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextConst(
-                title: "Are you sure you want to log out?",
+                title: loc.are_you_sure_logout,
                 size: 16,
                 color:AppColor.black),
             SizedBox(height: Sizes.screenHeight * 0.03),
@@ -423,7 +427,7 @@ class _DriverProfileState extends State<DriverProfile> {
                       child: TextConst(
                           fontWeight: FontWeight.w600,
                           fontFamily: AppFonts.kanitReg,
-                          title: "No", color: AppColor.royalBlue),
+                          title: loc.no, color: AppColor.royalBlue),
                     ),
                   ),
                 ),
@@ -442,7 +446,7 @@ class _DriverProfileState extends State<DriverProfile> {
                       borderRadius: const BorderRadius.all(Radius.circular(20)),
                     ),
                     child: Center(
-                      child: TextConst(title: "Yes", color: AppColor.white,fontFamily:AppFonts.kanitReg,fontWeight: FontWeight.w400,),
+                      child: TextConst(title: loc.yes, color: AppColor.white,fontFamily:AppFonts.kanitReg,fontWeight: FontWeight.w400,),
                     ),
                   ),
                 ),

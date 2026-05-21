@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
@@ -33,19 +34,19 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
   File? _insuranceFile;
   File? _policeFile;
 
-  Map<String, File?> get certificateFiles {
+  Map<String, File?> getCertificateFiles(AppLocalizations loc) {
     final Map<String, File?> map = {};
 
     if (showFitnessCertificate) {
-      map["Fitness\nCertificate"] = _fitnessFile;
+      map[loc.fitness_certificate] = _fitnessFile;
     }
 
     // ✅ Pollution condition
     if (showPollutionCertificate) {
-      map["Pollution (PUC)\nCertificate\n(Optional)"] = _pollutionFile;
+      map[loc.pollution_certificate_optional] = _pollutionFile;
     }
-    map["Insurance\nCertificate"] = _insuranceFile;
-    map["Police Verification\nCertificate\n(Optional)"] = _policeFile;
+    map[loc.insurance_certificate] = _insuranceFile;
+    map[loc.police_verification_certificate_optional] = _policeFile;
     return map;
   }
 
@@ -75,36 +76,36 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
     });
   }
 
-  void _setFile(String key, File? file) {
+  void _setFile(String key, File? file, AppLocalizations loc) {
     setState(() {
-      if (key.contains("Fitness"))
+      if (key == loc.fitness_certificate)
         _fitnessFile = file;
-      else if (key.contains("Pollution"))
+      else if (key == loc.pollution_certificate_optional)
         _pollutionFile = file;
-      else if (key.contains("Insurance"))
+      else if (key == loc.insurance_certificate)
         _insuranceFile = file;
-      else if (key.contains("Police"))
+      else if (key == loc.police_verification_certificate_optional)
         _policeFile = file;
     });
   }
 
-  Future<void> pickImage(String key, ImageSource source) async {
+  Future<void> pickImage(String key, ImageSource source, AppLocalizations loc) async {
     final XFile? file = await picker.pickImage(
       source: source,
       imageQuality: 70,
     );
     if (file != null) {
-      _setFile(key, File(file.path));
+      _setFile(key, File(file.path), loc);
     }
   }
 
-  Future<void> pickDocument(String key) async {
+  Future<void> pickDocument(String key, AppLocalizations loc) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
     if (result != null && result.files.single.path != null) {
-      _setFile(key, File(result.files.single.path!));
+      _setFile(key, File(result.files.single.path!), loc);
     }
   }
 
@@ -113,6 +114,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
   }
 
   void showPicker(String key) {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -130,10 +132,10 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                   Icons.picture_as_pdf,
                   color: AppColor.royalBlue,
                 ),
-                title: const Text("Upload PDF Document"),
+                title: Text(loc.upload_pdf_document),
                 onTap: () {
                   Navigator.pop(context);
-                  pickDocument(key);
+                  pickDocument(key, loc);
                 },
               ),
               ListTile(
@@ -141,10 +143,10 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                   Icons.photo_library,
                   color: AppColor.royalBlue,
                 ),
-                title: const Text("Choose Image From Gallery"),
+                title: Text(loc.choose_image_from_gallery),
                 onTap: () {
                   Navigator.pop(context);
-                  pickImage(key, ImageSource.gallery);
+                  pickImage(key, ImageSource.gallery, loc);
                 },
               ),
               ListTile(
@@ -152,10 +154,10 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                   Icons.camera_alt,
                   color: AppColor.royalBlue,
                 ),
-                title: const Text("Take Photo"),
+                title: Text(loc.take_photo),
                 onTap: () {
                   Navigator.pop(context);
-                  pickImage(key, ImageSource.camera);
+                  pickImage(key, ImageSource.camera, loc);
                 },
               ),
             ],
@@ -165,8 +167,8 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
     );
   }
 
-  Widget uploadBox(String title) {
-    File? file = certificateFiles[title];
+  Widget uploadBox(String title, AppLocalizations loc) {
+    File? file = getCertificateFiles(loc)[title];
     bool isPDF = file != null && file.path.toLowerCase().endsWith(".pdf");
 
     return GestureDetector(
@@ -212,7 +214,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                     right: 6,
                     top: 6,
                     child: GestureDetector(
-                      onTap: () => _setFile(title, null),
+                      onTap: () => _setFile(title, null, loc),
                       child: Container(
                         height: 28,
                         width: 28,
@@ -245,6 +247,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final driverRegisterFour = Provider.of<DriverRegisterFourViewModel>(
       context,
     );
@@ -270,8 +273,8 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 15),
-                    const TextConst(
-                      title: "Upload Required Certificates",
+                    TextConst(
+                      title: loc.upload_required_certificates,
                       size: 25,
                       fontWeight: FontWeight.w700,
                     ),
@@ -279,8 +282,8 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                     Wrap(
                       spacing: 20,
                       runSpacing: 25,
-                      children: certificateFiles.keys
-                          .map((e) => uploadBox(e))
+                      children: getCertificateFiles(loc).keys
+                          .map((e) => uploadBox(e, loc))
                           .toList(),
                     ),
                     const Spacer(),
@@ -288,7 +291,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                       height: 50,
                       width: double.infinity,
                       child: CustomButton(
-                        title: "Next",
+                        title: loc.next,
                         bgColor: AppColor.royalBlue,
                         textColor: Colors.white,
                           onTap: () {
@@ -296,7 +299,7 @@ class _RequiredCertificatesState extends State<RequiredCertificates> {
                                 insuranceCertificate == null) {
                               Utils.showErrorMessage(
                                 context,
-                                "Please upload all required certificates",
+                                loc.please_upload_all_required_certificates,
                               );
                               return;
                             }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
@@ -49,6 +50,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
 
   /// BOTTOM SHEET
   void showPicker(Function(File) onSelected) {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -63,7 +65,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
             children: [
               ListTile(
                 leading: Icon(Icons.photo, color: AppColor.royalBlue),
-                title: Text("Select from Gallery"),
+                title: Text(loc.select_from_gallery),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(onSelected, false);
@@ -71,7 +73,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
               ),
               ListTile(
                 leading: Icon(Icons.camera_alt, color: AppColor.royalBlue),
-                title: Text("Take Photo"),
+                title: Text(loc.take_photo),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(onSelected, true);
@@ -127,9 +129,9 @@ class _DrivingLicenseState extends State<DrivingLicense> {
                   top: 6,
                   child: GestureDetector(
                     onTap: () {
-                      if (label.contains("front")) {
+                      if (label == AppLocalizations.of(context)!.driver_license_front) {
                         licenseFront = null;
-                      } else if (label.contains("back")) {
+                      } else if (label == AppLocalizations.of(context)!.driver_license_back) {
                         licenseBack = null;
                       }
                       setState(() {});
@@ -170,6 +172,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
     required String hint,
     required TextEditingController controller,
   }) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -181,13 +184,13 @@ class _DrivingLicenseState extends State<DrivingLicense> {
       ),
       child: TextField(
         controller: controller,
-        readOnly: hint == "Validity date",
+        readOnly: hint == loc.validity_date,
         decoration: InputDecoration(
           hintText: hint,
           border: InputBorder.none,
           hintStyle: TextStyle(fontFamily: AppFonts.kanitReg),
         ),
-        onTap: hint == "Validity date"
+        onTap: hint == loc.validity_date
             ? () async {
           DateTime? picked = await showDatePicker(
             context: context,
@@ -226,6 +229,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final driverRegisterTwoVm = Provider.of<DriverRegisterTwoViewModel>(
       context,
     );
@@ -261,7 +265,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
                                 SizedBox(height: topPadding),
 
                                 TextConst(
-                                  title: "Driver license",
+                                  title: loc.driver_license,
                                   size: 25,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -274,7 +278,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
                       children: [
                         _imageBox(
                           image: licenseFront,
-                          label: "Driver license\n(front)",
+                          label: loc.driver_license_front,
                           onTap: () => showPicker((file) => licenseFront = file),
                         ),
 
@@ -282,7 +286,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
 
                         _imageBox(
                           image: licenseBack,
-                          label: "Driver license\n(back side)",
+                          label: loc.driver_license_back,
                           onTap: () => showPicker((file) => licenseBack = file),
                         ),
                       ],
@@ -292,7 +296,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
                     licenseInputField(),
 
                     _textField(
-                      hint: "Validity date",
+                      hint: loc.validity_date,
                       controller: validityDateController,
                     ),
 
@@ -337,32 +341,32 @@ class _DrivingLicenseState extends State<DrivingLicense> {
                           child: CustomButton(
                             bgColor: AppColor.royalBlue,
                             textColor: AppColor.white,
-                            title: "Next",
+                            title: loc.next,
                               onTap: () {
                                 if (licenseFront == null) {
-                                  Utils.showErrorMessage(context, "Please upload license front image");
+                                  Utils.showErrorMessage(context, loc.please_upload_license_front_image);
                                   return;
                                 }
 
                                 if (licenseBack == null) {
-                                  Utils.showErrorMessage(context, "Please upload license back image");
+                                  Utils.showErrorMessage(context, loc.please_upload_license_back_image);
                                   return;
                                 }
 
                                 final lic = licenseNumberController.text.trim();
 
                                 if (lic.isEmpty) {
-                                  Utils.showErrorMessage(context, "Please enter license number");
+                                  Utils.showErrorMessage(context, loc.please_enter_license_number);
                                   return;
                                 }
 
                                 if (driverLicenseError != null) {
-                                  Utils.showErrorMessage(context, "Please enter a valid license number");
+                                  Utils.showErrorMessage(context, loc.please_enter_valid_license_number);
                                   return;
                                 }
 
                                 if (validityDateController.text.trim().isEmpty) {
-                                  Utils.showErrorMessage(context, "Please select validity date");
+                                  Utils.showErrorMessage(context, loc.please_select_validity_date);
                                   return;
                                 }
 
@@ -424,6 +428,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
     );
   }
   Widget licenseInputField() {
+    final loc = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -447,7 +452,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
               UpperCaseTextFormatter(),
             ],
             decoration: InputDecoration(
-              hintText: "Driver license number",
+              hintText: loc.driver_license_number,
               border: InputBorder.none,
               hintStyle: TextStyle(fontFamily: AppFonts.kanitReg),
             ),
@@ -456,8 +461,7 @@ class _DrivingLicenseState extends State<DrivingLicense> {
               if (value.isEmpty) {
                 setState(() => driverLicenseError = null);
               } else if (!driverLicenseRegex.hasMatch(clean)) {
-                setState(() => driverLicenseError =
-                "Invalid license (example: MH12AB1234567)");
+                setState(() => driverLicenseError = loc.invalid_license_example);
               } else {
                 setState(() => driverLicenseError = null);
               }

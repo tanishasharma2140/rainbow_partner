@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
@@ -272,7 +273,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
 
   void _showUserCancelledPopup() {
     if (!mounted) return;
-
+    final loc = AppLocalizations.of(context)!;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showDialog(
         context: context,
@@ -304,9 +305,9 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
 
                   const SizedBox(height: 18),
 
-                  const Text(
-                    "Ride Cancelled",
-                    style: TextStyle(
+                  Text(
+                    loc.ride_cancelled,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                     ),
@@ -314,10 +315,10 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
 
                   const SizedBox(height: 8),
 
-                  const Text(
-                    "User has cancelled this ride",
+                  Text(
+                    loc.user_has_cancelled_this_ride,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       color: Colors.black54,
                     ),
@@ -341,9 +342,9 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                               (route) => false,
                         );
                       },
-                      child: const Text(
-                        "OK",
-                        style: TextStyle(
+                      child: Text(
+                        loc.ok,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -415,6 +416,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
 
 
   void _showPaymentSuccessPopup() {
+    final loc = AppLocalizations.of(context)!;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showDialog(
         context: context,
@@ -448,18 +450,17 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                   const SizedBox(height: 20),
 
                    TextConst(
-                     title:
-                    "Payment Successful",
+                     title: loc.payment_successful,
                      size: 18,
                      fontWeight: FontWeight.w700,
                   ),
 
                   const SizedBox(height: 8),
 
-                  const Text(
-                    "Customer has completed the payment",
+                  Text(
+                    loc.customer_has_completed_the_payment,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       fontFamily: AppFonts.kanitReg,
                       color: Colors.black54,
@@ -483,9 +484,9 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       alignment: Alignment.center,
-                      child: const Text(
-                        "OK",
-                        style: TextStyle(
+                      child: Text(
+                        loc.ok,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -580,84 +581,88 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
   void _showRideCompletedPopup() {
     if (_rideCompletedDialogShown) return;
     _rideCompletedDialogShown = true;
+    final loc = AppLocalizations.of(context)!;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) {
-          return Dialog(
-            backgroundColor: AppColor.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    height: 90,
-                    width: 90,
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check_circle,
-                      size: 60,
-                      color: Colors.green,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                   TextConst(
-                     title:
-                    "Ride Completed",
-                     size: 18,
-                     fontWeight: FontWeight.w700,
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  const TextConst(
-                    title:
-                    "Thank you for riding with us",
-                    textAlign: TextAlign.center,
-                    size: 14,
-                    color: Colors.black54,
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => DriverHomePage()),
-                            (route) => false,
-                      );
-                    },
-                    child: Container(
-                      height: 48,
-                      width: double.infinity,
+          return WillPopScope(
+            onWillPop: () async => false,
+            child: Dialog(
+              backgroundColor: AppColor.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      height: 90,
+                      width: 90,
                       decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.green.withOpacity(0.15),
+                        shape: BoxShape.circle,
                       ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        "Done",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: AppFonts.kanitReg,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                      child: const Icon(
+                        Icons.check_circle,
+                        size: 60,
+                        color: Colors.green,
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    TextConst(
+                      title: loc.ride_completed,
+                      size: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    TextConst(
+                      title: loc.thank_you_for_riding_with_us,
+                      textAlign: TextAlign.center,
+                      size: 14,
+                      color: Colors.black54,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (context) => DriverHomePage(),
+                          ),
+                              (route) => false,
+                        );
+                      },
+                      child: Container(
+                        height: 48,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          loc.done,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontFamily: AppFonts.kanitReg,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
@@ -854,10 +859,11 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
 
   Future<void> _verifyOtp(ChangeCabOrderStatusViewModel cabOrderStatusVm) async {
     if (isVerifyingOtp) return;
+    final loc = AppLocalizations.of(context)!;
 
     if (_otpController.text.length < 4) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter valid OTP")),
+        SnackBar(content: Text(loc.enter_valid_otp)),
       );
       return;
     }
@@ -894,18 +900,19 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
   String _getStatusText() {
     final int orderStatus = orderData?['order_status'] ?? 1;
     final String userName = orderData?['user_name'] ?? 'User';
+    final loc = AppLocalizations.of(context)!;
 
     switch (orderStatus) {
       case 1:
-        return "$userName waiting at pickup point";
+        return "$userName ${loc.waiting_at_pickup_point}";
       case 2:
-        return "Arrived at pickup";
+        return loc.arrived_at_pickup;
       case 3:
-        return "OTP verified - Ride started";
+        return loc.otp_verified_ride_started;
       case 4:
-        return "Ride completed";
+        return loc.ride_completed_status;
       default:
-        return "$userName waiting at pickup point";
+        return "$userName ${loc.waiting_at_pickup_point}";
     }
   }
 
@@ -938,10 +945,11 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
+    final loc = AppLocalizations.of(context)!;
 
     if (orderData == null) {
       return Scaffold(
-        body: Center(child: Text('Error loading ride data')),
+        body: Center(child: Text(loc.error_loading_ride_data)),
       );
     }
 
@@ -992,8 +1000,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
 
                     /// MESSAGE
                      TextConst(
-                       title:
-                      "Ride in progress",
+                       title: loc.ride_in_progress,
                        size: 16,
                        fontWeight: FontWeight.w600,
                     ),
@@ -1001,8 +1008,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                     const SizedBox(height: 6),
 
                      TextConst(
-                       title:
-                      "Please complete the ride before going back.",
+                       title: loc.please_complete_the_ride_before_going_back,
                       textAlign: TextAlign.center,
                        size: 13,
                        color: Colors.black54,
@@ -1020,9 +1026,9 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                           color: AppColor.royalBlue,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text(
-                          "OK",
-                          style: TextStyle(
+                        child: Text(
+                          loc.ok,
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -1116,7 +1122,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                             icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                             onPressed: () {
                               // 🔥 Block manual back during ride
-                            Utils.showErrorMessage(context, "Back disabled during active ride");
+                            Utils.showErrorMessage(context, loc.back_disabled_during_active_ride);
                             },
                             padding: EdgeInsets.zero,
                             iconSize: 18,
@@ -1282,13 +1288,13 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   TextConst(
-                                    title: orderData!['user_name'] ?? 'Customer',
+                                    title: orderData!['user_name'] ?? loc.customer,
                                     size: 17,
                                     fontWeight: FontWeight.w700,
                                   ),
                                   const SizedBox(height: 3),
                                   TextConst(
-                                    title: 'Order #${widget.orderId}',
+                                    title: '${loc.order} #${widget.orderId}',
                                     size: 13,
                                     color: Colors.grey,
                                   ),
@@ -1348,8 +1354,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                      TextConst(
-                                       title:
-                                      "Passenger Note",
+                                       title: loc.passenger_note,
                                        size: 12,
                                        fontWeight: FontWeight.w600,
                                        color: Colors.amber,
@@ -1386,7 +1391,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                                 Expanded(
                                   child: _infoItem(
                                     icon: Icons.location_on_outlined,
-                                    title: 'Distance',
+                                    title: loc.distance,
                                     value: "${orderData!['distance_km'] ?? 0} km",
                                     color: Colors.blue,
                                   ),
@@ -1399,7 +1404,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                                 Expanded(
                                   child: _infoItem(
                                     icon: Icons.currency_rupee,
-                                    title: 'Amount',
+                                    title: loc.amount,
                                     value: "₹${_getPayableAmount(orderData!)}",
                                     color: Colors.green,
                                   ),
@@ -1413,7 +1418,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                               icon: Icons.circle,
                               iconColor: Colors.green,
                               iconBgColor: Colors.green.withOpacity(0.1),
-                              title: 'Pickup',
+                              title: loc.pickup,
                               address: orderData!['pickup_location'] ?? 'N/A',
                               showDivider: true,
                             ),
@@ -1424,7 +1429,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                               icon: Icons.location_pin,
                               iconColor: Colors.red,
                               iconBgColor: Colors.red.withOpacity(0.1),
-                              title: 'Drop',
+                              title: loc.drop,
                               address: orderData!['drop_location'] ?? 'N/A',
                               showDivider: false,
                             ),
@@ -1439,7 +1444,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                         /// Status 1: I'm Here Button
                         CustomButton(
                           bgColor: AppColor.royalBlue,
-                          title: "I'm Here",
+                          title: loc.im_here,
                           onTap: () {
                             cabOrderStatusVm.changeCabOrderApi(
                               orderData!['order_id'],
@@ -1472,8 +1477,8 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                             child: isCompletingRide
                                 ? Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                SizedBox(
+                              children: [
+                                const SizedBox(
                                   height: 18,
                                   width: 18,
                                   child: CircularProgressIndicator(
@@ -1481,10 +1486,10 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                                     color: Colors.white,
                                   ),
                                 ),
-                                SizedBox(width: 10),
+                                const SizedBox(width: 10),
                                 Text(
-                                  "Completing...",
-                                  style: TextStyle(
+                                  loc.completing,
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -1492,9 +1497,9 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                                 ),
                               ],
                             )
-                                : const Text(
-                              "Reached Destination",
-                              style: TextStyle(
+                                : Text(
+                              loc.reached_destination,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -1520,9 +1525,9 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                               borderRadius: BorderRadius.circular(10),
                               color: Colors.white,
                             ),
-                            child: const Text(
-                              "Cancel Ride",
-                              style: TextStyle(
+                            child: Text(
+                              loc.cancel_ride,
+                              style: const TextStyle(
                                 color: Colors.red,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -1563,7 +1568,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                           ],
                         ),
                         child: Text(
-                          "Navigate to Drop",
+                          loc.navigate_to_drop,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -1619,6 +1624,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
   void _showCancelReasonBottomSheet(BuildContext context) {
     String? selectedReason;
     int? selectedReasonId;
+    final loc = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
       context: context,
@@ -1652,17 +1658,16 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      const Text(
-                        "Cancel Ride",
-                        style: TextStyle(
+                      Text(
+                        loc.cancel_ride,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 10),
-                      const TextConst(
-                        title:
-                        "Please tell us why you want to cancel?",
+                      TextConst(
+                        title: loc.please_tell_us_why_you_want_to_cancel,
                       ),
                       const SizedBox(height: 18),
 
@@ -1672,8 +1677,8 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
 
                       /// EMPTY STATE
                       if (!vm.loading && reasons.isEmpty)
-                        const Center(
-                          child: Text("No cancel reasons available"),
+                        Center(
+                          child: Text(loc.no_cancel_reasons_available),
                         ),
 
                       /// LIST
@@ -1751,9 +1756,9 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                             );
                           },
                           // _confirmRideCancellation(selectedReasonId!, selectedReason!);
-                          child: const Text(
-                            "Confirm Cancel",
-                            style: TextStyle(
+                          child: Text(
+                            loc.confirm_cancel,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
                             ),
@@ -1896,6 +1901,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
   }
 
   Widget _otpVerifyWidget(ChangeCabOrderStatusViewModel cabOrderStatusVm) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1906,9 +1912,9 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Enter Ride OTP",
-            style: TextStyle(
+          Text(
+            loc.enter_ride_otp,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -1921,7 +1927,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
             keyboardType: TextInputType.number,
             maxLength: 4,
             decoration: InputDecoration(
-              hintText: "Enter OTP",
+              hintText: loc.enter_otp,
               counterText: "",
               filled: true,
               fillColor: Colors.white,
@@ -1960,7 +1966,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
               ),
               alignment: Alignment.center,
               child: Text(
-                isVerifyingOtp ? "Verifying..." : "Verify OTP",
+                isVerifyingOtp ? loc.verifying : loc.verify_otp,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -2003,6 +2009,7 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
   void _showPayModeBottomSheet(BuildContext context) {
     // Default: 1 = Online (current screen)
     int selectedMode = 1;
+    final loc = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
       context: context,
@@ -2033,9 +2040,8 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
 
                   const SizedBox(height: 16),
 
-                  const TextConst(
-                    title:
-                    "Change Payment Mode",
+                  TextConst(
+                    title: loc.change_payment_mode,
                     size: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -2047,8 +2053,8 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                     icon: Icons.phone_android_outlined,
                     iconColor: Colors.orange,
                     bgColor: Colors.orange.withOpacity(0.1),
-                    title: "Online",
-                    subtitle: "UPI / Card",
+                    title: loc.online,
+                    subtitle: loc.upi_card,
                     isSelected: selectedMode == 1,
                     selectedColor: Colors.orange,
                     onTap: () => setModalState(() => selectedMode = 1),
@@ -2061,8 +2067,8 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                     icon: Icons.account_balance_wallet_outlined,
                     iconColor: Colors.green,
                     bgColor: Colors.green.withOpacity(0.1),
-                    title: "Cash",
-                    subtitle: "Collect from passenger",
+                    title: loc.cash,
+                    subtitle: loc.collect_from_passenger,
                     isSelected: selectedMode == 2,
                     selectedColor: Colors.green,
                     onTap: () => setModalState(() => selectedMode = 2),
@@ -2108,9 +2114,9 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                           context,
                         );
                       },
-                      child: const Text(
-                        "Confirm",
-                        style: TextStyle(
+                      child: Text(
+                        loc.confirm,
+                        style: const TextStyle(
                           fontSize: 15,
                           color: Colors.white,
                         ),
@@ -2212,6 +2218,7 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return WillPopScope(
       onWillPop: () async {
         SystemNavigator.pop();
@@ -2223,9 +2230,9 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: const Text(
-            "Payment",
-            style: TextStyle(
+          title: Text(
+            loc.payment,
+            style: const TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.bold,
               fontSize: 18,
@@ -2245,8 +2252,8 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                   ),
                   child: Row(
                     children: [
-                      TextConst(title: "Change pay mode"),
-                      SizedBox(width: 5,),
+                      TextConst(title: loc.change_pay_mode),
+                      const SizedBox(width: 5,),
                       const Icon(
                         Icons.credit_card_outlined,
                         color: Colors.orange,
@@ -2298,10 +2305,10 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                   const SizedBox(height: 30),
 
                   // ── Title ───────────────────────────────────────────
-                  const Text(
-                    "Waiting for Payment",
+                  Text(
+                    loc.waiting_for_payment,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
@@ -2312,7 +2319,7 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
 
                   // ── Subtitle ────────────────────────────────────────
                   Text(
-                    "Waiting for ${widget.userName} to complete payment",
+                    "${loc.waiting_for_payment} ${widget.userName} ${loc.to_complete_payment}",
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 16,
@@ -2340,9 +2347,9 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                     ),
                     child: Column(
                       children: [
-                        const Text(
-                          "Amount",
-                          style: TextStyle(
+                        Text(
+                          loc.amount,
+                          style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black54,
                           ),
@@ -2358,7 +2365,7 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          "Order #${widget.orderId}",
+                          "${loc.order} #${widget.orderId}",
                           style: const TextStyle(color: Colors.black54),
                         ),
                       ],
@@ -2368,10 +2375,10 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                   const SizedBox(height: 30),
 
                   // ── Waiting row ─────────────────────────────────────
-                  const Row(
+                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         height: 18,
                         width: 18,
                         child: CircularProgressIndicator(
@@ -2379,10 +2386,10 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                           color: Colors.orange,
                         ),
                       ),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Text(
-                        "Please wait...",
-                        style: TextStyle(
+                        loc.please_wait,
+                        style: const TextStyle(
                           fontSize: 15,
                           color: Colors.black54,
                         ),
@@ -2425,9 +2432,11 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
   void _showPayModeBottomSheet(BuildContext context) {
     // Default: 2 = Cash/Offline (current screen)
     int selectedMode = 2;
+    final loc = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppColor.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -2454,9 +2463,9 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
 
                   const SizedBox(height: 16),
 
-                  const Text(
-                    "Change Payment Mode",
-                    style: TextStyle(
+                  Text(
+                    loc.change_payment_mode,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -2469,8 +2478,8 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
                     icon: Icons.phone_android_outlined,
                     iconColor: Colors.orange,
                     bgColor: Colors.orange.withOpacity(0.1),
-                    title: "Online",
-                    subtitle: "UPI / Card",
+                    title: loc.online,
+                    subtitle: loc.upi_card,
                     isSelected: selectedMode == 1,
                     selectedColor: Colors.orange,
                     onTap: () => setModalState(() => selectedMode = 1),
@@ -2483,8 +2492,8 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
                     icon: Icons.account_balance_wallet_outlined,
                     iconColor: Colors.green,
                     bgColor: Colors.green.withOpacity(0.1),
-                    title: "Cash",
-                    subtitle: "Collect from passenger",
+                    title: loc.cash,
+                    subtitle: loc.collect_from_passenger,
                     isSelected: selectedMode == 2,
                     selectedColor: Colors.green,
                     onTap: () => setModalState(() => selectedMode = 2),
@@ -2529,9 +2538,9 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
                           context,
                         );
                       },
-                      child: const Text(
-                        "Confirm",
-                        style: TextStyle(
+                      child: Text(
+                        loc.confirm,
+                        style: const TextStyle(
                           fontSize: 15,
                           color: Colors.white,
                         ),
@@ -2635,6 +2644,7 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
   Widget build(BuildContext context) {
     final changeCabOrder =
     Provider.of<ChangeCabOrderStatusViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
 
     return WillPopScope(
       onWillPop: () async {
@@ -2647,9 +2657,9 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: const Text(
-            "Collect Cash",
-            style: TextStyle(
+          title: Text(
+            loc.collect_cash,
+            style: const TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.bold,
               fontSize: 18,
@@ -2669,9 +2679,9 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
                   ),
                   child:  Row(
                     children: [
-                      TextConst(title: "Change Pay Mode"),
-                      SizedBox(width: 5,),
-                      Icon(
+                      TextConst(title: loc.change_pay_mode),
+                      const SizedBox(width: 5,),
+                      const Icon(
                         Icons.credit_card_outlined,
                         color: Colors.green,
                         size: 20,
@@ -2706,9 +2716,9 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
 
                 const SizedBox(height: 32),
 
-                const Text(
-                  "Collect Cash Payment",
-                  style: TextStyle(
+                Text(
+                  loc.collect_cash_payment,
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -2718,7 +2728,7 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
                 const SizedBox(height: 12),
 
                 Text(
-                  "Collect cash from ${widget.userName}",
+                  "${loc.collect_cash_from} ${widget.userName}",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15,
@@ -2747,7 +2757,7 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
                   child: Column(
                     children: [
                       Text(
-                        "Amount to Collect",
+                        loc.amount_to_collect,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade700,
@@ -2774,7 +2784,7 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          "Order #${widget.orderId}",
+                          "${loc.order} #${widget.orderId}",
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade700,
@@ -2790,7 +2800,7 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
 
                 // ── Slide to collect ────────────────────────────────────
                 SlideToButton(
-                  title: "Collect Cash",
+                  title: loc.collect_cash,
                   onAccepted: () async {
                     await changeCabOrder.changeCabOrderApi(
                       widget.orderId,
@@ -2826,6 +2836,7 @@ class CollectByWalletScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final changeCabOrder =
     Provider.of<ChangeCabOrderStatusViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
     return WillPopScope(
       onWillPop: () async {
         SystemNavigator.pop();
@@ -2862,9 +2873,9 @@ class CollectByWalletScreen extends StatelessWidget {
                 const SizedBox(height: 30),
 
                 /// 🟣 Title
-                const Text(
-                  "Payment Received",
-                  style: TextStyle(
+                 Text(
+                   loc.payment_successful,
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                       fontFamily: AppFonts.kanitReg
@@ -2874,7 +2885,7 @@ class CollectByWalletScreen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 Text(
-                  "Payment has been successfully received from $userName via wallet.\nTap 'Done' to continue and pick up your next ride.",
+                  loc.customer_has_completed_the_payment,
                   style: TextStyle(
                     fontSize: 17,
                     color: Colors.grey.shade600,
@@ -2891,7 +2902,7 @@ class CollectByWalletScreen extends StatelessWidget {
                 CustomButton(
                   bgColor: AppColor.royalBlue,
                   textColor: AppColor.white,
-                  title: "Done",
+                  title: loc.done,
                   onTap: () async {
                     final response = await changeCabOrder.changeCabOrderApi(
                       orderId,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
@@ -49,27 +50,28 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
   }
 
   bool _validateFields() {
+    final loc = AppLocalizations.of(context)!;
     if (aadhaarFront == null) {
-      _showError("Please upload Aadhaar front side");
+      _showError(loc.please_upload_aadhaar_front_side);
       return false;
     }
 
     if (aadhaarBack == null) {
-      _showError("Please upload Aadhaar back side");
+      _showError(loc.please_upload_aadhaar_back_side);
       return false;
     }
 
     if (aadhaarNumberController.text.trim().isEmpty) {
-      _showError("Please enter Aadhaar number");
+      _showError(loc.please_enter_aadhaar_number);
       return false;
     }
 
     if (panFront == null) {
-      _showError("Please upload PAN card front side");
+      _showError(loc.please_upload_pan_card_front_side);
       return false;
     }
     if (panNumberController.text.trim().isEmpty) {
-      _showError("Please enter PAN number");
+      _showError(loc.please_enter_pan_number);
       return false;
     }
 
@@ -82,6 +84,7 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
 
   // BOTTOM SHEET
   void showPicker(Function(File) onSelected) {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -96,7 +99,7 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
             children: [
               ListTile(
                 leading: Icon(Icons.photo, color: AppColor.royalBlue),
-                title: const Text("Select from Gallery"),
+                title: Text(loc.select_from_gallery),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(onSelected, false);
@@ -104,7 +107,7 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
               ),
               ListTile(
                 leading: Icon(Icons.camera_alt, color: AppColor.royalBlue),
-                title: const Text("Take Photo"),
+                title: Text(loc.take_photo),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(onSelected, true);
@@ -123,6 +126,7 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
     required String label,
     required VoidCallback onTap,
   }) {
+    final loc = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () {
         if (image == null) onTap(); // Only open picker if image not selected
@@ -158,14 +162,11 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                   child: GestureDetector(
                     onTap: () {
                       /// Remove image
-                      if (label.contains("Aadhaar") &&
-                          label.contains("Front")) {
+                      if (label == loc.aadhaar_front_side) {
                         aadhaarFront = null;
-                      } else if (label.contains("Aadhaar") &&
-                          label.contains("Back")) {
+                      } else if (label == loc.aadhaar_back_side) {
                         aadhaarBack = null;
-                      } else if (label.contains("PAN") &&
-                          label.contains("Front")) {
+                      } else if (label == loc.pan_card_front_side) {
                         panFront = null;
 
                       }
@@ -209,8 +210,9 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
     required TextEditingController controller,
     required int maxLength,
   }) {
-    final bool isAadhaar = hint == "Aadhaar Number";
-    final bool isPan = hint == "PAN Number";
+    final loc = AppLocalizations.of(context)!;
+    final bool isAadhaar = hint == loc.aadhaar_number;
+    final bool isPan = hint == loc.pan_number;
 
     return Container(
       height: 55,
@@ -262,6 +264,7 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final driverRegisterThreeVm = Provider.of<DriverRegisterThreeViewModel>(
       context,
     );
@@ -290,8 +293,8 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                     SizedBox(height: topPadding),
 
                     /// ------------------ AADHAAR SECTION ------------------
-                    const TextConst(
-                      title: "Aadhaar card",
+                    TextConst(
+                      title: loc.aadhaar_card,
                       size: 25,
                       fontWeight: FontWeight.w700,
                     ),
@@ -302,28 +305,28 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                       children: [
                         _imageBox(
                           image: aadhaarFront,
-                          label: "Aadhaar\nFront Side",
+                          label: loc.aadhaar_front_side,
                           onTap: () => showPicker((file) => aadhaarFront = file),
                         ),
                         const SizedBox(width: 35),
                         _imageBox(
                           image: aadhaarBack,
-                          label: "Aadhaar\nBack Side",
+                          label: loc.aadhaar_back_side,
                           onTap: () => showPicker((file) => aadhaarBack = file),
                         ),
                       ],
                     ),
 
                     _inputField(
-                      hint: "Aadhaar Number",
+                      hint: loc.aadhaar_number,
                       controller: aadhaarNumberController,
                       maxLength: 12,
                     ),
 
                     const SizedBox(height: 20),
 
-                    const TextConst(
-                      title: "PAN Card",
+                    TextConst(
+                      title: loc.pan_card,
                       size: 25,
                       fontWeight: FontWeight.w700,
                     ),
@@ -334,14 +337,14 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                       children: [
                         _imageBox(
                           image: panFront,
-                          label: "PAN Card\nFront Side",
+                          label: loc.pan_card_front_side,
                           onTap: () => showPicker((file) => panFront = file),
                         ),
                       ],
                     ),
 
                     _inputField(
-                      hint: "PAN Number",
+                      hint: loc.pan_number,
                       controller: panNumberController,
                       maxLength: 10,
                     ),
@@ -387,7 +390,7 @@ class _AadhaarInfoState extends State<AadhaarInfo> {
                           child: CustomButton(
                             bgColor: AppColor.royalBlue,
                             textColor: AppColor.white,
-                            title: "Next",
+                            title: loc.next,
                             onTap: () {
                               if (!_validateFields()) return;
 

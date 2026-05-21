@@ -81,7 +81,6 @@ class DriverRegisterFourViewModel with ChangeNotifier {
           return status == 0 || status == 3;
         }
 
-        // 🔥 STATUS-BASED NAVIGATION (SEQUENCE)
         if (isPendingOrRejected(profile.personalInformationStatus)) {
           Navigator.push(context, CupertinoPageRoute(builder: (context)=>PersonalInformation(vehicleId: profile.vehicleId, vehicleName: profile.vehicleName, mobileNumber: profile.mobile, profileId: 1)));
         } else if (isPendingOrRejected(profile.driverLicenceStatus)) {

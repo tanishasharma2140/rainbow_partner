@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
@@ -159,7 +160,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
   Widget build(BuildContext context) {
     final profileVm = Provider.of<DriverProfileViewModel>(context);
     final int? driverId = profileVm.driverProfileModel?.data?.id;
-
+     final loc = AppLocalizations.of(context)!;
     debugPrint("👤 DRIVER ID => $driverId");
 
     return SafeArea(
@@ -171,8 +172,8 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
-          title: const TextConst(
-            title: "Searching Ride",
+          title:  TextConst(
+            title: loc.searching_ride,
             size: 18,
             fontWeight: FontWeight.w700,
             color: Colors.black,
@@ -292,7 +293,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
             /// PROFILE NOT READY
             if (driverId == null)
-              const Center(child: Text("Loading driver profile...")),
+              Center(child: Text(loc.loading_driver_profile)),
           ],
         ),
       ),
@@ -303,6 +304,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
   /// WAITING UI - NOW POSITIONED BELOW MAP
   /// =====================================================
   Widget _waitingUI({bool error = false}) {
+    final loc = AppLocalizations.of(context)!;
     return Positioned(
       top: MediaQuery.of(context).size.height * 0.55,
       left: 0,
@@ -331,16 +333,16 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
 
                 const SizedBox(height: 18),
 
-                const TextConst(
-                  title: "Waiting for ride...",
+                TextConst(
+                  title: loc.waiting_for_ride,
                   size: 16,
                   fontWeight: FontWeight.w700,
                 ),
 
                 const SizedBox(height: 6),
 
-                const TextConst(
-                  title: "Please stay online",
+                TextConst(
+                  title: loc.please_stay_online,
                   size: 14,
                   color: Colors.black54,
                 ),
@@ -361,9 +363,9 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                   ),
                 ),
               ] else
-                const Text(
-                  "Error loading rides",
-                  style: TextStyle(color: Colors.red),
+                Text(
+                  loc.error_loading_rides,
+                  style: const TextStyle(color: Colors.red),
                 ),
             ],
           ),
@@ -373,6 +375,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
   }
 
   Widget _orderListSheet(List<QueryDocumentSnapshot> docs, int currentDriverId) {
+    final loc = AppLocalizations.of(context)!;
     final driverCanDiscountVm = Provider.of<DriverCanDiscountViewModel>(
       context,
     );
@@ -409,9 +412,9 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
             ),
           ),
 
-          const Text(
-            "New Ride Requests",
-            style: TextStyle(
+          Text(
+            loc.new_ride_requests,
+            style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
               fontFamily: AppFonts.kanitReg,
@@ -517,6 +520,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
     required AcceptLaterRideViewModel acceptLaterRideVm,
     required DriverIgnoreOrderViewModel driverIgnoreVm,
   }) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -531,7 +535,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
           Row(
             children: [
               TextConst(
-                title: "Order #${data['order_id'] ?? orderId}",
+                title: "${loc.order} #${data['order_id'] ?? orderId}",
                 size: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -639,7 +643,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                   child: CircularProgressIndicator(color: AppColor.royalBlue),
                 )
               : CustomButton(
-                  title: "Accept",
+                  title: loc.accept,
                   bgColor: AppColor.royalBlue,
                   onTap: () {
                     acceptLaterRideVm.acceptLaterRideApi(orderId,  _currentLatLng!.latitude,
@@ -663,6 +667,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
     required DriverOfferViewModel driverOfferVm,
     required DriverIgnoreOrderViewModel driverIgnoreVm,
   }) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -677,7 +682,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
           Row(
             children: [
               TextConst(
-                title: "Order #${data['order_id'] ?? orderId}",
+                title: "${loc.order} #${data['order_id'] ?? orderId}",
                 size: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -768,8 +773,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                        TextConst(
-                         title:
-                        "Passenger Note",
+                         title: loc.passenger_note,
                          size: 12,
                          fontWeight: FontWeight.w600,
                          color: Colors.orange,
@@ -792,7 +796,7 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
           const SizedBox(height: 16),
 
           TextConst(
-            title: "Estimated Amount: ₹${data['estimated_amount']}",
+            title: "${loc.estimated_amount}: ₹${data['estimated_amount']}",
             size: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -904,14 +908,14 @@ class _RideWaitingScreenState extends State<RideWaitingScreen> {
                   child: CircularProgressIndicator(color: AppColor.royalBlue),
                 )
               : CustomButton(
-                  title: "Agree",
+                  title: loc.agree,
                   bgColor: AppColor.royalBlue,
                   onTap: () {
                     final int offerAmount = amount.value;
 
                     if (offerAmount < minAllowedAmount ||
                         offerAmount > maxAllowedAmount) {
-                      Utils.showErrorMessage(context, "Invalid offer amount");
+                      Utils.showErrorMessage(context, loc.invalid_offer_amount);
                       return;
                     }
 

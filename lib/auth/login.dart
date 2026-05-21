@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:rainbow_partner/controller/language_controller.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
@@ -77,6 +79,7 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
 
     return WillPopScope(
       onWillPop: () async {
@@ -95,25 +98,126 @@ class _LoginState extends State<Login> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
 
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: IconButton(
-                        onPressed: () {
-                          SystemNavigator.pop();
-                        },
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          size: 26,
-                          color: Colors.black,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+
+                        /// Back Button
+                        IconButton(
+                          onPressed: () {
+                            SystemNavigator.pop();
+                          },
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            size: 26,
+                            color: Colors.black,
+                          ),
                         ),
-                      ),
+
+                        /// Language Dropdown
+                        Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: Consumer<LanguageController>(
+                            builder: (context, languageProvider, child) {
+
+                              final loc = AppLocalizations.of(context)!;
+
+                              return PopupMenuButton<String>(
+                                color: AppColor.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+
+                                onSelected: (value) {
+                                  if (value == 'en') {
+                                    languageProvider.changeLanguage(
+                                      const Locale('en'),
+                                    );
+                                  } else if (value == 'hi') {
+                                    languageProvider.changeLanguage(
+                                      const Locale('hi'),
+                                    );
+                                  }
+                                },
+
+                                itemBuilder: (_) => [
+                                  PopupMenuItem(
+                                    value: 'en',
+                                    child: Row(
+                                      children: [
+                                        const SizedBox(width: 10),
+                                        TextConst(title: loc.english),
+                                      ],
+                                    ),
+                                  ),
+
+                                  PopupMenuItem(
+                                    value: 'hi',
+                                    child: Row(
+                                      children: [
+                                        const SizedBox(width: 10),
+                                        Text(loc.hindi),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 7,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+
+                                      const Icon(
+                                        Icons.language,
+                                        size: 18,
+                                        color: Colors.black87,
+                                      ),
+
+                                      const SizedBox(width: 6),
+
+                                      Text(
+                                        languageProvider.currentLanguageCode == 'en'
+                                            ? loc.english
+                                            : loc.hindi,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 4),
+
+                                      const Icon(
+                                        Icons.keyboard_arrow_down,
+                                        size: 18,
+                                        color: Colors.black54,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      ],
                     ),
 
                     SizedBox(height: Sizes.screenHeight * 0.02),
 
                     TextConst(
                       textAlign: TextAlign.center,
-                      title: "Join us via phone number",
+                      title: loc.join_us_via,
                       size: 25,
                       fontWeight: FontWeight.w700,
                     ),
@@ -121,7 +225,7 @@ class _LoginState extends State<Login> {
                     SizedBox(height: Sizes.screenHeight * 0.01),
 
                     TextConst(
-                      title: "We’ll text a code to verify your phone",
+                      title: loc.we_will_text,
                       size: 16,
                       color: AppColor.blackLightI,
                     ),
@@ -171,7 +275,7 @@ class _LoginState extends State<Login> {
                         horizontal: Sizes.screenWidth * 0.06,
                       ),
                       child: CustomButton(
-                        title: "Next",
+                          title: loc.next,
                         textColor: AppColor.white,
                         bgColor: isPermissionGranted
                             ? AppColor.royalBlue
@@ -185,7 +289,7 @@ class _LoginState extends State<Login> {
                             String phone = auth.phoneController.text.trim();
 
                             if (phone.isEmpty || phone.length != 10) {
-                              Utils.showErrorMessage(context, "Please enter valid number");
+                              Utils.showErrorMessage(context, loc.please_enter_valid);
                               return;
                             }
 

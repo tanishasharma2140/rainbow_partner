@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
@@ -19,7 +20,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
-
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       bottom: true,
@@ -43,7 +44,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             children: [
               /// Title
               TextConst(
-                title: "Choose your profile",
+                title: loc.choose_your_profile,
                 color: AppColor.black,
                 size: 24,
                 fontWeight: FontWeight.w700,
@@ -52,7 +53,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               const SizedBox(height: 10),
 
               Text(
-                "*Please Note : One mobile number one Profile",
+                 loc.please_note_one_profile,
                 style: TextStyle(
                   color: Colors.black38,
                   fontSize: 13,
@@ -67,9 +68,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               _profileTile(
                 image: "assets/cab_driver.png",
-                title: "rainboW Driver",
+                title: loc.rainbow_driver,
                 subtitle:
-                "Drive customers safely with real-time navigation and trip updates.",
+                 loc.rainbow_driver_description,
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> ChooseVehicle(
                     mobileNumber: widget.phone,
@@ -81,9 +82,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               _profileTile(
                 image: "assets/service_provider.png",
-                title: "Service Man",
+                title: loc.service_man,
                 subtitle:
-                "Provide on-demand home services at customer's location.",
+                loc.service_man_description,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -97,9 +98,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               _profileTile(
                 image: "assets/service_man.png",
-                title: "Need a Job",
+                title: loc.need_a_job,
                 subtitle:
-                "Offer professional repair, installation and maintenance services.",
+                loc.need_a_job_description,
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=>RegisterServiceScreen(
                     profileId: 3,

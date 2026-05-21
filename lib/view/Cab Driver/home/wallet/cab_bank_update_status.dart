@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view_model/service_man/service_bank_update_view_model.dart';
@@ -26,6 +27,7 @@ class _CabBanUpdateStatusState extends State<CabBanUpdateStatus> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final vm = Provider.of<ServiceBankUpdateViewModel>(context);
 
     /// 🔹 LOADING STATE
@@ -41,8 +43,8 @@ class _CabBanUpdateStatusState extends State<CabBanUpdateStatus> {
       return Scaffold(
         backgroundColor: AppColor.whiteDark,
         appBar: _appBar(context),
-        body: const Center(
-          child: TextConst(title: "No update request found"),
+        body: Center(
+          child: TextConst(title: loc.no_update_request_found),
         ),
       );
     }
@@ -65,8 +67,8 @@ class _CabBanUpdateStatusState extends State<CabBanUpdateStatus> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const TextConst(
-                  title: "Request Status",
+                TextConst(
+                  title: loc.request_status,
                   size: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -85,16 +87,16 @@ class _CabBanUpdateStatusState extends State<CabBanUpdateStatus> {
               ),
               child: Column(
                 children: [
-                  _row("Bank Name", request.bankName),
+                  _row(loc.bank_name, request.bankName),
                   _divider(),
-                  _row("Account Holder", request.accountHolderName),
+                  _row(loc.account_holder, request.accountHolderName),
                   _divider(),
                   _row(
-                    "Account Number",
+                    loc.account_number,
                     "XXXX XXXX ${request.accountNumber.substring(request.accountNumber.length - 4)}",
                   ),
                   _divider(),
-                  _row("IFSC Code", request.ifscCode),
+                  _row(loc.ifsc_code, request.ifscCode),
                 ],
               ),
             ),
@@ -110,11 +112,11 @@ class _CabBanUpdateStatusState extends State<CabBanUpdateStatus> {
               ),
               child: Column(
                 children: [
-                  _dateRow("Requested On", request.createdAt),
+                  _dateRow(loc.requested_on, request.createdAt),
                   const Divider(),
                   _dateRow(
-                    "Updated On",
-                    request.updatedAt ?? "Not updated yet",
+                    loc.updated_on,
+                    request.updatedAt ?? loc.not_updated_yet,
                   ),
                 ],
               ),
@@ -127,6 +129,7 @@ class _CabBanUpdateStatusState extends State<CabBanUpdateStatus> {
 
   /// 🔹 APP BAR
   AppBar _appBar(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return AppBar(
       backgroundColor: AppColor.royalBlue,
       elevation: 0,
@@ -134,8 +137,8 @@ class _CabBanUpdateStatusState extends State<CabBanUpdateStatus> {
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),
       ),
-      title: const TextConst(
-        title: "Bank Update Request",
+      title: TextConst(
+        title: loc.bank_update_request,
         color: Colors.white,
         size: 18,
         fontWeight: FontWeight.w600,
@@ -181,21 +184,22 @@ class _CabBanUpdateStatusState extends State<CabBanUpdateStatus> {
 
   /// 🔹 STATUS CHIP (0=pending,1=approved,2=rejected)
   Widget _statusChip(int status) {
+    final loc = AppLocalizations.of(context)!;
     late Color color;
     late String text;
 
     switch (status) {
       case 1:
         color = Colors.green;
-        text = "Approved";
+        text = loc.approved;
         break;
       case 2:
         color = Colors.red;
-        text = "Rejected";
+        text = loc.rejected;
         break;
       default:
         color = Colors.orange;
-        text = "Pending";
+        text = loc.pending;
     }
 
     return Container(

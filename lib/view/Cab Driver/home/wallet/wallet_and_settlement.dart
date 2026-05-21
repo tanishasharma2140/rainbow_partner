@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/model/driver_transaction_model.dart';
 import 'package:rainbow_partner/res/animated_gradient_border.dart';
 import 'package:rainbow_partner/res/app_color.dart';
@@ -65,21 +66,9 @@ class _WalletSettlementState extends State<WalletSettlement> {
     await bankVm.serviceBankDetailApi(2, context);
   }
 
-
-
-  // Static transaction data
-
-  // Static bank details
-  // final Map<String, dynamic> bankDetails = {
-  //   'hasBank': true,
-  //   'bankName': 'HDFC Bank',
-  //   'accountNumber': 'XXXXXX4567',
-  //   'accountHolder': 'John Doe',
-  //   'ifscCode': 'HDFC0001234'
-  // };
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       bottom: true,
       top: false,
@@ -89,8 +78,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
           backgroundColor: AppColor.royalBlue,
           elevation: 0,
           title: TextConst(
-            title:
-            'Wallet & Settlements',
+            title: loc.wallet_settlements,
             size: 18,
             color:  AppColor.white,
             fontWeight: FontWeight.bold,
@@ -126,6 +114,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
   }
 
   Widget _buildBalanceCard() {
+    final loc = AppLocalizations.of(context)!;
     final profileVm = Provider.of<DriverProfileViewModel>(context);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: Sizes.screenWidth * 0.045),
@@ -159,7 +148,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
             children: [
               Expanded(
                 child: _buildWalletCard(
-                  title: "Wallet",
+                  title: loc.wallet,
                   amount:
                   "₹${profileVm.driverProfileModel?.data?.wallet ?? "0"}",
                   icon: Icons.account_balance_wallet_rounded,
@@ -175,7 +164,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
 
               Expanded(
                 child: _buildWalletCard(
-                  title: "Due Wallet",
+                  title: loc.due_wallet,
                   amount:
                   "₹${profileVm.driverProfileModel?.data?.dueWallet ?? "0"}",
                   icon: Icons.pending_actions_rounded,
@@ -234,6 +223,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
   }
 
   Widget _buildQuickActions() {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16),
       padding: EdgeInsets.all(16),
@@ -247,15 +237,11 @@ class _WalletSettlementState extends State<WalletSettlement> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildActionButton('Withdraw', Icons.currency_rupee, _showWithdrawalDialog),
-          _buildActionButton('History', Icons.history, (){
+          _buildActionButton(loc.withdraw, Icons.currency_rupee, _showWithdrawalDialog),
+          _buildActionButton(loc.history, Icons.history, (){
             Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverWithdrawHistory()));
           }),
-            // bankDetails['hasBank'] ? 'Bank History' : 'Add Bank',
-            // bankDetails['hasBank'] ? Icons.history : Icons.account_balance,
-            // bankDetails['hasBank'] ? _goToBankHistory : _addBankAccount,
-
-          _buildActionButton('Due Wallet', Icons.wallet, _showDueWalletDialog),
+          _buildActionButton(loc.due_wallet, Icons.wallet, _showDueWalletDialog),
         ],
       ),
     );
@@ -290,6 +276,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
   }
 
   Widget _buildTransactionHistory() {
+    final loc = AppLocalizations.of(context)!;
     final driverTransactionVm = Provider.of<DriverTransactionViewModel>(context);
 
     final transactions = driverTransactionVm.driverTransactionsModel?.data ?? [];
@@ -299,8 +286,8 @@ class _WalletSettlementState extends State<WalletSettlement> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Recent Transactions',
+          Text(
+            loc.recent_transactions,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
@@ -309,11 +296,11 @@ class _WalletSettlementState extends State<WalletSettlement> {
             _transactionShimmerList()
 
           else if (transactions.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(vertical: 60),
               child: Center(
                 child: Text(
-                  "No Transactions Found",
+                  loc.no_transactions_found,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey,
@@ -335,8 +322,8 @@ class _WalletSettlementState extends State<WalletSettlement> {
                 final int sectionStatus = data.sectionStatus ?? 0;
                 final Payment? payment = data.payment;
 
-                final String statusText = _getStatusText(sectionStatus);
-                final String paymentStatus = _getPaymentStatus(sectionStatus);
+                final String statusText = _getStatusText(sectionStatus, loc);
+                final String paymentStatus = _getPaymentStatus(sectionStatus, loc);
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -370,30 +357,30 @@ class _WalletSettlementState extends State<WalletSettlement> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (sectionStatus == 1) ...[
-                              _buildTransactionText('Amount', payment?.amount, Colors.green),
-                              _buildTransactionText('Platform Fee', payment?.platformFee, Colors.orange),
-                              _buildTransactionText('Final Amount', payment?.finalAmount, Colors.blue),
+                              _buildTransactionText(loc.amount, payment?.amount, Colors.green),
+                              _buildTransactionText(loc.platform_fee, payment?.platformFee, Colors.orange),
+                              _buildTransactionText(loc.final_amount, payment?.finalAmount, Colors.blue),
                             ],
 
                             if (sectionStatus == 2) ...[
-                              _buildTransactionText('Amount', payment?.amount, Colors.green),
+                              _buildTransactionText(loc.amount, payment?.amount, Colors.green),
                               SizedBox(height: 5),
-                              _buildTransactionText('Platform Fee', payment?.platformFee, Colors.orange),
+                              _buildTransactionText(loc.platform_fee, payment?.platformFee, Colors.orange),
                             ],
 
                             if (sectionStatus == 3) ...[
-                              _buildTransactionText('Amount', payment?.amount, Colors.green),
-                              _buildTransactionText('Platform Fee', payment?.platformFee, Colors.orange),
+                              _buildTransactionText(loc.amount, payment?.amount, Colors.green),
+                              _buildTransactionText(loc.platform_fee, payment?.platformFee, Colors.orange),
                             ],
 
                             if (sectionStatus == 5) ...[
-                              _buildTransactionText('Amount', payment?.amount, Colors.purple),
-                              _buildTransactionText('Type', "Due Wallet", Colors.purple),
+                              _buildTransactionText(loc.amount, payment?.amount, Colors.purple),
+                              _buildTransactionText(loc.type, loc.due_wallet, Colors.purple),
                             ],
 
                             const SizedBox(height: 6),
                             Text(
-                              'Txn ID: ${payment?.id ?? 'N/A'}',
+                              '${loc.txn_id}: ${payment?.id ?? loc.na}',
                               style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                             ),
                             Text(
@@ -419,7 +406,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            _getAmountLabel(sectionStatus),
+                            _getAmountLabel(sectionStatus, loc),
                             style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                           ),
                           Text(
@@ -537,16 +524,16 @@ class _WalletSettlementState extends State<WalletSettlement> {
     );
   }
 
-  String _getPaymentStatus(int sectionStatus) {
+  String _getPaymentStatus(int sectionStatus, AppLocalizations loc) {
     switch (sectionStatus) {
       case 1:
-        return 'Online Payment';
+        return loc.online_payment;
       case 2:
-        return 'Cash Payment';
+        return loc.cash_payment;
       case 3:
-        return 'Wallet Payment';
+        return loc.wallet_payment;
       case 5:
-        return 'Paid';
+        return loc.paid;
       default:
         return '-';
     }
@@ -554,18 +541,18 @@ class _WalletSettlementState extends State<WalletSettlement> {
 
 
 
-  String _getStatusText(int sectionStatus) {
+  String _getStatusText(int sectionStatus, AppLocalizations loc) {
     switch (sectionStatus) {
       case 1:
-        return 'Online';
+        return loc.online;
       case 2:
-        return 'Offline';
+        return loc.offline;
       case 3:
-        return 'Wallet';
+        return loc.wallet;
       case 5:
-        return 'Due Cleared';
+        return loc.due_cleared;
       default:
-        return 'Unknown';
+        return loc.unknown;
     }
   }
 
@@ -637,18 +624,18 @@ class _WalletSettlementState extends State<WalletSettlement> {
     }
   }
 
-  String _getAmountLabel(int sectionStatus) {
+  String _getAmountLabel(int sectionStatus, AppLocalizations loc) {
     switch (sectionStatus) {
       case 1:
-        return 'After Fee';
+        return loc.after_fee;
       case 2:
-        return 'Cash In';
+        return loc.cash_in;
       case 3:
-        return 'Wallet';
+        return loc.wallet;
       case 5:
-        return 'Due Paid';
+        return loc.due_paid;
       default:
-        return 'Amount';
+        return loc.amount;
     }
   }
 
@@ -664,6 +651,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
   }
 
   void _showWithdrawalDialog() {
+    final loc = AppLocalizations.of(context)!;
     final profileVm = Provider.of<DriverProfileViewModel>(context,listen: false);
     final getBankVm = Provider.of<ServiceGetBankDetailViewModel>(context,listen: false);
     final driverWithdrawVm = Provider.of<DriverWithdrawRequestViewModel>(context,listen: false);
@@ -697,7 +685,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Withdraw Funds',
+                    loc.withdraw_funds,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -729,7 +717,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Available Balance',
+                                  loc.available_balance,
                                   style: TextStyle(fontSize: 12, color: Colors.grey),
                                 ),
                                 Text(
@@ -750,7 +738,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                     TextFormField(
                       controller: amountController,
                       decoration: InputDecoration(
-                        labelText: 'Enter Amount',
+                        labelText: loc.enter_amount,
                         prefixIcon:
                         Icon(Icons.currency_rupee, color: AppColor.royalBlue),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -762,7 +750,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                       Padding(
                         padding: const EdgeInsets.all(12),
                         child: Text(
-                          "No bank account added. Please add a bank account first.",
+                          loc.no_bank_account_added,
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.red, fontSize: 13),
                         ),
@@ -770,7 +758,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                       SizedBox(height: 10),
                       CustomButton(
                         bgColor: AppColor.royalBlue,
-                        title: "Add Bank",
+                        title: loc.add_bank,
                         onTap: () {
                           Navigator.pop(context);  // Close dialog first
                           Future.delayed(const Duration(milliseconds: 150), () {
@@ -811,7 +799,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                                         fontWeight: FontWeight.w600, fontSize: 14),
                                   ),
                                   Text(
-                                    'Account: ${getBankVm.serviceBankDetailModel?.bankDetails?.accountNumber??""}',
+                                    '${loc.account}: ${getBankVm.serviceBankDetailModel?.bankDetails?.accountNumber??""}',
                                     style: TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
                                 ],
@@ -831,7 +819,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(context),
-                            child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+                            child: Text(loc.cancel, style: TextStyle(color: Colors.grey)),
                           ),
                         ),
                         SizedBox(width: 12),
@@ -842,7 +830,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                                 : () async {
                               final amount = amountController.text.trim();
                               if (amount.isEmpty) {
-                                Utils.showErrorMessage(context, "Enter Amount");
+                                Utils.showErrorMessage(context, loc.enter_amount);
                                 return;
                               }
 
@@ -870,7 +858,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                                 color: Colors.white,
                               ),
                             )
-                                : const TextConst(title: 'Withdraw', color: Colors.white),
+                                : TextConst(title: loc.withdraw, color: Colors.white),
                           ),
                         ),
                       ],
@@ -886,26 +874,8 @@ class _WalletSettlementState extends State<WalletSettlement> {
     );
   }
 
-
-
-  // void _goToBankHistory() {
-  //   // Simple dialog for demo
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: Text('Bank History'),
-  //       content: Text('Bank transaction history page would open here'),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context),
-  //           child: Text('OK'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   void _showDueWalletDialog() {
+    final loc = AppLocalizations.of(context)!;
     final profileVm = Provider.of<DriverProfileViewModel>(context, listen: false);
     final payment = Provider.of<CabPaymentViewmodel>(context, listen: false);
 
@@ -935,9 +905,8 @@ class _WalletSettlementState extends State<WalletSettlement> {
                     child: Icon(Icons.wallet, color: AppColor.royalBlue, size: 30),
                   ),
                   const SizedBox(height: 8),
-                  const TextConst(
-                    title:
-                    'Due Wallet Payment',
+                  TextConst(
+                    title: loc.due_wallet_payment,
                     size: 20, fontWeight: FontWeight.w600,
                   ),
                 ],
@@ -960,9 +929,8 @@ class _WalletSettlementState extends State<WalletSettlement> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const TextConst(
-                                title:
-                                'Due Wallet Balance',
+                              TextConst(
+                                title: loc.due_wallet_balance,
                                   size: 12, color: Colors.grey
                               ),
                               TextConst(
@@ -979,10 +947,9 @@ class _WalletSettlementState extends State<WalletSettlement> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const TextConst(
+                  TextConst(
                     textAlign: TextAlign.center,
-                    title:
-                    "You need to pay the full due wallet amount.",
+                    title: loc.pay_full_due_wallet,
                     size: 13, color: Colors.grey
                   ),
                 ],
@@ -993,7 +960,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text("Close",style: TextStyle(color: Colors.black),),
+                        child: Text(loc.close,style: TextStyle(color: Colors.black),),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -1029,7 +996,7 @@ class _WalletSettlementState extends State<WalletSettlement> {
                               ),
                             )
                                 : Text(
-                              "Pay ₹$dueAmount Now",
+                              "${loc.pay_now} ₹$dueAmount",
                               style: const TextStyle(color: Colors.white, fontSize: 10),
                             ),
                           );

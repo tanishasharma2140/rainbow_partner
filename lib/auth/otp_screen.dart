@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
@@ -81,7 +82,7 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   void _verifyOtp(String pin) {
-
+    final loc = AppLocalizations.of(context)!;
     // Safely get AuthViewModel from Provider
     final authVm = context.read<AuthViewModel>();
 
@@ -94,7 +95,7 @@ class _OtpScreenState extends State<OtpScreen> {
         context,
       );
     } else {
-      Utils.showErrorMessage(context, "Please enter a valid 4-digit OTP.");
+      Utils.showErrorMessage(context, loc.please_enter_valid_four);
     }
   }
 
@@ -115,6 +116,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final defaultPinTheme = PinTheme(
       width: 50,
       height: 50,
@@ -172,7 +174,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
               TextConst(
                 textAlign: TextAlign.center,
-                title: "Enter the code",
+                title: loc.enter_the_code,
                 size: 25,
                 fontWeight: FontWeight.w700,
               ),
@@ -180,7 +182,7 @@ class _OtpScreenState extends State<OtpScreen> {
               const SizedBox(height: 8),
 
               TextConst(
-                title: "We sent your code via SMS to\n${widget.phoneNumber}",
+                title: "${loc.we_sent_your_code}\n${widget.phoneNumber}",
                 size: 16,
                 color: AppColor.blackLightI,
                 fontFamily: AppFonts.poppinsReg,
@@ -218,8 +220,8 @@ class _OtpScreenState extends State<OtpScreen> {
                   child: TextConst(
                     title:
                     _canResend
-                        ? "Resend code"
-                        : "Resend code ${_formatTimer(_secondsLeft)}",
+                        ? loc.resend_code
+                        : "${loc.resend_code} ${_formatTimer(_secondsLeft)}",
                     fontWeight: FontWeight.w600,
                     size: 16,
                     color: _canResend ? Colors.black : Colors.grey,

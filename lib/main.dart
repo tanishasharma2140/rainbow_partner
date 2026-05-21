@@ -4,7 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/controller/language_controller.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/service/internet_checker_service.dart';
 import 'package:rainbow_partner/utils/routes/routes.dart';
@@ -67,6 +70,7 @@ import 'package:rainbow_partner/view_model/cabdriver/vehicle_brand_view_model.da
 import 'package:rainbow_partner/view_model/service_man/withdraw_request_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/zone_cities_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -96,6 +100,8 @@ Future<void> handleNativeCallback(MethodCall call) async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences sp = await SharedPreferences.getInstance();
+  final String languageCode = sp.getString('language_code') ?? '';
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -108,14 +114,17 @@ Future<void> main() async {
 
   nativeChannel.setMethodCallHandler(handleNativeCallback);
 
-  runApp(const MyApp());
+  runApp( MyApp(
+    locale: languageCode,
+  ));
 }
 
 double topPadding = 0.0;
 double bottomPadding = 0.0;
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final String locale;
+  const MyApp({super.key, required this.locale});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -214,7 +223,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       if (orderId.isNotEmpty) {
         if (panel == 'serviceman') {
           Provider.of<IgnoreServiceOrderViewModel>(ctx, listen: false)
-              .ignoreServiceOrderApi(1, ctx);
+              .ignoreServiceOrderApi(int.parse(orderId), ctx);
         } else {
           Provider.of<DriverIgnoreOrderViewModel>(ctx, listen: false)
               .driverIgnoreOrderApi(orderId, ctx);
@@ -448,25 +457,42 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           ChangeNotifierProvider(
               create: (context) => ChangeCabPayModeViewModel()),
           ChangeNotifierProvider(create: (context) => CabPaymentViewmodel()),
+          ChangeNotifierProvider(create: (context) => LanguageController()),
         ],
-        child: MaterialApp(
-          navigatorKey: navigatorKey,
-          debugShowCheckedModeBanner: false,
-          initialRoute: RoutesName.splashScreen,
-          onGenerateRoute: (settings) {
-            if (settings.name != null) {
-              return CupertinoPageRoute(
-                builder: Routers.generateRoute(settings.name!),
-                settings: settings,
+        child: Consumer<LanguageController>(
+            builder: (context, provider, child) {
+              return MaterialApp(
+                navigatorKey: navigatorKey,
+                debugShowCheckedModeBanner: false,
+                initialRoute: RoutesName.splashScreen,
+                onGenerateRoute: (settings) {
+                  if (settings.name != null) {
+                    return CupertinoPageRoute(
+                      builder: Routers.generateRoute(settings.name!),
+                      settings: settings,
+                    );
+                  }
+                  return null;
+                },
+                title: 'Rainbow Partner',
+                locale: provider.appLocale,
+                localizationsDelegates: [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate
+                ],
+                supportedLocales: const [
+                  Locale('en'),
+                  Locale('hi'),
+                ],
+                theme: ThemeData(
+                  colorScheme: ColorScheme.fromSeed(
+                      seedColor: Colors.deepPurple),
+                  useMaterial3: true,
+                ),
               );
             }
-            return null;
-          },
-          title: 'Rainbow Partner',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-            useMaterial3: true,
-          ),
         ),
       ),
     );

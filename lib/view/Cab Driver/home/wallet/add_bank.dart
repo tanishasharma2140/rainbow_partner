@@ -1,6 +1,7 @@
 import "package:cloud_firestore/cloud_firestore.dart";
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
+import "package:rainbow_partner/l10n/app_localizations.dart";
 import "package:rainbow_partner/res/app_color.dart";
 import "package:rainbow_partner/res/app_fonts.dart";
 import "package:rainbow_partner/res/gradient_circle_pro.dart";
@@ -60,6 +61,7 @@ class _AddBankState extends State<AddBank> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final cabAddBankVm = Provider.of<AddBankDetailViewModel>(context);
     return Stack(
       children: [
@@ -72,7 +74,7 @@ class _AddBankState extends State<AddBank> {
               backgroundColor: AppColor.royalBlue,
               elevation: 0,
               title: TextConst(
-                title: "Add Bank Account",
+                title: loc.add_bank_account,
                 color: AppColor.white,
                 size: 18,
                 fontWeight: FontWeight.w600,
@@ -154,7 +156,7 @@ class _AddBankState extends State<AddBank> {
                                 ),
                               ),
                               child: TextConst(
-                                title: "Bank Account Information",
+                                title: loc.bank_account_information,
                                 color: AppColor.royalBlue,
                                 fontWeight: FontWeight.w600,
                                 size: 14,
@@ -166,8 +168,8 @@ class _AddBankState extends State<AddBank> {
 
                           // Account Holder Name
                           _buildFormField(
-                            title: "Bank Name",
-                            hintText: "Enter bank name",
+                            title: loc.bank_name,
+                            hintText: loc.enter_bank_name,
                             controller: _bankController,
                             icon: Icons.account_balance,
                           ),
@@ -176,8 +178,8 @@ class _AddBankState extends State<AddBank> {
 
                           // Account Holder Name
                           _buildFormField(
-                            title: "Account Holder Name",
-                            hintText: "Enter full name as per bank records",
+                            title: loc.account_holder_name,
+                            hintText: loc.enter_full_name_bank_records,
                             controller: _holderNameController,
                             icon: Icons.person_outline,
                           ),
@@ -186,8 +188,8 @@ class _AddBankState extends State<AddBank> {
 
 
                           _buildFormField(
-                            title: "Account Number",
-                            hintText: "Enter account number",
+                            title: loc.account_number,
+                            hintText: loc.enter_account_number,
                             controller: _accountController,
                             icon: Icons.credit_card,
                             keyboardType: TextInputType.number,
@@ -197,8 +199,8 @@ class _AddBankState extends State<AddBank> {
                           SizedBox(height: Sizes.screenHeight * 0.025),
 
                           _buildFormField(
-                            title: "Confirm Account Number",
-                            hintText: "Re-enter account number",
+                            title: loc.confirm_account_number,
+                            hintText: loc.re_enter_account_number,
                             controller: _reAccountController,
                             icon: Icons.credit_card_outlined,
                             keyboardType: TextInputType.number,
@@ -220,7 +222,7 @@ class _AddBankState extends State<AddBank> {
                                   ),
                                   SizedBox(width: 8),
                                   Text(
-                                    "IFSC Code",
+                                    loc.ifsc_code,
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -242,7 +244,7 @@ class _AddBankState extends State<AddBank> {
                                         controller: _ifscCodeController,
                                         onChanged: _validateIfscCode,
                                         decoration: InputDecoration(
-                                          hintText: "Enter IFSC Code",
+                                          hintText: loc.enter_ifsc_code,
                                           hintStyle: TextStyle(
                                             fontFamily: AppFonts.kanitReg,
                                             color: Colors.grey,
@@ -315,7 +317,7 @@ class _AddBankState extends State<AddBank> {
                                           // !bankDetailViewModel.loading
                                           //     ?
                                           TextConst(
-                                            title: "ADD BANK ACCOUNT",
+                                            title: loc.add_bank_account_button,
                                             color: AppColor.white,
                                             size: 16,
                                             fontWeight: FontWeight.bold,
@@ -353,8 +355,7 @@ class _AddBankState extends State<AddBank> {
                                 SizedBox(width: 8),
                                 Expanded(
                                   child: TextConst(
-                                    title:
-                                        "Your bank details are secure and encrypted",
+                                    title: loc.your_bank_details_secure,
                                     color: Colors.green,
                                     size: 12,
                                     fontWeight: FontWeight.w500,
@@ -458,6 +459,7 @@ class _AddBankState extends State<AddBank> {
   }
 
   Widget _buildBankDetailsCard() {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -516,7 +518,7 @@ class _AddBankState extends State<AddBank> {
                 Icon(Icons.verified, color: Colors.green, size: 12),
                 SizedBox(width: 4),
                 Text(
-                  "Verified",
+                  loc.verified,
                   style: TextStyle(
                     color: Colors.green,
                     fontSize: 10,

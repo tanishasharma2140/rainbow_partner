@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
@@ -83,39 +84,40 @@ class _VehicleInformationState extends State<VehicleInformation> {
   String? vehicleNumberError;
 
   bool _validateVehicleInfo() {
+    final loc = AppLocalizations.of(context)!;
     if (vehiclePhoto == null) {
-      _showError("Please upload vehicle photo");
+      _showError(loc.please_upload_vehicle_photo);
       return false;
     }
 
     if (selectedBrandId == null) {
-      _showError("Please select vehicle brand");
+      _showError(loc.please_select_vehicle_brand);
       return false;
     }
 
     if (selectedModelId == null) {
-      _showError("Please select vehicle model");
+      _showError(loc.please_select_vehicle_model);
       return false;
     }
 
     if (selectedColor == null || selectedColor!.isEmpty) {
-      _showError("Please select vehicle color");
+      _showError(loc.please_select_vehicle_color);
       return false;
     }
 
     if (plateController.text.trim().isEmpty) {
-      _showError("Please enter vehicle plate number");
+      _showError(loc.please_enter_vehicle_plate_number);
       return false;
     }
     if (!isValidIndianVehicle(plateController.text.trim())) {
-      _showError("Please enter valid vehicle number");
+      _showError(loc.please_enter_valid_vehicle_number);
       return false;
     }
 
 
 
     if (yearController.text.trim().isEmpty) {
-      _showError("Please select vehicle production year");
+      _showError(loc.please_select_vehicle_production_year);
       return false;
     }
 
@@ -155,6 +157,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
   }
 
   Future<void> _selectYear(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
     int currentYear = DateTime.now().year;
 
     showModalBottomSheet(
@@ -171,8 +174,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                const Text(
-                  "Select Production Year",
+                Text(
+                  loc.select_production_year,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 18,
@@ -202,6 +205,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
 
   // VEHICLE BRAND SELECTOR
   void pickBrand() {
+    final loc = AppLocalizations.of(context)!;
     final vehicleBrandVm = Provider.of<VehicleBrandViewModel>(
       context,
       listen: false,
@@ -229,8 +233,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const SizedBox(width: 30),
-                    const TextConst(
-                      title: "Vehicle Brand",
+                    TextConst(
+                      title: loc.vehicle_brand,
                       size: 20,
                       fontWeight: FontWeight.w700,
                     ),
@@ -257,7 +261,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
                     ? const Center(child: CircularProgressIndicator())
                     : vehicleBrandVm.vehicleBrandModel?.data == null ||
                           vehicleBrandVm.vehicleBrandModel!.data!.isEmpty
-                    ? const Center(child: Text("No brands found"))
+                    ? Center(child: Text(loc.no_brands_found))
                     : ListView.builder(
                         itemCount:
                             vehicleBrandVm.vehicleBrandModel!.data!.length,
@@ -298,13 +302,14 @@ class _VehicleInformationState extends State<VehicleInformation> {
   }
 
   void pickModel() {
+    final loc = AppLocalizations.of(context)!;
     final vehicleModelVm = Provider.of<VehicleModelViewModel>(
       context,
       listen: false,
     );
     if (selectedBrand == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select vehicle brand first!")),
+        SnackBar(content: Text(loc.please_select_vehicle_brand_first)),
       );
       return;
     }
@@ -322,8 +327,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
           child: Column(
             children: [
               const SizedBox(height: 20),
-              const TextConst(
-                title: "Vehicle model",
+              TextConst(
+                title: loc.vehicle_model,
                 size: 20,
                 fontWeight: FontWeight.w700,
               ),
@@ -334,7 +339,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
                     ? const Center(child: CircularProgressIndicator())
                     : vehicleModelVm.vehicleSameModel?.data == null ||
                     vehicleModelVm.vehicleSameModel!.data!.isEmpty
-                    ? const Center(child: Text("No models found"))
+                    ? Center(child: Text(loc.no_models_found))
                     : ListView.builder(
                         itemCount: vehicleModelVm.vehicleSameModel?.data?.length ?? 0,
                         itemBuilder: (_, i) {
@@ -366,6 +371,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
 
   // VEHICLE COLOR SELECTOR
   void pickColor() {
+    final loc = AppLocalizations.of(context)!;
     final vehicleColorVm = Provider.of<VehicleColorsViewModel>(
       context,
       listen: false,
@@ -383,8 +389,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
           child: Column(
             children: [
               const SizedBox(height: 20),
-              const TextConst(
-                title: "Vehicle color",
+              TextConst(
+                title: loc.vehicle_color,
                 size: 20,
                 fontWeight: FontWeight.w700,
               ),
@@ -421,6 +427,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
   }
 
   void pickFuelType() {
+    final loc = AppLocalizations.of(context)!;
     final vehicleFuelVm = Provider.of<VehicleFuelViewModel>(
       context,
       listen: false,
@@ -448,8 +455,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const SizedBox(width: 30),
-                    const TextConst(
-                      title: "Fuel Type",
+                    TextConst(
+                      title: loc.fuel_type,
                       size: 20,
                       fontWeight: FontWeight.w700,
                     ),
@@ -476,7 +483,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
                     ? const Center(child: CircularProgressIndicator())
                     : vehicleFuelVm.vehicleFuelModel?.data == null ||
                     vehicleFuelVm.vehicleFuelModel!.data!.isEmpty
-                    ? const Center(child: Text("No fuel types found"))
+                    ? Center(child: Text(loc.no_fuel_types_found))
                     : ListView.builder(
                   itemCount: vehicleFuelVm.vehicleFuelModel!.data!.length,
                   itemBuilder: (_, i) {
@@ -537,6 +544,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
 
   // bottom sheet for selecting image
   void showPicker() {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -551,7 +559,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
             children: [
               ListTile(
                 leading: const Icon(Icons.photo, color: AppColor.royalBlue),
-                title: const Text("Select from Gallery"),
+                title: Text(loc.select_from_gallery),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(false);
@@ -559,7 +567,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
               ),
               ListTile(
                 leading: const Icon(Icons.camera_alt, color: AppColor.royalBlue),
-                title: const Text("Take Photo"),
+                title: Text(loc.take_photo),
                 onTap: () {
                   Navigator.pop(context);
                   pickImage(true);
@@ -574,6 +582,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final driverRegisterFiveVm = Provider.of<DriverRegisterFiveViewModel>(
       context,
     );
@@ -601,8 +610,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
                   children: [
                     SizedBox(height: topPadding),
 
-                    const TextConst(
-                      title: "Vehicle information",
+                    TextConst(
+                      title: loc.vehicle_information,
                       size: 25,
                       fontWeight: FontWeight.w700,
                     ),
@@ -632,8 +641,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
                                 : null,
                           ),
                           const SizedBox(height: 8),
-                          const Text(
-                            "Photo of your\nvehicle",
+                          Text(
+                            loc.photo_of_your_vehicle,
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -642,33 +651,33 @@ class _VehicleInformationState extends State<VehicleInformation> {
 
                     // DROPDOWN FIELDS
                     dropdownField(
-                      hint: "Vehicle brand",
+                      hint: loc.vehicle_brand_hint,
                       onTap: pickBrand,
                       value: selectedBrand,
                     ),
                     dropdownField(
-                      hint: "Vehicle model",
+                      hint: loc.vehicle_model_hint,
                       onTap: pickModel,
                       value: selectedModel,
                     ),
                     dropdownField(
-                      hint: "Vehicle color",
+                      hint: loc.vehicle_color_hint,
                       onTap: pickColor,
                       value: selectedColor,
                     ),
                     dropdownField(
-                      hint: "Fuel type",
+                      hint: loc.fuel_type_hint,
                       onTap: pickFuelType,
                       value: selectedFuelType,
                     ),
 
                     inputField(
-                      hint: "Vehicle Number",
+                      hint: loc.vehicle_number,
                       controller: plateController,
                     ),
 
                     inputField(
-                      hint: "Vehicle production year",
+                      hint: loc.vehicle_production_year,
                       controller: yearController,
                       readOnly: true,
                       onTap: () => _selectYear(context),
@@ -715,7 +724,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
                           height: 50,
                           width: 110,
                           child: CustomButton(
-                            title: "Next",
+                            title: loc.next,
                             bgColor: AppColor.royalBlue,
                             textColor: Colors.white,
                             onTap: () {
@@ -788,7 +797,8 @@ class _VehicleInformationState extends State<VehicleInformation> {
     bool readOnly = false,
     VoidCallback? onTap,
   }) {
-    final bool isVehicleNumber = hint == "Vehicle Number";
+    final loc = AppLocalizations.of(context)!;
+    final bool isVehicleNumber = hint == loc.vehicle_number;
 
     Widget field = Container(
       height: 55,
@@ -824,7 +834,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
           if (value.isEmpty) {
             setState(() => vehicleNumberError = null);
           } else if (!isValidIndianVehicle(value)) {
-            setState(() => vehicleNumberError = "Enter valid vehicle number");
+            setState(() => vehicleNumberError = loc.enter_valid_vehicle_number);
           } else {
             setState(() => vehicleNumberError = null);
           }

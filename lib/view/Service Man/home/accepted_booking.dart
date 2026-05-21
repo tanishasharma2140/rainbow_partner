@@ -23,7 +23,7 @@ class AcceptedBooking extends StatefulWidget {
 }
 
 class _AcceptedBookingState extends State<AcceptedBooking> {
-  final TextEditingController otpController = TextEditingController();
+  final Map<int, TextEditingController> otpControllers = {};
 
   @override
   void initState() {
@@ -680,7 +680,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                   if (status == 1) ...[
                     const Text("Enter OTP", style: TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
-                    otpField(),
+                    otpField(orderId),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -705,7 +705,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                             title: "Verify & Start",
                             loading: changeVm.isLoading(orderId),
                             onTap: () {
-                              changeVm.changeOrderStatusApi(orderId, 2, otpController.text, "", context);
+                              changeVm.changeOrderStatusApi(orderId, 2, otpControllers[orderId]?.text ?? "", "", context);
                             },
                           ),
                         ),
@@ -778,13 +778,16 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     );
   }
 
-  Widget otpField() => Container(
+  Widget otpField(int orderId) => Container(
     decoration: BoxDecoration(
       color: Colors.grey.shade100,
       borderRadius: BorderRadius.circular(12),
     ),
     child: TextField(
-      controller: otpController,
+      controller: otpControllers.putIfAbsent(
+        orderId,
+            () => TextEditingController(),
+      ),
       maxLength: 4,
       textAlign: TextAlign.center,
       keyboardType: TextInputType.number,

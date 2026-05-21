@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/model/service_bank_detail_model.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -29,6 +30,7 @@ class _CabBankDetailViewState extends State<CabBankDetailView> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       bottom: false,
@@ -38,8 +40,7 @@ class _CabBankDetailViewState extends State<CabBankDetailView> {
           backgroundColor: AppColor.royalBlue,
           elevation: 0,
           title:  TextConst(
-            title:
-            'Bank Details',
+            title: loc.bank_details,
             size: 17,
             color: AppColor.white,
             fontWeight: FontWeight.bold,
@@ -70,8 +71,8 @@ class _CabBankDetailViewState extends State<CabBankDetailView> {
                       ),
                     );
                   },
-                  child: const TextConst(
-                    title: "Edit",
+                  child: TextConst(
+                    title: loc.edit,
                     color: AppColor.white,
                     size: 14,
                     fontWeight: FontWeight.w600,
@@ -96,9 +97,9 @@ class _CabBankDetailViewState extends State<CabBankDetailView> {
             // 🚫 NO DATA STATE
             if (vm.serviceBankDetailModel == null ||
                 vm.serviceBankDetailModel!.bankDetails == null) {
-              return const Center(
+              return Center(
                 child: Text(
-                  "No Bank Details Found",
+                  loc.no_bank_details_found,
                   style: TextStyle(
                     color: Colors.grey,
                     fontSize: 14,
@@ -119,6 +120,7 @@ class _CabBankDetailViewState extends State<CabBankDetailView> {
   // ================= BANK DATA UI =================
 
   Widget bankDataFound(BankDetails bank) {
+    final loc = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -161,19 +163,19 @@ class _CabBankDetailViewState extends State<CabBankDetailView> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextConst(
-                        title: 'Bank Account Verified',
+                        title: loc.bank_account_verified,
                         size: 18,
                         fontWeight: FontWeight.bold,
                         color: AppColor.white,
                       ),
                       SizedBox(height: 2),
                       TextConst(
-                        title: 'Your account is ready for withdrawals',
+                        title: loc.your_account_ready_withdrawals,
                         size: 13,
                         color: Colors.white70,
                       ),
@@ -204,25 +206,25 @@ class _CabBankDetailViewState extends State<CabBankDetailView> {
 
                 _buildListTile(
                   icon: Icons.person,
-                  title: 'Account Holder Name',
+                  title: loc.account_holder_name,
                   value: bank.accountHolderName ?? "--",
                 ),
 
                 _buildListTile(
                   icon: Icons.account_balance,
-                  title: 'Bank Name',
+                  title: loc.bank_name,
                   value: bank.bankName ?? "--",
                 ),
 
                 _buildListTile(
                   icon: Icons.credit_card,
-                  title: 'Account Number',
+                  title: loc.account_number,
                   value: _maskAccountNumber(bank.accountNumber ?? ""),
                 ),
 
                 _buildListTile(
                   icon: Icons.code,
-                  title: 'IFSC Code',
+                  title: loc.ifsc_code,
                   value: bank.ifscCode ?? "--",
                   isLast: true,
                 ),

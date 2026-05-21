@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart' as AppSettings;
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/gradient_circle_pro.dart';
@@ -87,6 +88,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
   bool isOnline = false;
 
   Future<bool> _onWillPop() async {
+    final loc = AppLocalizations.of(context)!;
     return await showDialog(
       context: context,
       barrierDismissible: false,
@@ -112,15 +114,13 @@ class _DriverHomePageState extends State<DriverHomePage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                    TextConst(
-                     title:
-                    "Exit App",
+                     title: loc.exit_app,
                      size: 17,
                      fontWeight: FontWeight.w700,
                   ),
                   const SizedBox(height: 10),
                    TextConst(
-                     title:
-                    "Are you sure you want to exit?",
+                     title: loc.are_you_sure_exit,
                     textAlign: TextAlign.center,
                      size: 14,
                      color: Colors.black54,
@@ -139,8 +139,8 @@ class _DriverHomePageState extends State<DriverHomePage> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             alignment: Alignment.center,
-                            child: const Text(
-                              "Cancel",
+                            child: Text(
+                              loc.cancel,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -164,8 +164,8 @@ class _DriverHomePageState extends State<DriverHomePage> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             alignment: Alignment.center,
-                            child: const Text(
-                              "Exit",
+                            child: Text(
+                              loc.exit,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontFamily: AppFonts.kanitReg,
@@ -235,6 +235,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final driverProfileVm = Provider.of<DriverProfileViewModel>(context);
     final data = driverProfileVm.driverProfileModel?.data;
     final driverOnlineVm = Provider.of<DriverOnlineStatusViewModel>(context);
@@ -310,7 +311,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     TextConst(
-                                      title: "Welcome back 👋",
+                                      title: loc.welcome_back,
                                       size: 15,
                                       color: Colors.white70,
                                     ),
@@ -346,7 +347,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                         child: Row(
                           children: [
                             _statsBox(
-                              "Rides",
+                              loc.rides,
                               cabEarningVm.cabEarningModel?.data?.totalCompletedRide
                                       .toString() ??
                                   "0",
@@ -355,7 +356,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
                             const SizedBox(width: 12),
                             _statsBox(
-                              "Earnings",
+                              loc.earnings,
                               "₹${cabEarningVm.cabEarningModel?.data?.totalEarning ?? "0"}",
                               Icons.payments_rounded,
                               onTap: () {
@@ -370,7 +371,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                             ),
                             const SizedBox(width: 12),
                             _statsBox(
-                              "Distance",
+                              loc.distance,
                               "${cabEarningVm.cabEarningModel?.data?.totalDistance ?? "0"}km",
                               Icons.route_rounded,
                             ),
@@ -385,12 +386,12 @@ class _DriverHomePageState extends State<DriverHomePage> {
                         _activeRideCard(),
                       ],
                       const SizedBox(height: 15),
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.symmetric(horizontal: 20),
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: TextConst(
-                            title: "Quick Actions",
+                            title: loc.quick_actions,
                             size: 18,
                             fontWeight: FontWeight.w700,
                           ),
@@ -406,7 +407,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                           children: [
                             _actionItem(
                               Icons.person,
-                              "Profile",
+                              loc.profile,
                               onTap: () {
                                 print("tapped");
                                 Navigator.push(
@@ -419,7 +420,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                             ),
                             _actionItem(
                               Icons.account_balance_wallet,
-                              "Wallet Settlemant",
+                              loc.wallet_settlement,
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -431,7 +432,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                             ),
                             _actionItem(
                               Icons.account_balance,
-                              "Add Bank",
+                              loc.add_bank,
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -443,7 +444,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                             ),
                             _actionItem(
                               Icons.account_balance_outlined,
-                              "Bank Update Status",
+                              loc.bank_update_status,
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -455,7 +456,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                             ),
                             _actionItem(
                               Icons.local_taxi,
-                              "Ride History & Schedule Booking",
+                              loc.ride_history_schedule_booking,
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -466,7 +467,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                                 );
                               },
                             ),
-                            _actionItem(Icons.settings_rounded, "Settings",
+                            _actionItem(Icons.settings_rounded, loc.settings,
                             onTap: (){
                               Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverSetting()));
                             }
@@ -517,6 +518,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
   Future<bool> _maybeAskOverlayPermission() async {
     bool hasPermission = true;
+    final loc = AppLocalizations.of(context)!;
 
     try {
       final bool? platformValue =
@@ -538,23 +540,21 @@ class _DriverHomePageState extends State<DriverHomePage> {
           borderRadius: BorderRadius.circular(12),
         ),
         title:  TextConst(
-            title:
-            "Overlay Permission",
+            title: loc.overlay_permission,
             fontWeight: FontWeight.w600
         ),
-        content: TextConst(title:
-        "Enable Display over other apps to continue.",
+        content: TextConst(title: loc.enable_display_over_apps,
             size: 13
         ),
         actionsPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child:  TextConst(title:"Later",color: AppColor.black,),
+            child:  TextConst(title: loc.later,color: AppColor.black,),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child:  TextConst(title: "Allow",color: AppColor.black,),
+            child:  TextConst(title: loc.allow,color: AppColor.black,),
           ),
         ],
       ),
@@ -575,6 +575,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
   //              ONLINE / OFFLINE SWITCH
   // -------------------------------------------------
   Widget _onlineSwitch() {
+    final loc = AppLocalizations.of(context)!;
     final driverProfileVm = Provider.of<DriverProfileViewModel>(context);
     final driverOnlineVm =
     Provider.of<DriverOnlineStatusViewModel>(context, listen: false);
@@ -599,7 +600,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
         children: [
 
           TextConst(
-            title: isOnline ? "Online" : "Offline",
+            title: isOnline ? loc.online : loc.offline,
             size: 14,
             color: isOnline ? Colors.green : Colors.red,
             fontWeight: FontWeight.w600,
@@ -624,7 +625,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
                   Utils.showErrorMessage(
                     context,
-                    "Overlay permission is required",
+                    loc.overlay_permission_required,
                   );
 
                   return;
@@ -666,7 +667,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
                       Utils.showSuccessMessage(
                         context,
-                        "You are online now",
+                        loc.you_are_online_now,
                       );
 
                     } catch (e) {
@@ -675,7 +676,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
                       Utils.showErrorMessage(
                         context,
-                        "Something went wrong",
+                        loc.something_went_wrong,
                       );
                     }
                   },
@@ -717,7 +718,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
                   Utils.showSuccessMessage(
                     context,
-                    "You are offline now",
+                    loc.you_are_offline_now,
                   );
 
                 } catch (e) {
@@ -726,7 +727,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
                   Utils.showErrorMessage(
                     context,
-                    "Something went wrong",
+                    loc.something_went_wrong,
                   );
                 }
               }
@@ -741,7 +742,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
       BuildContext context, {
         required VoidCallback onAccept,
       }) {
-    // final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -762,13 +763,13 @@ class _DriverHomePageState extends State<DriverHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextConst(
-                    title: "Foreground Location Access Permissions Required",
+                    title: loc.foreground_location_access_permissions_required,
                     size: 18,
                     fontWeight: FontWeight.w600,
                   ),
                   const SizedBox(height: 12),
                   TextConst(
-                    title: "This app collects your location even when the app is closed or not in use to enable ride matching, show nearby ride requests, and keep you available while you are online as a driver.",
+                    title: loc.location_permission_description,
                     size: 14,
                     color: Colors.black87,
                   ),
@@ -783,7 +784,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                           Navigator.pop(context);
                         },
                         child:  Text(
-                          "CANCEL",
+                          loc.cancel.toUpperCase(),
                           style: TextStyle(
                             color: Colors.pink,
                             fontWeight: FontWeight.w600,
@@ -807,7 +808,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  "Location permission is required",
+                                  loc.location_permission_required,
                                 ),
                               ),
                             );
@@ -816,7 +817,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                           }
                         },
                         child:  Text(
-                          "ACCEPT",
+                          loc.accept.toUpperCase(),
                           style: TextStyle(
                             color: Colors.pink,
                             fontWeight: FontWeight.w600,
@@ -884,6 +885,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
   //                ACTIVE RIDE CARD
   // -------------------------------------------------
   Widget _activeRideCard() {
+    final loc = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -926,15 +928,15 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   TextConst(
-                    title: "Ride ongoing",
+                    title: loc.ride_ongoing,
                     size: 17,
                     fontWeight: FontWeight.w700,
                   ),
                   SizedBox(height: 4),
                   TextConst(
-                    title: "You're on duty — drive safely!",
+                    title: loc.drive_safely,
                     size: 14,
                     color: Colors.black54,
                   ),

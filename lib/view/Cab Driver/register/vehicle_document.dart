@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/constant_appbar.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
@@ -39,17 +40,17 @@ class _VehicleDocumentState extends State<VehicleDocument> {
   File? _registrationBackFile;
 
   // ✅ Dynamic document map (getter)
-  Map<String, File?> get documentFiles {
+  Map<String, File?> getDocumentFiles(AppLocalizations loc) {
     final Map<String, File?> map = {};
 
     if (showPermits) {
-      map["Vehicle permit -\npart A"] = _permitAFile;
-      map["Vehicle permit -\npart B"] = _permitBFile;
+      map[loc.vehicle_permit_part_a] = _permitAFile;
+      map[loc.vehicle_permit_part_b] = _permitBFile;
     }
 
     if (showRegistration) {
-      map["Vehicle registration certificate"] = _registrationFrontFile;
-      map["Back side of\nregistration certificate"] = _registrationBackFile;
+      map[loc.vehicle_registration_certificate] = _registrationFrontFile;
+      map[loc.back_side_of_registration_certificate] = _registrationBackFile;
     }
 
     return map;
@@ -75,35 +76,35 @@ class _VehicleDocumentState extends State<VehicleDocument> {
   }
 
   // ✅ Central setter
-  void _setFile(String key, File? file) {
+  void _setFile(String key, File? file, AppLocalizations loc) {
     setState(() {
-      if (key.contains("part A")) {
+      if (key == loc.vehicle_permit_part_a) {
         _permitAFile = file;
-      } else if (key.contains("part B")) {
+      } else if (key == loc.vehicle_permit_part_b) {
         _permitBFile = file;
-      } else if (key.contains("Back side")) {
+      } else if (key == loc.back_side_of_registration_certificate) {
         _registrationBackFile = file;
-      } else if (key.contains("registration")) {
+      } else if (key == loc.vehicle_registration_certificate) {
         _registrationFrontFile = file;
       }
     });
   }
 
-  Future<void> pickImage(String key, ImageSource source) async {
+  Future<void> pickImage(String key, ImageSource source, AppLocalizations loc) async {
     final picked = await picker.pickImage(source: source, imageQuality: 70);
     if (picked != null) {
-      _setFile(key, File(picked.path));
+      _setFile(key, File(picked.path), loc);
     }
   }
 
-  Future<void> pickDocument(String key) async {
+  Future<void> pickDocument(String key, AppLocalizations loc) async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
       );
       if (result != null && result.files.single.path != null) {
-        _setFile(key, File(result.files.single.path!));
+        _setFile(key, File(result.files.single.path!), loc);
       }
     } catch (e) {
       print("Document pick error => $e");
@@ -115,6 +116,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
   }
 
   void showPicker(String key) {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -130,28 +132,28 @@ class _VehicleDocumentState extends State<VehicleDocument> {
               ListTile(
                 leading: const Icon(Icons.picture_as_pdf,
                     color: AppColor.royalBlue),
-                title: const Text("Upload PDF Document"),
+                title: Text(loc.upload_pdf_document),
                 onTap: () {
                   Navigator.pop(context);
-                  pickDocument(key);
+                  pickDocument(key, loc);
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library,
                     color: AppColor.royalBlue),
-                title: const Text("Choose From Gallery"),
+                title: Text(loc.choose_from_gallery),
                 onTap: () {
                   Navigator.pop(context);
-                  pickImage(key, ImageSource.gallery);
+                  pickImage(key, ImageSource.gallery, loc);
                 },
               ),
               ListTile(
                 leading:
                 const Icon(Icons.camera_alt, color: AppColor.royalBlue),
-                title: const Text("Take a Photo"),
+                title: Text(loc.take_a_photo),
                 onTap: () {
                   Navigator.pop(context);
-                  pickImage(key, ImageSource.camera);
+                  pickImage(key, ImageSource.camera, loc);
                 },
               ),
             ],
@@ -161,8 +163,8 @@ class _VehicleDocumentState extends State<VehicleDocument> {
     );
   }
 
-  Widget uploadBox(String title, {bool optional = false}) {
-    File? file = documentFiles[title];
+  Widget uploadBox(String title, AppLocalizations loc, {bool optional = false}) {
+    File? file = getDocumentFiles(loc)[title];
     bool isPDF = file != null && file.path.toLowerCase().endsWith(".pdf");
 
     return GestureDetector(
@@ -216,7 +218,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                           bottomRight: Radius.circular(20),
                         ),
                       ),
-                      child: const Text("Optional",
+                      child: Text(loc.optional,
                           style: TextStyle(fontSize: 12)),
                     ),
                   ),
@@ -227,7 +229,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                     right: 6,
                     top: 6,
                     child: GestureDetector(
-                      onTap: () => _setFile(title, null),
+                      onTap: () => _setFile(title, null, loc),
                       child: Container(
                         height: 28,
                         width: 28,
@@ -257,6 +259,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final driverRegisterSixVm =
     Provider.of<DriverRegisterSixViewModel>(context);
 
@@ -282,8 +285,8 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 15),
-                    const TextConst(
-                      title: "Vehicle documents",
+                    TextConst(
+                      title: loc.vehicle_documents,
                       size: 25,
                       fontWeight: FontWeight.w700,
                     ),
@@ -295,15 +298,16 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                       children: [
                         // ✅ Permit A & B — sirf category 3, 4
                         if (showPermits) ...[
-                          uploadBox("Vehicle permit -\npart A"),
-                          uploadBox("Vehicle permit -\npart B"),
+                          uploadBox(loc.vehicle_permit_part_a, loc),
+                          uploadBox(loc.vehicle_permit_part_b, loc),
                         ],
 
                         // ✅ Registration — category 2, 3, 4
                         if (showRegistration) ...[
-                          uploadBox("Vehicle registration certificate"),
+                          uploadBox(loc.vehicle_registration_certificate, loc),
                           uploadBox(
-                            "Back side of\nregistration certificate",
+                            loc.back_side_of_registration_certificate,
+                            loc,
                             optional: true,
                           ),
                         ],
@@ -346,7 +350,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                           height: 50,
                           width: 110,
                           child: CustomButton(
-                            title: "Next",
+                            title: loc.next,
                             bgColor: AppColor.royalBlue,
                             textColor: Colors.white,
                             onTap: () {
@@ -358,7 +362,7 @@ class _VehicleDocumentState extends State<VehicleDocument> {
                                       vehicleRegistrationFront == null)) {
                                 Utils.showErrorMessage(
                                   context,
-                                  "Please upload all required vehicle documents",
+                                  loc.please_upload_all_required_vehicle_documents,
                                 );
                                 return;
                               }

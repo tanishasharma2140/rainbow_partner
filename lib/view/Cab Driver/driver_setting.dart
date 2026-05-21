@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/driver_about_us.dart';
@@ -21,6 +22,7 @@ class DriverSetting extends StatefulWidget {
 class _DriverSettingState extends State<DriverSetting> {
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       bottom: true,
@@ -31,7 +33,7 @@ class _DriverSettingState extends State<DriverSetting> {
           elevation: 0,
           centerTitle: true,
           title: TextConst(
-            title: 'Settings',
+            title: loc.settings,
             size: 18,
             color: AppColor.white,
             fontWeight: FontWeight.bold,
@@ -47,8 +49,8 @@ class _DriverSettingState extends State<DriverSetting> {
             children: [
               _settingCard(
                 icon: Icons.notifications_active_outlined,
-                title: 'Notifications',
-                subtitle: 'Ride alerts & app notifications',
+                title: loc.notifications,
+                subtitle: loc.ride_alerts_app_notifications,
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverNotification()));
                 },
@@ -56,8 +58,8 @@ class _DriverSettingState extends State<DriverSetting> {
               const SizedBox(height: 12),
               _settingCard(
                 icon: Icons.support_agent,
-                title: 'Help & Support',
-                subtitle: 'For Help & Support',
+                title: loc.help_support,
+                subtitle: loc.for_help_support,
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverHelpAndSupport()));
                 },
@@ -65,8 +67,8 @@ class _DriverSettingState extends State<DriverSetting> {
               const SizedBox(height: 12),
               _settingCard(
                 icon: Icons.description_outlined,
-                title: 'Terms & Conditions',
-                subtitle: 'Read our terms of service',
+                title: loc.terms_conditions,
+                subtitle: loc.read_terms_service,
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=>DriverTermsCondition()));
                 },
@@ -74,8 +76,8 @@ class _DriverSettingState extends State<DriverSetting> {
               const SizedBox(height: 12),
               _settingCard(
                 icon: Icons.privacy_tip_outlined,
-                title: 'Privacy Policy',
-                subtitle: 'How we use your data',
+                title: loc.privacy_policy,
+                subtitle: loc.how_we_use_data,
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverPrivacyPolicy()));
                 },
@@ -83,8 +85,8 @@ class _DriverSettingState extends State<DriverSetting> {
               const SizedBox(height: 12),
               _settingCard(
                 icon: Icons.policy,
-                title: 'Refund Policy',
-                subtitle: 'Read our refund & Cancellation policy ',
+                title: loc.refund_policy,
+                subtitle: loc.read_refund_cancellation_policy,
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverRefundPolicy()));
                 },
@@ -92,8 +94,8 @@ class _DriverSettingState extends State<DriverSetting> {
               const SizedBox(height: 12),
               _settingCard(
                 icon: Icons.design_services,
-                title: 'Service Description',
-                subtitle: 'Read our service description ',
+                title: loc.service_description,
+                subtitle: loc.read_service_description,
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverServiceDescription()));
                 },
@@ -101,8 +103,8 @@ class _DriverSettingState extends State<DriverSetting> {
               const SizedBox(height: 12),
               _settingCard(
                 icon: Icons.contact_page,
-                title: 'Contact us',
-                subtitle: 'Reach out for help and support',
+                title: loc.contact_us,
+                subtitle: loc.reach_out_help_support,
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverContactUs()));
                 },
@@ -110,8 +112,8 @@ class _DriverSettingState extends State<DriverSetting> {
               const SizedBox(height: 12),
               _settingCard(
                 icon: Icons.account_box_outlined,
-                title: 'About us',
-                subtitle: 'Know more about our services',
+                title: loc.about_us,
+                subtitle: loc.know_more_services,
                 onTap: () {
                   Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverAboutUs()));
                 },
