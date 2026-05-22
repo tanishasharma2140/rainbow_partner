@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
@@ -33,6 +34,7 @@ class _PartnerNotificationState extends State<PartnerNotification> {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<PartnerNotificationViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
 
     return SafeArea(
       top: false,
@@ -44,7 +46,7 @@ class _PartnerNotificationState extends State<PartnerNotification> {
           elevation: 0,
           centerTitle: true,
           title: TextConst(
-            title: 'Notifications',
+            title: loc.notifications,
             size: 18,
             color: AppColor.white,
             fontWeight: FontWeight.bold,
@@ -59,7 +61,7 @@ class _PartnerNotificationState extends State<PartnerNotification> {
             ? _buildShimmerLoader()
             : vm.partnerNotificationModel == null ||
             (vm.partnerNotificationModel?.data?.isEmpty ?? true)
-            ? _buildEmptyState()
+            ? _buildEmptyState(loc)
             : _buildNotificationList(vm),
       ),
     );
@@ -69,7 +71,6 @@ class _PartnerNotificationState extends State<PartnerNotification> {
   // 1️⃣ SHIMMER LOADER
   // ---------------------------
   Widget _buildShimmerLoader() {
-    final vm = Provider.of<PartnerNotificationViewModel>(context);
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: 2,
@@ -95,13 +96,13 @@ class _PartnerNotificationState extends State<PartnerNotification> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppLocalizations loc) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: const [
-          SizedBox(
+        children: [
+          const SizedBox(
             width: 180,
             height: 180,
             child: Image(
@@ -109,16 +110,16 @@ class _PartnerNotificationState extends State<PartnerNotification> {
               fit: BoxFit.contain,
             ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           TextConst(
-            title: "You are all up to date",
+            title: loc.you_are_all_up_to_date,
             size: 20,
             fontWeight: FontWeight.w700,
             fontFamily: AppFonts.poppinsReg,
             textAlign: TextAlign.center,
           ),
           TextConst(
-            title: "No new notifications — come back soon",
+            title: loc.no_new_notifications_come_back_soon,
             size: 15,
             color: Colors.black54,
             textAlign: TextAlign.center,

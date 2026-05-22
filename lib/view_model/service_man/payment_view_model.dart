@@ -24,8 +24,8 @@ class PaymentViewModel with ChangeNotifier {
   }
 
   /// Paytm config (default)
-  bool isStaging = true;
-  bool restrictAppInvoke = true;
+  bool isStaging = false;
+  bool restrictAppInvoke = false;
   bool enableAssist = true;
 
   String result = '';
@@ -87,7 +87,7 @@ class PaymentViewModel with ChangeNotifier {
         }
 
         await _startPaytmTransaction(
-          mid: "IneuZB64959027148878",
+          mid: "RAINBO51441000273277",
           orderId: orderId.toString(),
           txnToken: txnToken.toString(),
           amount: amountValue.toString(),

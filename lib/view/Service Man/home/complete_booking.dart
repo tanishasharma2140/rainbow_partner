@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/gradient_circle_pro.dart';
@@ -45,16 +46,16 @@ class _CompleteBookingState extends State<CompleteBooking> {
   }
 
   // ---------------- STATUS TEXT ----------------
-  String getServiceStatusText(dynamic status) {
+  String getServiceStatusText(dynamic status, AppLocalizations loc) {
     switch (status?.toString()) {
       case "4":
-        return "Completed";
+        return loc.completed;
       case "5":
-        return "Cancelled by User";
+        return loc.cancelled_by_user;
       case "6":
-        return "Rejected by Me";
+        return loc.rejected_by_me;
       default:
-        return "Completed";
+        return loc.completed;
     }
   }
 
@@ -71,6 +72,7 @@ class _CompleteBookingState extends State<CompleteBooking> {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<CompleteBookingViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
 
     return SafeArea(
       top: false,
@@ -88,8 +90,8 @@ class _CompleteBookingState extends State<CompleteBooking> {
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-              const TextConst(
-                title: "Booking History",
+              TextConst(
+                title: loc.booking_history,
                 color: Colors.white,
                 size: 20,
                 fontWeight: FontWeight.w600,
@@ -136,7 +138,7 @@ class _CompleteBookingState extends State<CompleteBooking> {
             if (vm.completeBookingModel == null ||
                 vm.completeBookingModel!.data == null ||
                 vm.completeBookingModel!.data!.isEmpty) {
-              return _noDataFound();
+              return _noDataFound(loc);
             }
 
             // 3️⃣ Data Available
@@ -227,7 +229,7 @@ class _CompleteBookingState extends State<CompleteBooking> {
                                       ),
                                       child: TextConst(
                                         title:
-                                        getServiceStatusText(status),
+                                        getServiceStatusText(status, loc),
                                         size: 12,
                                         color:
                                         getServiceStatusColor(status),
@@ -267,33 +269,33 @@ class _CompleteBookingState extends State<CompleteBooking> {
                       const SizedBox(height: 15),
 
                       infoRow(
-                        "Address:",
+                        "${loc.address}:",
                         marquee: true,
                         value: completeVm.serviceAddress ??
-                            "Address not available",
+                            loc.address_not_available,
                       ),
                       infoRow(
-                        "Date & Time:",
+                        "${loc.date_time}:",
                         value: formatDateTime(
                             completeVm.serviceDatetime),
                       ),
                       infoRow(
-                        "Customer:",
+                        "${loc.customer}:",
                         value:
                         completeVm.servicemanName ?? "N/A",
                       ),
 
                       if (status == 5 || status == 6)
                         infoRow(
-                          "Reason:",
+                          "${loc.reason}:",
                           value: completeVm.cancelReason ??
-                              "Reason not available",
+                              loc.reason_not_available,
                         )
                       else
                         infoRow(
-                          "Payment Status:",
+                          "${loc.payment_status}:",
                           value:
-                          getPaymentStatusText(completeVm.payMode),
+                          getPaymentStatusText(completeVm.payMode, loc),
                         ),
                     ],
                   ),
@@ -306,29 +308,29 @@ class _CompleteBookingState extends State<CompleteBooking> {
     );
   }
 
-  String getPaymentStatusText(dynamic payMode) {
+  String getPaymentStatusText(dynamic payMode, AppLocalizations loc) {
     switch (int.tryParse(payMode?.toString() ?? "") ?? 0) {
       case 1:
-        return "Online Payment";
+        return loc.online_payment;
       case 2:
-        return "Offline Payment";
+        return loc.offline_payment;
       case 3:
-        return "By Wallet";
+        return loc.by_wallet;
       default:
         return "N/A";
     }
   }
 
   // ---------------- NO DATA ----------------
-  Widget _noDataFound() {
-    return const Center(
+  Widget _noDataFound(AppLocalizations loc) {
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.inbox_rounded, size: 60, color: Colors.grey),
           SizedBox(height: 12),
           TextConst(
-            title: "No Data Found",
+            title: loc.no_data_found,
             size: 16,
             color: Colors.grey,
             fontWeight: FontWeight.w600,
@@ -347,7 +349,7 @@ class _CompleteBookingState extends State<CompleteBooking> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 95,
+            width: 100,
             child: Text(
               label,
               style: const TextStyle(

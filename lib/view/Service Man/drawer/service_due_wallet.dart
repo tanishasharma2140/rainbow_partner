@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/animated_gradient_border.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -18,14 +19,6 @@ class ServiceDueWallet extends StatefulWidget {
 class _ServiceDueWalletState extends State<ServiceDueWallet> {
   int selectedType = 0; // 0 = All
 
-  final List<Map<String, dynamic>> filters = [
-    {"title": "All", "type": 0},
-    {"title": "Online", "type": 1},
-    {"title": "Offline", "type": 2},
-    {"title": "From Wallet", "type": 3},
-    {"title": "Due Wallet", "type": 5},
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -37,7 +30,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
     });
   }
 
-  void _showClearDuePopup(BuildContext context) {
+  void _showClearDuePopup(BuildContext context, AppLocalizations loc) {
     final payment = Provider.of<PaymentViewModel>(context, listen: false);
     final profile = Provider.of<ServicemanProfileViewModel>(context,listen: false);
 
@@ -54,8 +47,8 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const TextConst(
-            title: "Clear Due Amount",
+          title: TextConst(
+            title: loc.clear_due_amount,
             size: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -74,7 +67,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                     const Icon(Icons.account_balance_wallet, color: Colors.red),
                     const SizedBox(width: 8),
                     TextConst(
-                      title: "Due Amount: ₹$dueAmount",
+                      title: "${loc.due_amount}: ₹$dueAmount",
                       size: 15,
                       fontWeight: FontWeight.w600,
                       color: Colors.red,
@@ -89,7 +82,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const TextConst(title: "Cancel", color: Colors.grey),
+              child: TextConst(title: loc.cancel, color: Colors.grey),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -101,7 +94,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
               onPressed: () {
                 if (dueAmount <= 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("No due amount available")),
+                    SnackBar(content: Text(loc.no_due_amount_available)),
                   );
                   return;
                 }
@@ -115,8 +108,8 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
 
                 // Navigator.pop(context);
               },
-              child: const TextConst(
-                title: "Submit",
+              child: TextConst(
+                title: loc.submit,
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
               ),
@@ -127,18 +120,18 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
     );
   }
 
-  String getPaymentType(int? type) {
+  String getPaymentType(int? type, AppLocalizations loc) {
     switch (type) {
       case 1:
-        return "Online";
+        return loc.online;
       case 2:
-        return "Offline";
+        return loc.offline;
       case 3:
-        return "Wallet";
+        return loc.wallet;
       case 5:
-        return "Due Wallet";
+        return loc.due_wallet;
       default:
-        return "Unknown";
+        return loc.unknown;
     }
   }
 
@@ -157,16 +150,16 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
     }
   }
 
-  String getStatus(int? status) {
+  String getStatus(int? status, AppLocalizations loc) {
     switch (status) {
       case 0:
-        return "Pending";
+        return loc.pending;
       case 1:
-        return "Success";
+        return loc.success;
       case 2:
-        return "Failed";
+        return loc.failed;
       default:
-        return "Unknown";
+        return loc.unknown;
     }
   }
 
@@ -186,6 +179,16 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
   @override
   Widget build(BuildContext context) {
     final profile = Provider.of<ServicemanProfileViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
+
+    final List<Map<String, dynamic>> filters = [
+      {"title": loc.all, "type": 0},
+      {"title": loc.online, "type": 1},
+      {"title": loc.offline, "type": 2},
+      {"title": loc.from_wallet, "type": 3},
+      {"title": loc.due_wallet, "type": 5},
+    ];
+
     return SafeArea(
       top: false,
       child: Scaffold(
@@ -199,8 +202,8 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-          title: const TextConst(
-            title: "Transaction History",
+          title: TextConst(
+            title: loc.transaction_history,
             color: Colors.white,
             size: 20,
             fontWeight: FontWeight.w600,
@@ -260,11 +263,11 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     TextConst(
-                                      title: "Wallet Balance",
+                                      title: loc.wallet_balance,
                                       size: 15,
                                       color: AppColor.black,
                                     ),
-                                    SizedBox(height: 4),
+                                    const SizedBox(height: 4),
                                     TextConst(
                                       title:
                                           "₹ ${profile.servicemanProfileModel?.data?.wallet ?? "0"}",
@@ -288,8 +291,8 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    const TextConst(
-                                      title: "Due Amount",
+                                    TextConst(
+                                      title: loc.due_amount,
                                       size: 15,
                                       color: AppColor.black,
                                     ),
@@ -324,7 +327,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                             width: double.infinity,
                             child: GestureDetector(
                               onTap: () {
-                                _showClearDuePopup(context);
+                                _showClearDuePopup(context, loc);
                               },
                               child: Container(
                                 height: 40, // 🔹 reduced height
@@ -336,8 +339,8 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                                     width: 1.4,
                                   ),
                                 ),
-                                child: const TextConst(
-                                  title: "Clear Due",
+                                child: TextConst(
+                                  title: loc.clear_due,
                                   color: Colors.red,
                                   size: 14,
                                   fontWeight: FontWeight.w600,
@@ -398,7 +401,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
 
                   /// ================= TRANSACTION LIST =================
                   if (list.isEmpty)
-                    _emptyState()
+                    _emptyState(loc)
                   else
                     ListView.builder(
                       shrinkWrap: true,
@@ -407,7 +410,7 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                       itemBuilder: (_, index) {
                         final payment = list[index].payment;
 
-                        return _transactionTile(payment);
+                        return _transactionTile(payment, loc);
                       },
                     ),
                 ],
@@ -419,59 +422,10 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
     );
   }
 
-  // ================= SUMMARY CARD =================
-  // Widget _summaryCard({
-  //   required String title,
-  //   required String amount,
-  //   required IconData icon,
-  //   required Color color,
-  //   bool showButton = false,
-  // }) {
-  //   return Container(
-  //     padding: const EdgeInsets.all(16),
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: BorderRadius.circular(16),
-  //       boxShadow: [
-  //         BoxShadow(
-  //           color: color.withOpacity(0.15),
-  //           blurRadius: 8,
-  //         ),
-  //       ],
-  //     ),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Icon(icon, color: color),
-  //         const SizedBox(height: 10),
-  //         TextConst(title: title, size: 13, color: Colors.black54),
-  //         const SizedBox(height: 6),
-  //         TextConst(
-  //           title: amount,
-  //           size: 22,
-  //           color: color,
-  //           fontWeight: FontWeight.bold,
-  //         ),
-  //         if (showButton) ...[
-  //           const SizedBox(height: 10),
-  //           CustomButton(
-  //             title: "Clear Due",
-  //             height: 36,
-  //             bgColor: color,
-  //             textColor: Colors.white,
-  //             onTap: () {},
-  //           ),
-  //         ]
-  //       ],
-  //     ),
-  //   );
-  // }
-
   // ================= TRANSACTION TILE =================
-// ================= TRANSACTION TILE =================
-  Widget _transactionTile(payment) {
-    final typeInfo = _getTypeInfo(payment.paymentType);
-    final statusInfo = _getStatusInfo(payment.status);
+  Widget _transactionTile(payment, AppLocalizations loc) {
+    final typeInfo = _getTypeInfo(payment.paymentType, loc);
+    final statusInfo = _getStatusInfo(payment.status, loc);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -488,8 +442,8 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const TextConst(
-                title: "Service Transaction",
+              TextConst(
+                title: loc.service_transaction,
                 size: 15,
                 fontWeight: FontWeight.w600,
               ),
@@ -526,9 +480,9 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Final Amount",
-                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  Text(
+                    loc.final_amount,
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -544,9 +498,9 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
-                    "Platform Fee",
-                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  Text(
+                    loc.platform_fee,
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -600,32 +554,32 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
   }
 
 // ================= TYPE LABEL =================
-  Map<String, dynamic> _getTypeInfo(dynamic paymentType) {
+  Map<String, dynamic> _getTypeInfo(dynamic paymentType, AppLocalizations loc) {
     switch (paymentType) {
       case 1:
-        return {"label": "Online", "color": Colors.blue};
+        return {"label": loc.online, "color": Colors.blue};
       case 2:
-        return {"label": "Offline", "color": Colors.orange};
+        return {"label": loc.offline, "color": Colors.orange};
       case 3:
-        return {"label": "Wallet", "color": Colors.purple};
+        return {"label": loc.wallet, "color": Colors.purple};
       case 5:
-        return {"label": "Due Wallet", "color": Colors.red};
+        return {"label": loc.due_wallet, "color": Colors.red};
       default:
-        return {"label": "Unknown", "color": Colors.grey};
+        return {"label": loc.unknown, "color": Colors.grey};
     }
   }
 
 // ================= STATUS LABEL =================
-  Map<String, dynamic> _getStatusInfo(dynamic status) {
+  Map<String, dynamic> _getStatusInfo(dynamic status, AppLocalizations loc) {
     switch (status) {
       case 0:
-        return {"label": "Pending", "color": Colors.orange};
+        return {"label": loc.pending, "color": Colors.orange};
       case 1:
-        return {"label": "Success", "color": Colors.green};
+        return {"label": loc.success, "color": Colors.green};
       case 2:
-        return {"label": "Failed", "color": Colors.red};
+        return {"label": loc.failed, "color": Colors.red};
       default:
-        return {"label": "Unknown", "color": Colors.grey};
+        return {"label": loc.unknown, "color": Colors.grey};
     }
   }
   // ================= FILTER LOGIC =================
@@ -640,12 +594,12 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
   }
 
   // ================= EMPTY STATE =================
-  Widget _emptyState() {
-    return const Center(
+  Widget _emptyState(AppLocalizations loc) {
+    return Center(
       child: Padding(
-        padding: EdgeInsets.only(top: 40),
+        padding: const EdgeInsets.only(top: 40),
         child: TextConst(
-          title: "No transactions found",
+          title: loc.no_transactions_found,
           size: 16,
           color: Colors.black54,
         ),

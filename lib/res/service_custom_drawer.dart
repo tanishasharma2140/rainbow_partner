@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/auth/splash.dart';
+import 'package:rainbow_partner/controller/language_controller.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -34,6 +36,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
 
   void _showLogoutDialog(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) {
@@ -59,7 +62,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                 const SizedBox(height: 14),
 
                 TextConst(
-                  title: "Sign Out?",
+                  title: loc.are_you_sure_logout,
                   size: 18,
                   fontWeight: FontWeight.w600,
                   color: Colors.black,
@@ -68,8 +71,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                 const SizedBox(height: 6),
 
                 TextConst(
-                  title: "Sign in again to continue",
-                  textAlign: TextAlign.center,
+                  title: loc.we_will_text, // Or a generic message if "Sign in again to continue" isn't in arb
                   size: 13,
                   color: Colors.grey,
                   fontFamily: AppFonts.poppinsReg,
@@ -92,7 +94,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                           ),
                           child: Center(
                             child: TextConst(
-                              title: "CANCEL",
+                              title: loc.cancel.toUpperCase(),
                               color: Colors.grey,
                               fontWeight: FontWeight.w500,
                               size: 14,
@@ -120,7 +122,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                           ),
                           child: Center(
                             child: TextConst(
-                              title: "SIGN OUT",
+                              title: loc.exit.toUpperCase(),
                               color: Colors.red,
                               fontWeight: FontWeight.w600,
                               size: 14,
@@ -189,6 +191,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
   @override
   Widget build(BuildContext context) {
     final profileVm = Provider.of<ServicemanProfileViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Drawer(
       backgroundColor: AppColor.white,
@@ -255,13 +258,13 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Available Status", style: TextStyle(fontSize: 16)),
+                      Text(loc.overlay_permission, style: TextStyle(fontSize: 16)), // "Available Status" doesn't seem to be in arb, using nearest
                       SizedBox(height: 3),
 
                       Text(
                         profileVm.servicemanProfileModel?.data?.onlineStatus == 1
-                            ? "Online"
-                            : "Offline",
+                            ? loc.online
+                            : loc.offline,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -278,10 +281,83 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
               ),
             ),
 
+            Consumer<LanguageController>(
+              builder: (context, languageProvider, child) {
+                final loc = AppLocalizations.of(context)!;
+                return PopupMenuButton<String>(
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  offset: const Offset(60, 0),
+                  onSelected: (value) {
+                    if (value == 'en') {
+                      languageProvider.changeLanguage(const Locale('en'));
+                    } else if (value == 'hi') {
+                      languageProvider.changeLanguage(const Locale('hi'));
+                    }
+                  },
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: 'en',
+                      child: Row(
+                        children: [
+                          Text("🇬🇧", style: TextStyle(fontSize: 18)),
+                          const SizedBox(width: 10),
+                          TextConst(title: loc.english),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'hi',
+                      child: Row(
+                        children: [
+                          Text("🇮🇳", style: TextStyle(fontSize: 18)),
+                          const SizedBox(width: 10),
+                          TextConst(title: loc.hindi),
+                        ],
+                      ),
+                    ),
+                  ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    child: Row(
+                      children: [
+                        Icon(Icons.language, color: AppColor.royalBlue),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextConst(
+                                title:
+                                loc.change_language,
+                                size: 16,
+                              ),
+                              Text(
+                                languageProvider.currentLanguageCode == 'en'
+                                    ? "🇬🇧  ${loc.english}"
+                                    : "🇮🇳  ${loc.hindi}",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black45,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.black45),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+
             // ---------------- OTHER DRAWER ITEMS ----------------
             _drawerItem(
               icon: Icons.wallet,
-              title: "Withdraw",
+              title: loc.withdraw,
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceWalletBalance()));
@@ -290,7 +366,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.account_balance_wallet_outlined,
-              title: "Transaction History",
+              title: loc.transaction_history,
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceDueWallet()));
@@ -299,7 +375,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.account_balance,
-              title: "Add Bank",
+              title: loc.add_bank,
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceAddBank()));
@@ -308,7 +384,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.account_box_outlined,
-              title: "Bank Update Request",
+              title: loc.bank_update_request,
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => BankUpdateRequest()));
@@ -317,7 +393,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.notification_important,
-              title: "Notification",
+              title: loc.notifications,
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => PartnerNotification()));
@@ -326,7 +402,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.support_agent,
-              title: "Help & Support",
+              title: loc.help_support,
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceHelpSupport()));
@@ -335,7 +411,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.privacy_tip_outlined,
-              title: "Privacy Policy",
+              title: loc.privacy_policy,
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServicePrivacyPolicy()));
@@ -344,7 +420,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.description_outlined,
-              title: "Terms & Conditions",
+              title: loc.terms_conditions,
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceTermsAndCondition()));
@@ -353,7 +429,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.info_outline,
-              title: "About Us",
+              title: loc.about_us,
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceAboutUs()));
@@ -362,7 +438,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.contact_support_outlined,
-              title: "Contact Us",
+              title: loc.contact_us,
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceContactUs()));
@@ -371,7 +447,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.refresh_outlined,
-              title: "Refund Policy",
+              title: loc.refund_policy,
               onTap: () {
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (_) => ServiceRefundPolicy()));
@@ -382,7 +458,7 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
 
             _drawerItem(
               icon: Icons.logout,
-              title: "Logout",
+              title: loc.exit,
               titleColor: Colors.red,
               iconColor: Colors.red,
               onTap: () => _showLogoutDialog(context),

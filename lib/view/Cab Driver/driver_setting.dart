@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:rainbow_partner/controller/language_controller.dart';
 import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -45,80 +47,195 @@ class _DriverSettingState extends State<DriverSetting> {
         ),
         body: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              _settingCard(
-                icon: Icons.notifications_active_outlined,
-                title: loc.notifications,
-                subtitle: loc.ride_alerts_app_notifications,
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverNotification()));
-                },
-              ),
-              const SizedBox(height: 12),
-              _settingCard(
-                icon: Icons.support_agent,
-                title: loc.help_support,
-                subtitle: loc.for_help_support,
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverHelpAndSupport()));
-                },
-              ),
-              const SizedBox(height: 12),
-              _settingCard(
-                icon: Icons.description_outlined,
-                title: loc.terms_conditions,
-                subtitle: loc.read_terms_service,
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=>DriverTermsCondition()));
-                },
-              ),
-              const SizedBox(height: 12),
-              _settingCard(
-                icon: Icons.privacy_tip_outlined,
-                title: loc.privacy_policy,
-                subtitle: loc.how_we_use_data,
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverPrivacyPolicy()));
-                },
-              ),
-              const SizedBox(height: 12),
-              _settingCard(
-                icon: Icons.policy,
-                title: loc.refund_policy,
-                subtitle: loc.read_refund_cancellation_policy,
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverRefundPolicy()));
-                },
-              ),
-              const SizedBox(height: 12),
-              _settingCard(
-                icon: Icons.design_services,
-                title: loc.service_description,
-                subtitle: loc.read_service_description,
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverServiceDescription()));
-                },
-              ),
-              const SizedBox(height: 12),
-              _settingCard(
-                icon: Icons.contact_page,
-                title: loc.contact_us,
-                subtitle: loc.reach_out_help_support,
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverContactUs()));
-                },
-              ),
-              const SizedBox(height: 12),
-              _settingCard(
-                icon: Icons.account_box_outlined,
-                title: loc.about_us,
-                subtitle: loc.know_more_services,
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverAboutUs()));
-                },
-              ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                // const SizedBox(height: 12),
+
+                Consumer<LanguageController>(
+                  builder: (context, languageProvider, child) {
+                    return PopupMenuButton<String>(
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      offset: const Offset(0, 45),
+
+                      onSelected: (value) {
+                        if (value == 'en') {
+                          languageProvider.changeLanguage(const Locale('en'));
+                        } else if (value == 'hi') {
+                          languageProvider.changeLanguage(const Locale('hi'));
+                        }
+                      },
+
+                      itemBuilder: (_) => [
+                        PopupMenuItem(
+                          value: 'en',
+                          child: Row(
+                            children: [
+                              const Text("🇬🇧"),
+                              SizedBox(width: 10),
+                              TextConst(title: loc.english),
+                            ],
+                          ),
+                        ),
+
+                        PopupMenuItem(
+                          value: 'hi',
+                          child: Row(
+                            children: [
+                              const Text("🇮🇳"),
+                              SizedBox(width: 10),
+                              TextConst(title: loc.hindi),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              height: 42,
+                              width: 42,
+                              decoration: BoxDecoration(
+                                color: AppColor.royalBlue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.language,
+                                color: AppColor.royalBlue,
+                              ),
+                            ),
+
+                            const SizedBox(width: 14),
+
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextConst(
+                                    title: loc.change_language,
+                                    size: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+
+                                  const SizedBox(height: 4),
+
+                                  Text(
+                                    languageProvider.currentLanguageCode == 'en'
+                                        ? "🇬🇧 ${loc.english}"
+                                        : "🇮🇳 ${loc.hindi}",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const Icon(
+                              Icons.keyboard_arrow_down,
+                              size: 18,
+                              color: Colors.grey,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _settingCard(
+                  icon: Icons.notifications_active_outlined,
+                  title: loc.notifications,
+                  subtitle: loc.ride_alerts_app_notifications,
+                  onTap: () {
+                    Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverNotification()));
+                  },
+                ),
+                const SizedBox(height: 12),
+                _settingCard(
+                  icon: Icons.support_agent,
+                  title: loc.help_support,
+                  subtitle: loc.for_help_support,
+                  onTap: () {
+                    Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverHelpAndSupport()));
+                  },
+                ),
+                const SizedBox(height: 12),
+                _settingCard(
+                  icon: Icons.description_outlined,
+                  title: loc.terms_conditions,
+                  subtitle: loc.read_terms_service,
+                  onTap: () {
+                    Navigator.push(context, CupertinoPageRoute(builder: (context)=>DriverTermsCondition()));
+                  },
+                ),
+                const SizedBox(height: 12),
+                _settingCard(
+                  icon: Icons.privacy_tip_outlined,
+                  title: loc.privacy_policy,
+                  subtitle: loc.how_we_use_data,
+                  onTap: () {
+                    Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverPrivacyPolicy()));
+                  },
+                ),
+                const SizedBox(height: 12),
+                _settingCard(
+                  icon: Icons.policy,
+                  title: loc.refund_policy,
+                  subtitle: loc.read_refund_cancellation_policy,
+                  onTap: () {
+                    Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverRefundPolicy()));
+                  },
+                ),
+                const SizedBox(height: 12),
+                _settingCard(
+                  icon: Icons.design_services,
+                  title: loc.service_description,
+                  subtitle: loc.read_service_description,
+                  onTap: () {
+                    Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverServiceDescription()));
+                  },
+                ),
+                const SizedBox(height: 12),
+                _settingCard(
+                  icon: Icons.contact_page,
+                  title: loc.contact_us,
+                  subtitle: loc.reach_out_help_support,
+                  onTap: () {
+                    Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverContactUs()));
+                  },
+                ),
+                const SizedBox(height: 12),
+                _settingCard(
+                  icon: Icons.account_box_outlined,
+                  title: loc.about_us,
+                  subtitle: loc.know_more_services,
+                  onTap: () {
+                    Navigator.push(context, CupertinoPageRoute(builder: (context)=> DriverAboutUs()));
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

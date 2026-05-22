@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 
@@ -7,6 +8,7 @@ class JobRequestSuccessPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return WillPopScope(
       onWillPop: () async => false, // back disable
       child: Scaffold(
@@ -36,8 +38,8 @@ class JobRequestSuccessPage extends StatelessWidget {
                 const SizedBox(height: 25),
 
                 // ✅ TITLE
-                const TextConst(
-                  title: "Request Submitted!",
+                TextConst(
+                  title: l10n.request_submitted,
                   size: 22,
                   fontWeight: FontWeight.w700,
                   color: Colors.black,
@@ -47,9 +49,8 @@ class JobRequestSuccessPage extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 // ✅ MESSAGE
-                const TextConst(
-                  title:
-                  "Your job request has been successfully submitted.\nNow please wait for the job to be assigned",
+                TextConst(
+                  title: l10n.job_request_successfully_submitted,
                   size: 15,
                   color: Colors.black54,
                   textAlign: TextAlign.center,
@@ -71,8 +72,8 @@ class JobRequestSuccessPage extends StatelessWidget {
                     onPressed: () {
                       Navigator.pop(context); // ya Home page pe bhejo
                     },
-                    child: const TextConst(
-                      title: "Go to Home",
+                    child: TextConst(
+                      title: l10n.go_to_home,
                       size: 16,
                       color: Colors.white,
                       fontWeight: FontWeight.w600,

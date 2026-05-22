@@ -358,7 +358,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get no_vehicle_found => 'कोई वाहन नहीं मिला';
 
   @override
-  String get welcome_back => 'वापसी पर स्वागत है 👋';
+  String get welcome_back => 'वापसी पर स्वागत है!';
 
   @override
   String get rides => 'राइड्स';
@@ -373,7 +373,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get quick_actions => 'त्वरित कार्य';
 
   @override
-  String get profile => 'प्रोफाइल';
+  String get profile => 'प्रोफ़ाइल';
 
   @override
   String get wallet_settlement => 'वॉलेट सेटलमेंट';
@@ -580,7 +580,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get due_wallet => 'ड्यू वॉलेट';
 
   @override
-  String get withdraw => 'निकालें';
+  String get withdraw => 'निकासी';
 
   @override
   String get history => 'इतिहास';
@@ -589,7 +589,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get recent_transactions => 'हाल की ट्रांजैक्शन';
 
   @override
-  String get no_transactions_found => 'कोई ट्रांजैक्शन नहीं मिली';
+  String get no_transactions_found => 'कोई लेन-देन नहीं मिला';
 
   @override
   String get amount => 'राशि';
@@ -693,13 +693,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get confirm_account_number => 'खाता संख्या की पुष्टि करें';
 
   @override
-  String get re_enter_account_number => 'खाता संख्या दोबारा दर्ज करें';
+  String get re_enter_account_number => 'खाता संख्या पुनः दर्ज करें';
 
   @override
-  String get ifsc_code => 'IFSC कोड';
+  String get ifsc_code => 'आईएफएससी कोड';
 
   @override
-  String get enter_ifsc_code => 'IFSC कोड दर्ज करें';
+  String get enter_ifsc_code => 'आईएफएससी कोड दर्ज करें';
 
   @override
   String get add_bank_account_button => 'बैंक खाता जोड़ें';
@@ -740,10 +740,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get account_holder => 'खाता धारक';
 
   @override
-  String get requested_on => 'अनुरोध तिथि';
+  String get requested_on => 'अनुरोध की तिथि';
 
   @override
-  String get updated_on => 'अपडेट तिथि';
+  String get updated_on => 'अपडेट की तिथि';
 
   @override
   String get not_updated_yet => 'अभी तक अपडेट नहीं हुआ';
@@ -804,7 +804,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get time => 'समय';
 
   @override
-  String get na => 'लागू नहीं';
+  String get na => 'उपलब्ध नहीं';
 
   @override
   String get completed => 'पूर्ण';
@@ -834,7 +834,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get tomorrow => 'कल';
 
   @override
-  String get notifications => 'सूचनाएं';
+  String get notifications => 'सूचनाएँ';
 
   @override
   String get ride_alerts_app_notifications => 'राइड अलर्ट और ऐप सूचनाएं';
@@ -887,20 +887,20 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get no_new_notifications_come_back_soon =>
-      'कोई नई सूचना नहीं — जल्द वापस आएं';
+      'कोई नई सूचना नहीं — जल्द वापस आएँ';
 
   @override
-  String get need_help_services => 'क्या आपको सेवाओं में मदद चाहिए?';
+  String get need_help_services => 'सेवाओं में सहायता चाहिए?';
 
   @override
   String get help_support_description =>
-      'यदि आपको अपनी सेवाओं को जोड़ने, अपडेट करने या प्रबंधित करने में कोई समस्या हो रही है, तो हम आपकी सहायता के लिए यहां हैं।\n\nहमारी सहायता टीम हमेशा उपलब्ध है।';
+      'यदि आपको अपनी सेवाओं को जोड़ने, अपडेट करने या प्रबंधित करने में कोई समस्या आ रही है, तो हम आपकी सहायता के लिए यहाँ हैं।\n\nहमारी सहायता टीम हमेशा उपलब्ध है।';
 
   @override
   String get contact_support => 'सहायता से संपर्क करें';
 
   @override
-  String get need_quick_support => 'क्या आपको तुरंत सहायता चाहिए?';
+  String get need_quick_support => 'त्वरित सहायता चाहिए?';
 
   @override
   String get terms_and_condition => 'नियम और शर्त';
@@ -1060,7 +1060,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get please_wait => 'कृपया प्रतीक्षा करें...';
 
   @override
-  String get collect_cash => 'कैश प्राप्त करें';
+  String get collect_cash => 'नकद प्राप्त करें';
 
   @override
   String get collect_cash_payment => 'कैश भुगतान प्राप्त करें';
@@ -1081,7 +1081,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get all => 'सभी';
 
   @override
-  String get reject => 'अस्वीकृत';
+  String get reject => 'अस्वीकार';
 
   @override
   String get no_withdraw_history_found => 'कोई निकासी इतिहास नहीं मिला';
@@ -1089,4 +1089,475 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get your_withdraw_history_will_appear_here =>
       'आपका निकासी इतिहास यहाँ दिखाई देगा';
+
+  @override
+  String get upload_file => 'फ़ाइल अपलोड करें';
+
+  @override
+  String get camera => 'कैमरा';
+
+  @override
+  String get gallery => 'गैलरी';
+
+  @override
+  String get upload_pdf => 'PDF अपलोड करें';
+
+  @override
+  String get create_your_account => 'अपना अकाउंट बनाएं';
+
+  @override
+  String get fill_your_details_below => 'नीचे अपनी जानकारी भरें';
+
+  @override
+  String get first_name => 'पहला नाम';
+
+  @override
+  String get last_name => 'अंतिम नाम';
+
+  @override
+  String get city => 'शहर';
+
+  @override
+  String get email_address_optional => 'ईमेल पता (वैकल्पिक)';
+
+  @override
+  String get full_address => 'पूरा पता';
+
+  @override
+  String get select_category => 'श्रेणी चुनें';
+
+  @override
+  String get select_gender => 'लिंग चुनें';
+
+  @override
+  String get male => 'पुरुष';
+
+  @override
+  String get female => 'महिला';
+
+  @override
+  String get other => 'अन्य';
+
+  @override
+  String get dont_have_any_skill => 'कोई कौशल नहीं है?';
+
+  @override
+  String get upload_experience_certificate =>
+      'अनुभव प्रमाणपत्र अपलोड करें (इमेज/PDF)';
+
+  @override
+  String get upload_aadhaar_front => 'आधार फ्रंट अपलोड करें';
+
+  @override
+  String get upload_aadhaar_back => 'आधार बैक अपलोड करें';
+
+  @override
+  String get submit => 'सबमिट करें';
+
+  @override
+  String get location_permission_denied_permanently =>
+      'लोकेशन अनुमति स्थायी रूप से अस्वीकृत';
+
+  @override
+  String get error_fetching_location => 'लोकेशन प्राप्त करने में त्रुटि';
+
+  @override
+  String get no_cities_found => 'कोई शहर नहीं मिला';
+
+  @override
+  String get select_city => 'शहर चुनें';
+
+  @override
+  String get you_can_select_maximum_3_categories =>
+      'आप अधिकतम 3 श्रेणियां चुन सकते हैं';
+
+  @override
+  String get please_enter_first_name => 'कृपया पहला नाम दर्ज करें';
+
+  @override
+  String get please_enter_last_name => 'कृपया अंतिम नाम दर्ज करें';
+
+  @override
+  String get please_select_city => 'कृपया शहर चुनें';
+
+  @override
+  String get please_enter_address => 'कृपया पता दर्ज करें';
+
+  @override
+  String get please_fetch_current_location =>
+      'कृपया अपना वर्तमान स्थान प्राप्त करने के लिए पता फ़ील्ड में लोकेशन आइकन पर क्लिक करें';
+
+  @override
+  String get select_gender_error => 'लिंग चुनें';
+
+  @override
+  String get select_at_least_one_category => 'कम से कम एक श्रेणी चुनें';
+
+  @override
+  String get upload_experience_certificate_error =>
+      'अनुभव प्रमाणपत्र अपलोड करें';
+
+  @override
+  String get upload_aadhaar_front_back => 'आधार फ्रंट और बैक अपलोड करें';
+
+  @override
+  String get upload_profile_photo => 'प्रोफाइल फोटो अपलोड करें';
+
+  @override
+  String get verification_pending => 'सत्यापन लंबित';
+
+  @override
+  String get admin_is_verifying_your_profile =>
+      'एडमिन आपकी प्रोफाइल सत्यापित कर रहा है।\nकृपया स्वीकृति की प्रतीक्षा करें।';
+
+  @override
+  String get account_inactive => 'अकाउंट निष्क्रिय';
+
+  @override
+  String get reason => 'कारण';
+
+  @override
+  String get enable_display_over_other_apps =>
+      'अन्य ऐप्स पर डिस्प्ले सक्षम करें';
+
+  @override
+  String get are_you_sure_you_want_to_exit =>
+      'क्या आप वाकई बाहर निकलना चाहते हैं?';
+
+  @override
+  String get handyman_home => 'हैंडीमैन होम';
+
+  @override
+  String get hello => 'नमस्ते';
+
+  @override
+  String get on => 'चालू';
+
+  @override
+  String get off => 'बंद';
+
+  @override
+  String get total_cash_in_hand => 'कुल नकद राशि';
+
+  @override
+  String get find_services => 'सेवाएं खोजें';
+
+  @override
+  String get accepted_bookings => 'स्वीकृत बुकिंग';
+
+  @override
+  String get booking_history => 'बुकिंग इतिहास';
+
+  @override
+  String get total_revenue => 'कुल राजस्व';
+
+  @override
+  String get reviews => 'समीक्षाएं';
+
+  @override
+  String get updating_status => 'स्थिति अपडेट हो रही है...';
+
+  @override
+  String get no_reviews_found => 'कोई समीक्षा नहीं मिली';
+
+  @override
+  String get anonymous => 'गुमनाम';
+
+  @override
+  String get service => 'सेवा';
+
+  @override
+  String get location_services_are_disabled => 'लोकेशन सेवाएं बंद हैं';
+
+  @override
+  String get location_permission_denied => 'लोकेशन अनुमति अस्वीकृत';
+
+  @override
+  String get location_permission_permanently_denied =>
+      'लोकेशन अनुमति स्थायी रूप से अस्वीकृत';
+
+  @override
+  String get no_address => 'कोई पता नहीं';
+
+  @override
+  String get pending_bookings => 'लंबित बुकिंग';
+
+  @override
+  String get no_pending_bookings_available => 'कोई लंबित बुकिंग उपलब्ध नहीं है';
+
+  @override
+  String get address => 'पता';
+
+  @override
+  String get date => 'तारीख';
+
+  @override
+  String get qty => 'मात्रा';
+
+  @override
+  String get desc => 'विवरण';
+
+  @override
+  String get ignore => 'अनदेखा करें';
+
+  @override
+  String get reject_booking => 'बुकिंग अस्वीकार करें';
+
+  @override
+  String get please_mention_rejection_reason =>
+      'कृपया अस्वीकार करने का कारण बताएं';
+
+  @override
+  String get enter_reason => 'कारण दर्ज करें...';
+
+  @override
+  String get please_enter_reason => 'कृपया कारण दर्ज करें';
+
+  @override
+  String get please_select_your_preferred_payment_mode =>
+      'कृपया अपना पसंदीदा भुगतान मोड चुनें';
+
+  @override
+  String get pay_online => 'ऑनलाइन भुगतान करें';
+
+  @override
+  String get pay_offline => 'ऑफलाइन भुगतान करें';
+
+  @override
+  String get please_collect_amount_from_customer =>
+      'कृपया ग्राहक से ₹amount प्राप्त करें';
+
+  @override
+  String get cash_collected => 'नकद प्राप्त हो गया';
+
+  @override
+  String get meter => 'मीटर';
+
+  @override
+  String get km => 'कि.मी.';
+
+  @override
+  String get accept_booking => 'बुकिंग स्वीकार करें';
+
+  @override
+  String get quantity => 'मात्रा';
+
+  @override
+  String get hide_details => 'विवरण छुपाएं';
+
+  @override
+  String get view_order_detail => 'ऑर्डर विवरण देखें';
+
+  @override
+  String get customer_name => 'ग्राहक का नाम';
+
+  @override
+  String get customer_mobile => 'ग्राहक मोबाइल';
+
+  @override
+  String get payment_mode => 'भुगतान मोड';
+
+  @override
+  String get service_date => 'सेवा तिथि';
+
+  @override
+  String get current_pay_mode => 'वर्तमान भुगतान मोड';
+
+  @override
+  String get change => 'बदलें';
+
+  @override
+  String get verify_start => 'सत्यापित करें और शुरू करें';
+
+  @override
+  String get work_completed_collect_cash => 'कार्य पूर्ण हुआ, नकद प्राप्त करें';
+
+  @override
+  String get update_complete_status => 'पूर्ण स्थिति अपडेट करें';
+
+  @override
+  String get waiting_for_user_payment =>
+      'उपयोगकर्ता भुगतान की प्रतीक्षा कर रहा है';
+
+  @override
+  String get service_completed_payment_done => 'सेवा पूर्ण • भुगतान हो गया';
+
+  @override
+  String get service_started_successfully_message =>
+      'सेवा सफलतापूर्वक शुरू हो गई है। कृपया कार्य पूरा करें और उसके बाद स्थिति अपडेट करें।';
+
+  @override
+  String get rejected_by_me => 'मेरे द्वारा अस्वीकृत';
+
+  @override
+  String get address_not_available => 'पता उपलब्ध नहीं है';
+
+  @override
+  String get date_time => 'तारीख और समय';
+
+  @override
+  String get reason_not_available => 'कारण उपलब्ध नहीं है';
+
+  @override
+  String get payment_status => 'भुगतान स्थिति';
+
+  @override
+  String get offline_payment => 'ऑफलाइन भुगतान';
+
+  @override
+  String get by_wallet => 'वॉलेट द्वारा';
+
+  @override
+  String get earning_list => 'कमाई सूची';
+
+  @override
+  String get week => 'सप्ताह';
+
+  @override
+  String get month => 'महीना';
+
+  @override
+  String get recent_earnings => 'हाल की कमाई';
+
+  @override
+  String get no_recent_earnings_found => 'हाल की कोई कमाई नहीं मिली';
+
+  @override
+  String get no_profile_found => 'कोई प्रोफ़ाइल नहीं मिली';
+
+  @override
+  String get basic_details => 'मूल विवरण';
+
+  @override
+  String get mobile => 'मोबाइल';
+
+  @override
+  String get service_name => 'सेवा का नाम';
+
+  @override
+  String get documents => 'दस्तावेज़';
+
+  @override
+  String get aadhaar_front => 'आधार फ्रंट';
+
+  @override
+  String get aadhaar_back => 'आधार बैक';
+
+  @override
+  String get experience_certificate => 'अनुभव प्रमाण पत्र';
+
+  @override
+  String get other_info => 'अन्य जानकारी';
+
+  @override
+  String get created_at => 'बनाने की तिथि';
+
+  @override
+  String get document => 'दस्तावेज़';
+
+  @override
+  String get transaction_history => 'लेन-देन इतिहास';
+
+  @override
+  String get clear_due_amount => 'बकाया राशि साफ करें';
+
+  @override
+  String get due_amount => 'बकाया राशि';
+
+  @override
+  String get no_due_amount_available => 'कोई बकाया राशि उपलब्ध नहीं है';
+
+  @override
+  String get failed => 'विफल';
+
+  @override
+  String get wallet_balance => 'वॉलेट बैलेंस';
+
+  @override
+  String get clear_due => 'बकाया साफ करें';
+
+  @override
+  String get from_wallet => 'वॉलेट से';
+
+  @override
+  String get service_transaction => 'सेवा लेन-देन';
+
+  @override
+  String get please_enter_bank_name => 'कृपया बैंक का नाम दर्ज करें';
+
+  @override
+  String get please_re_enter_account_number =>
+      'कृपया खाता संख्या पुनः दर्ज करें';
+
+  @override
+  String get account_numbers_do_not_match => 'खाता संख्या मेल नहीं खाती';
+
+  @override
+  String get enter_account_holder_name => 'खाता धारक का नाम दर्ज करें';
+
+  @override
+  String get please_enter_account_holder_name =>
+      'कृपया खाता धारक का नाम दर्ज करें';
+
+  @override
+  String get please_enter_ifsc_code => 'कृपया आईएफएससी कोड दर्ज करें';
+
+  @override
+  String get state_bank_of_india => 'स्टेट बैंक ऑफ इंडिया';
+
+  @override
+  String get change_language => 'भाषा बदलें';
+
+  @override
+  String get choose_image_gallery => 'गैलरी से इमेज चुनें';
+
+  @override
+  String get upload_pdf_document_affidavit_allowed =>
+      'PDF दस्तावेज़ अपलोड करें (एफिडेविट मान्य है)';
+
+  @override
+  String get designation_certificates_affidavits_cv =>
+      'डिज़िग्नेशन सर्टिफिकेट / एफिडेविट / CV';
+
+  @override
+  String get doc => 'दस्तावेज़';
+
+  @override
+  String get add => 'जोड़ें';
+
+  @override
+  String get designation_certificate_affidavit_message =>
+      'यदि आपके पास डिज़िग्नेशन सर्टिफिकेट नहीं है, तो विकल्प के रूप में एफिडेविट (PDF) अपलोड करें।';
+
+  @override
+  String get search_city => 'शहर खोजें...';
+
+  @override
+  String get uttar_pradesh_india => 'उत्तर प्रदेश, भारत';
+
+  @override
+  String get hello_user => 'नमस्ते यूज़र !';
+
+  @override
+  String get create_account_better_experience =>
+      'बेहतर अनुभव के लिए\nअपना अकाउंट बनाएं';
+
+  @override
+  String get email_address => 'ईमेल पता';
+
+  @override
+  String get designation_example => 'डिज़िग्नेशन (जैसे प्लंबर)';
+
+  @override
+  String get dont_know_any_skill => 'कोई स्किल नहीं जानते';
+
+  @override
+  String get request_submitted => 'रिक्वेस्ट सबमिट हो गई!';
+
+  @override
+  String get job_request_successfully_submitted =>
+      'आपकी जॉब रिक्वेस्ट सफलतापूर्वक सबमिट हो गई है।\nअब कृपया जॉब असाइन होने तक प्रतीक्षा करें';
+
+  @override
+  String get go_to_home => 'होम पर जाएं';
 }

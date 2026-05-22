@@ -173,10 +173,24 @@ class RapidoIncomingOrderOverlayService : Service() {
         card.addView(distanceBadge)
 
         if (rideDistance.isNotEmpty() && rideDistance != "0.0") {
-            val rideDistTv = TextView(this).apply {
-                text = "User Travelling distance: $rideDistance km"; textSize = 14f; setTypeface(null, Typeface.BOLD); setTextColor(Color.parseColor("#424242"))
-                gravity = Gravity.CENTER; layoutParams = LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8) }
+
+            val rideText = if (panel == "serviceman") {
+                "You need to travel $rideDistance km to provide this service"
+            } else {
+                "User Travelling distance: $rideDistance km"
             }
+
+            val rideDistTv = TextView(this).apply {
+                text = rideText
+                textSize = 14f
+                setTypeface(null, Typeface.BOLD)
+                setTextColor(Color.parseColor("#424242"))
+                gravity = Gravity.CENTER
+                layoutParams = LinearLayout.LayoutParams(-1, -2).apply {
+                    topMargin = dp(8)
+                }
+            }
+
             card.addView(rideDistTv)
         }
 

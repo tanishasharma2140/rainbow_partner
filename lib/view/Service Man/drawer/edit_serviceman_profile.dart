@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -31,6 +32,7 @@ class _EditServicemanProfileState extends State<EditServicemanProfile> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       child: Scaffold(
@@ -44,8 +46,7 @@ class _EditServicemanProfileState extends State<EditServicemanProfile> {
               },
               child: Icon(Icons.arrow_back,color: AppColor.white,)),
           title:  TextConst(
-            title:
-            "Profile",
+            title: loc.profile,
             size: 20,
             color: AppColor.white,
           ),
@@ -61,7 +62,7 @@ class _EditServicemanProfileState extends State<EditServicemanProfile> {
             }
 
             if (d == null) {
-              return const Center(child: Text("No Profile Found"));
+              return Center(child: Text(loc.no_profile_found));
             }
 
             return SingleChildScrollView(
@@ -93,27 +94,27 @@ class _EditServicemanProfileState extends State<EditServicemanProfile> {
                   const SizedBox(height: 20),
 
                   // ------------- BASIC DETAILS ------------------
-                  profileTitle("Basic Details"),
-                  profileRow("Name", "${d.firstName} ${d.lastName}"),
-                  profileRow("Mobile", d.mobile),
-                  profileRow("Address", d.address),
-                  profileRow("Service Name", d.serviceName),
+                  profileTitle(loc.basic_details),
+                  profileRow(loc.name, "${d.firstName} ${d.lastName}"),
+                  profileRow(loc.mobile, d.mobile),
+                  profileRow(loc.address, d.address),
+                  profileRow(loc.service_name, d.serviceName),
 
                   const SizedBox(height: 20),
 
                   // ------------ DOCUMENTS ------------------
-                  profileTitle("Documents"),
-                  profileDoc("Aadhaar Front", d.aadhaarFront),
-                  profileDoc("Aadhaar Back", d.aadhaarBack),
-                  profileDoc("Experience Certificate", d.experienceCertificate),
+                  profileTitle(loc.documents),
+                  profileDoc(loc.aadhaar_front, d.aadhaarFront),
+                  profileDoc(loc.aadhaar_back, d.aadhaarBack),
+                  profileDoc(loc.experience_certificate, d.experienceCertificate),
 
                   const SizedBox(height: 20),
 
                   // ------------ OTHER INFO ------------------
-                  profileTitle("Other Info"),
-                  profileRow("Wallet", "₹${d.wallet}"),
-                  profileRow("Due Wallet", "₹${d.dueWallet}"),
-                  profileRow("Created At", d.createdAt),
+                  profileTitle(loc.other_info),
+                  profileRow(loc.wallet, "₹${d.wallet}"),
+                  profileRow(loc.due_wallet, "₹${d.dueWallet}"),
+                  profileRow(loc.created_at, d.createdAt),
                 ],
               ),
             );
@@ -198,8 +199,9 @@ class FullImageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text("Document")),
+      appBar: AppBar(title: Text(loc.document)),
       body: Center(child: Image.network(url)),
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/service_custom_drawer.dart';
@@ -95,6 +96,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
   }
 
   void _showPendingDialog() {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -111,15 +113,14 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
               children: [
                 Icon(Icons.hourglass_bottom, color: Colors.orange, size: 42),
                 const SizedBox(height: 14),
-                const TextConst(
-                  title: "Verification Pending",
+                TextConst(
+                  title: loc.verification_pending,
                   size: 18,
                   fontWeight: FontWeight.w700,
                 ),
                 const SizedBox(height: 10),
-                const TextConst(
-                  title:
-                  "Admin is verifying your profile.\nPlease wait for approval.",
+                TextConst(
+                  title: loc.admin_is_verifying_your_profile,
                   textAlign: TextAlign.center,
                   size: 14,
                   color: Colors.grey,
@@ -134,6 +135,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
   }
 
   void _showRejectedDialog(String reason) {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -150,14 +152,14 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
               children: [
                 Icon(Icons.block, color: Colors.red, size: 42),
                 const SizedBox(height: 14),
-                const TextConst(
-                  title: "Account Inactive",
+                TextConst(
+                  title: loc.account_inactive,
                   size: 18,
                   fontWeight: FontWeight.w700,
                 ),
                 const SizedBox(height: 10),
                 TextConst(
-                  title: "Reason: $reason",
+                  title: "${loc.reason}: $reason",
                   textAlign: TextAlign.center,
                   size: 14,
                   color: Colors.red,
@@ -236,24 +238,25 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<Position> _getCurrentLocation() async {
+    final loc = AppLocalizations.of(context)!;
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      throw Exception("Location services are disabled");
+      throw Exception(loc.location_services_are_disabled);
     }
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        throw Exception("Location permission denied");
+        throw Exception(loc.location_permission_denied);
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      throw Exception("Location permission permanently denied");
+      throw Exception(loc.location_permission_permanently_denied);
     }
 
     return await Geolocator.getCurrentPosition(
@@ -262,6 +265,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
   }
 
   Future<bool> _maybeAskOverlayPermission() async {
+    final loc = AppLocalizations.of(context)!;
     bool hasPermission = false;
 
     try {
@@ -281,16 +285,16 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     final shouldOpenSettings = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Overlay Permission"),
-        content: Text("Enable display over other apps"),
+        title: Text(loc.overlay_permission),
+        content: Text(loc.enable_display_over_other_apps),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text("Cancel"),
+            child: Text(loc.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text("Allow"),
+            child: Text(loc.allow),
           ),
         ],
       ),
@@ -312,7 +316,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
 
   Future<void> _toggleOnlineStatus(bool currentStatus) async {
-
+    final loc = AppLocalizations.of(context)!;
     if (!mounted) return;
 
     setState(() {
@@ -351,7 +355,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
           Utils.showErrorMessage(
             context,
-            "Overlay permission is required",
+            loc.overlay_permission_required,
           );
 
           return;
@@ -412,7 +416,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
         Utils.showSuccessMessage(
           context,
-          "You are online now",
+          loc.you_are_online_now,
         );
 
       }
@@ -430,7 +434,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
         Utils.showSuccessMessage(
           context,
-          "You are offline now",
+          loc.you_are_offline_now,
         );
       }
 
@@ -459,6 +463,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
   }
 
   Future<bool> _onWillPop() async {
+    final loc = AppLocalizations.of(context)!;
     return await showDialog(
       context: context,
       barrierDismissible: false,
@@ -484,15 +489,13 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextConst(
-                    title:
-                    "Exit App",
+                    title: loc.exit_app,
                     size: 17,
                     fontWeight: FontWeight.w700,
                   ),
                   const SizedBox(height: 10),
                   TextConst(
-                    title:
-                    "Are you sure you want to exit?",
+                    title: loc.are_you_sure_exit,
                     textAlign: TextAlign.center,
                     size: 14,
                     color: Colors.black54,
@@ -511,8 +514,8 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             alignment: Alignment.center,
-                            child: const Text(
-                              "Cancel",
+                            child: Text(
+                              loc.cancel,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -536,8 +539,8 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             alignment: Alignment.center,
-                            child: const Text(
-                              "Exit",
+                            child: Text(
+                              loc.exit,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontFamily: AppFonts.kanitReg,
@@ -597,6 +600,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final serviceProfileVm = Provider.of<ServicemanProfileViewModel>(context);
     final reviewVm = Provider.of<ReviewViewModel>(context);
     final serviceVm = Provider.of<ServiceInfoViewModel>(context);
@@ -622,7 +626,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                   children: [
                     SizedBox(width: 18),
                     TextConst(
-                      title: "Handyman Home",
+                      title: loc.handyman_home,
                       color: Colors.white,
                       size: 20,
                       fontWeight: FontWeight.w600,
@@ -674,13 +678,12 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   TextConst(
-                                    title:
-                                    "Hello, ${serviceProfileVm.servicemanProfileModel!.data!.firstName} ${serviceProfileVm.servicemanProfileModel!.data!.lastName}",
+                                    title: "${loc.hello}, ${serviceProfileVm.servicemanProfileModel!.data!.firstName} ${serviceProfileVm.servicemanProfileModel!.data!.lastName}",
                                     size: 18,
                                     fontWeight: FontWeight.w600,
                                   ),
                                   TextConst(
-                                    title: "Welcome back!",
+                                    title: loc.welcome_back,
                                     size: 13,
                                     color: Colors.grey,
                                   ),
@@ -692,7 +695,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                             GestureDetector(
                               onTap: () => _toggleOnlineStatus(isOnline),
                               child: Container(
-                                width: 110,
+                                width: 120,
                                 height: 42,
                                 decoration: BoxDecoration(
                                   color: isOnline ? Colors.green : Colors.red,
@@ -713,11 +716,11 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                                           : Alignment.centerRight,
                                       child: Padding(
                                         padding: EdgeInsets.only(
-                                          left: isOnline ? 12 : 0,
-                                          right: isOnline ? 0 : 12,
+                                          left: isOnline ? 11 : 0,
+                                          right: isOnline ? 0 : 11,
                                         ),
                                         child: Text(
-                                          isOnline ? "Online" : "Offline",
+                                          isOnline ? loc.online : loc.offline,
                                           style: TextStyle(
                                             color: Colors.white.withOpacity(0.7),
                                             fontSize: 12,
@@ -751,7 +754,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                                         ),
                                         child: Center(
                                           child: Text(
-                                            isOnline ? "ON" : "OFF",
+                                            isOnline ? loc.on : loc.off,
                                             style: TextStyle(
                                               color: isOnline
                                                   ? Colors.green
@@ -790,9 +793,9 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              const Expanded(
+                              Expanded(
                                 child: TextConst(
-                                  title: "Total Cash in Hand",
+                                  title: loc.total_cash_in_hand,
                                   size: 16,
                                 ),
                               ),
@@ -821,7 +824,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                           children: [
                             Expanded(
                               child: statBox(
-                                title: "Find Services",
+                                title: loc.find_services,
                                 imagePath: "assets/sandy_loading.gif",
                                 onTap: () {
                                   Navigator.push(
@@ -837,7 +840,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                             Expanded(
                               child: statBox(
                                 value: serviceVm.serviceInfoModel?.data?.acceptedBooking.toString() ?? "0",
-                                title: "Accepted Bookings",
+                                title: loc.accepted_bookings,
                                 icon: Icons.design_services,
                                 onTap: () {
                                   Navigator.push(
@@ -860,7 +863,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                             Expanded(
                               child: statBox(
                                 value: serviceVm.serviceInfoModel?.data?.completedBooking.toString() ?? "",
-                                title: "Booking History",
+                                title: loc.booking_history,
                                 icon: Icons.list_alt_outlined,
                                 onTap: () {
                                   Navigator.push(
@@ -876,7 +879,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                             Expanded(
                               child: statBox(
                                 value: "₹${serviceVm.serviceInfoModel?.data?.totalEarning ?? ""}",
-                                title: "Total Revenue",
+                                title: loc.total_revenue,
                                 icon: Icons.monetization_on_outlined,
                                 onTap: () {
                                   Navigator.push(
@@ -894,7 +897,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                         const SizedBox(height: 25),
 
                         TextConst(
-                          title: "Reviews",
+                          title: loc.reviews,
                           size: 20,
                           fontWeight: FontWeight.w600,
                         ),
@@ -927,7 +930,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                         decoration: TextDecoration.none,
                       ),
                       child: Text(
-                        "Updating status...",
+                        loc.updating_status,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -945,6 +948,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
   }
 
   Widget reviewList(ReviewViewModel reviewVm) {
+    final loc = AppLocalizations.of(context)!;
     if (reviewVm.loading) {
       return ListView.builder(
         itemCount: 3,
@@ -962,8 +966,8 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     final reviews = reviewVm.reviewModel?.data;
 
     if (reviews == null || reviews.isEmpty) {
-      return const Center(
-        child: Text("No reviews found", style: TextStyle(color: Colors.grey)),
+      return Center(
+        child: Text(loc.no_reviews_found, style: const TextStyle(color: Colors.grey)),
       );
     }
 
@@ -977,7 +981,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
         return Padding(
           padding: const EdgeInsets.only(bottom: 15),
           child: reviewCard(
-            name: review.userName ?? "Anonymous",
+            name: review.userName ?? loc.anonymous,
             date: formatDateTime(review.createdAt),
             service: review.serviceName ?? "--",
             rating: review.rating?.toString() ?? "0",
@@ -995,6 +999,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     required String rating,
     String? image,
   }) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
@@ -1050,7 +1055,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                 const SizedBox(height: 4),
                 TextConst(title: date, size: 13, color: Colors.grey),
                 TextConst(
-                  title: "Service: $service",
+                  title: "${loc.service}: $service",
                   size: 13,
                   color: Colors.grey,
                 ),

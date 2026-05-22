@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/model/service_bank_detail_model.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
@@ -44,6 +45,8 @@ class _ServiceEditBankPageState extends State<ServiceEditBankPage> {
   @override
   Widget build(BuildContext context) {
     final bankEditVm = Provider.of<ServiceBankEditViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: AppColor.whiteDark,
       appBar: AppBar(
@@ -55,8 +58,8 @@ class _ServiceEditBankPageState extends State<ServiceEditBankPage> {
             child: Icon(Icons.arrow_back,color: AppColor.white,)),
         backgroundColor: AppColor.royalBlue,
         elevation: 0,
-        title: const TextConst(
-          title: "Edit Bank Details",
+        title: TextConst(
+          title: loc.edit_bank_details,
           color: Colors.white,
           size: 18,
           fontWeight: FontWeight.w600,
@@ -69,11 +72,11 @@ class _ServiceEditBankPageState extends State<ServiceEditBankPage> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _input("Bank Name", bankNameCtrl),
-                _input("Account Holder Name", holderNameCtrl),
-                _input("Account Number", accNoCtrl, isNumber: true),
-                _input("Re-enter Account Number", reAccNoCtrl, isNumber: true),
-                _input("IFSC Code", ifscCtrl),
+                _input(loc.bank_name, bankNameCtrl),
+                _input(loc.account_holder_name, holderNameCtrl),
+                _input(loc.account_number, accNoCtrl, isNumber: true),
+                _input(loc.re_enter_account_number, reAccNoCtrl, isNumber: true),
+                _input(loc.ifsc_code, ifscCtrl),
 
                 const SizedBox(height: 14),
 
@@ -82,7 +85,7 @@ class _ServiceEditBankPageState extends State<ServiceEditBankPage> {
                 /// SAVE
                 CustomButton(
                   bgColor: AppColor.royalBlue,
-                  title: "Save Changes",
+                  title: loc.save_changes,
                   onTap: () {
                     bankEditVm.serviceBankEditApi(
                       1,

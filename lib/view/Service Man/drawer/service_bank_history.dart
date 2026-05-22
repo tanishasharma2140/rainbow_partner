@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/model/service_bank_detail_model.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -27,12 +28,14 @@ class _ServiceBankHistoryState extends State<ServiceBankHistory> {
   }
 
   String maskAccount(String number) {
+    if (number.length < 4) return number;
     return "XXXX XXXX ${number.substring(number.length - 4)}";
   }
 
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<ServiceGetBankDetailViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
 
     if (vm.loading) {
       return const Scaffold(
@@ -42,8 +45,23 @@ class _ServiceBankHistoryState extends State<ServiceBankHistory> {
 
     if (vm.serviceBankDetailModel == null ||
         vm.serviceBankDetailModel!.bankDetails == null) {
-      return const Scaffold(
-        body: Center(child: TextConst(title: "No bank details found")),
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColor.royalBlue,
+          elevation: 0,
+          leading: GestureDetector(
+              onTap: (){
+                Navigator.pop(context);
+              },
+              child: Icon(Icons.arrow_back,color: AppColor.white,)),
+          title: TextConst(
+            title: loc.bank_details,
+            color: Colors.white,
+            size: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        body: Center(child: TextConst(title: loc.no_bank_details_found)),
       );
     }
 
@@ -60,8 +78,8 @@ class _ServiceBankHistoryState extends State<ServiceBankHistory> {
               Navigator.pop(context);
             },
             child: Icon(Icons.arrow_back,color: AppColor.white,)),
-        title: const TextConst(
-          title: "Bank Details",
+        title: TextConst(
+          title: loc.bank_details,
           color: Colors.white,
           size: 18,
           fontWeight: FontWeight.w600,
@@ -76,8 +94,8 @@ class _ServiceBankHistoryState extends State<ServiceBankHistory> {
                 ),
               );
             },
-            child: const TextConst(
-              title: "Edit",
+            child: TextConst(
+              title: loc.edit,
               color: Colors.white,
               size: 14,
               fontWeight: FontWeight.w600,
@@ -117,8 +135,8 @@ class _ServiceBankHistoryState extends State<ServiceBankHistory> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const TextConst(
-                          title: "Bank Name",
+                        TextConst(
+                          title: loc.bank_name,
                           color: Colors.white70,
                           size: 12,
                         ),
@@ -139,13 +157,13 @@ class _ServiceBankHistoryState extends State<ServiceBankHistory> {
             const SizedBox(height: 20),
 
             /// 🔷 DETAILS
-            _detailTile("Account Holder", bank.accountHolderName, Icons.person),
+            _detailTile(loc.account_holder, bank.accountHolderName, Icons.person),
             _detailTile(
-              "Account Number",
+              loc.account_number,
               maskAccount(bank.accountNumber),
               Icons.credit_card,
             ),
-            _detailTile("IFSC Code", bank.ifscCode, Icons.confirmation_number),
+            _detailTile(loc.ifsc_code, bank.ifscCode, Icons.confirmation_number),
           ],
         ),
       ),
@@ -174,17 +192,19 @@ class _ServiceBankHistoryState extends State<ServiceBankHistory> {
             child: Icon(icon, color: AppColor.royalBlue),
           ),
           const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextConst(title: title, size: 12, color: Colors.grey),
-              const SizedBox(height: 4),
-              TextConst(
-                title: value,
-                size: 15,
-                fontWeight: FontWeight.w600,
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextConst(title: title, size: 12, color: Colors.grey),
+                const SizedBox(height: 4),
+                TextConst(
+                  title: value,
+                  size: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ],
+            ),
           ),
         ],
       ),

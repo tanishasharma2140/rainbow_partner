@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_loader.dart';
@@ -46,7 +47,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
   }
 
   // ---------------- REJECT DIALOG ----------------
-  void showRejectDialog(int orderId, ChangeOrderStatusViewModel vm) {
+  void showRejectDialog(int orderId, ChangeOrderStatusViewModel vm, AppLocalizations l10n) {
     final TextEditingController reasonCtrl = TextEditingController();
 
     showDialog(
@@ -61,14 +62,14 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const TextConst(
-                title: "Reject Booking",
+              TextConst(
+                title: l10n.reject_booking,
                 size: 16,
                 fontWeight: FontWeight.w700,
               ),
               const SizedBox(height: 8),
-              const TextConst(
-                title: "Please mention rejection reason",
+              TextConst(
+                title: l10n.please_mention_rejection_reason,
                 size: 13,
                 color: Colors.black54,
               ),
@@ -82,10 +83,10 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                   controller: reasonCtrl,
                   textInputAction: TextInputAction.done,
                   maxLines: 3,
-                  decoration: const InputDecoration(
-                    hintText: "Enter reason...",
+                  decoration: InputDecoration(
+                    hintText: l10n.enter_reason,
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(14),
+                    contentPadding: const EdgeInsets.all(14),
                   ),
                 ),
               ),
@@ -102,7 +103,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                           color: Colors.grey.shade200,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text("Cancel"),
+                        child: Text(l10n.cancel),
                       ),
                     ),
                   ),
@@ -113,7 +114,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                         if (reasonCtrl.text.trim().isEmpty) {
                           Utils.showErrorMessage(
                             context,
-                            "Please enter reason",
+                            l10n.please_enter_reason,
                           );
                           return;
                         }
@@ -133,9 +134,9 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                           color: Colors.red,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
-                          "Reject",
-                          style: TextStyle(color: Colors.white),
+                        child: Text(
+                          l10n.reject,
+                          style: const TextStyle(color: Colors.white),
                         ),
                       ),
                     ),
@@ -149,7 +150,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     );
   }
 
-  void _showPayModeDialog(BuildContext context, int orderId) {
+  void _showPayModeDialog(BuildContext context, int orderId, AppLocalizations l10n) {
     final changePayModeVm = Provider.of<ChangeServicePayModeVm>(context, listen: false);
     showDialog(
       context: context,
@@ -166,16 +167,14 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const TextConst(
-                  title:
-                  "Change Payment Mode",
+                TextConst(
+                  title: l10n.change_payment_mode,
                   size: 18,
                   fontWeight: FontWeight.bold,
                 ),
                 const SizedBox(height: 8),
-                const TextConst(
-                    title:
-                  "Please select your preferred payment mode",
+                TextConst(
+                  title: l10n.please_select_your_preferred_payment_mode,
                   size: 13,
                   color: Colors.grey,
                 ),
@@ -196,12 +195,12 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                       border: Border.all(color: AppColor.royalBlue),
                     ),
                     child: Row(
-                      children: const [
-                        Icon(Icons.payment, color: AppColor.royalBlue),
-                        SizedBox(width: 12),
+                      children: [
+                        const Icon(Icons.payment, color: AppColor.royalBlue),
+                        const SizedBox(width: 12),
                         Text(
-                          "Pay Online",
-                          style: TextStyle(
+                          l10n.pay_online,
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                           ),
@@ -228,12 +227,12 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                       border: Border.all(color: Colors.orange),
                     ),
                     child: Row(
-                      children: const [
-                        Icon(Icons.money, color: Colors.orange),
-                        SizedBox(width: 12),
+                      children: [
+                        const Icon(Icons.money, color: Colors.orange),
+                        const SizedBox(width: 12),
                         Text(
-                          "Pay Offline",
-                          style: TextStyle(
+                          l10n.pay_offline,
+                          style: const TextStyle(
                             fontSize: 15,
                             color: AppColor.black,
                             fontWeight: FontWeight.w600,
@@ -250,7 +249,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text("Cancel"),
+                    child: Text(l10n.cancel),
                   ),
                 ),
               ],
@@ -265,6 +264,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     required int orderId,
     required int amount,
     required ChangeOrderStatusViewModel vm,
+    required AppLocalizations l10n,
   }) {
     showDialog(
       context: context,
@@ -290,13 +290,13 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                 ),
               ),
               const SizedBox(height: 14),
-              const Text(
-                "Collect Cash",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              Text(
+                l10n.collect_cash,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               Text(
-                "Please collect ₹$amount from customer",
+                l10n.please_collect_amount_from_customer.replaceAll("₹amount", "₹$amount"),
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 14, color: Colors.black54),
               ),
@@ -313,7 +313,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                           color: Colors.grey.shade200,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text("Cancel"),
+                        child: Text(l10n.cancel),
                       ),
                     ),
                   ),
@@ -338,9 +338,9 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                           color: Colors.green,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
-                          "Cash Collected",
-                          style: TextStyle(
+                        child: Text(
+                          l10n.cash_collected,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
@@ -357,14 +357,14 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     );
   }
 
-  String formatDistance(dynamic distance) {
+  String formatDistance(dynamic distance, AppLocalizations l10n) {
     if (distance == null) return "--";
     double value = double.tryParse(distance.toString()) ?? 0;
-    int km = value.floor();
-    int meter = ((value - km) * 1000).round();
-    if (km == 0) return "$meter meter";
-    if (meter == 0) return "$km km";
-    return "$km km $meter meter";
+    int kmValue = value.floor();
+    int meterValue = ((value - kmValue) * 1000).round();
+    if (kmValue == 0) return "$meterValue ${l10n.meter}";
+    if (meterValue == 0) return "$kmValue ${l10n.km}";
+    return "$kmValue ${l10n.km} $meterValue ${l10n.meter}";
   }
 
   String formatDateTime(dynamic value) {
@@ -387,16 +387,16 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     }
   }
 
-  String formatPayMode(dynamic payMode) {
+  String formatPayMode(dynamic payMode, AppLocalizations l10n) {
     switch (int.tryParse(payMode?.toString() ?? "") ?? 0) {
       case 1:
-        return "Pay Online";
+        return l10n.pay_online;
       case 2:
-        return "Pay Offline";
+        return l10n.pay_offline;
       case 3:
-        return "Wallet";
+        return l10n.wallet;
       default:
-        return "N/A";
+        return l10n.na;
     }
   }
 
@@ -404,6 +404,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
   Widget build(BuildContext context) {
     final bookingVm = Provider.of<CompleteBookingViewModel>(context);
     final changeVm = Provider.of<ChangeOrderStatusViewModel>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColor.whiteDark,
@@ -412,10 +413,10 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
         automaticallyImplyLeading: false,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back, color: AppColor.white),
+          child: const Icon(Icons.arrow_back, color: AppColor.white),
         ),
-        title: const TextConst(
-          title: "Accept Booking",
+        title: TextConst(
+          title: l10n.accept_booking,
           color: Colors.white,
           size: 20,
           fontWeight: FontWeight.w600,
@@ -425,11 +426,11 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
         color: AppColor.royalBlue,
         onRefresh: _refreshBookings,
         child: bookingVm.loading
-            ? Center(child: CustomLoader(color: AppColor.royalBlue))
+            ? const Center(child: CustomLoader(color: AppColor.royalBlue))
             : bookingVm.completeBookingModel == null ||
             bookingVm.completeBookingModel!.data == null ||
             bookingVm.completeBookingModel!.data!.isEmpty
-            ? _noDataFound()
+            ? _noDataFound(l10n)
             : ListView.builder(
           padding: const EdgeInsets.all(15),
           itemCount: bookingVm.completeBookingModel!.data!.length,
@@ -484,9 +485,9 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                                     borderRadius: BorderRadius.circular(18),
                                     border: Border.all(color: Colors.orange),
                                   ),
-                                  child: const Text(
-                                    "Pending",
-                                    style: TextStyle(
+                                  child: Text(
+                                    l10n.pending,
+                                    style: const TextStyle(
                                       color: Colors.orange,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 12,
@@ -522,7 +523,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                   ),
                   const SizedBox(height: 12),
                   infoRow(
-                    "Address:",
+                    "${l10n.address}:",
                     booking.serviceAddress ?? "",
                     showMapIcon: true,
                     onMapTap: () {
@@ -532,10 +533,10 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                       );
                     },
                   ),
-                  infoRow("Date:", formatDateTime(booking.serviceDatetime)),
-                  infoRow("Customer:", booking.userName ?? ""),
-                  infoRow("Distance:", formatDistance(booking.distance)),
-                  infoRow("Quantity:", booking.quantity.toString()),
+                  infoRow("${l10n.date}:", formatDateTime(booking.serviceDatetime)),
+                  infoRow("${l10n.customer}:", booking.userName ?? ""),
+                  infoRow("${l10n.distance}:", formatDistance(booking.distance, l10n)),
+                  infoRow("${l10n.quantity}:", booking.quantity.toString()),
 
                   InkWell(
                     onTap: () {
@@ -546,7 +547,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                     child: Align(
                       alignment: Alignment.bottomRight,
                       child: Text(
-                        (_expandedMap[booking.id] ?? false) ? "Hide Details" : "View Order Detail",
+                        (_expandedMap[booking.id] ?? false) ? l10n.hide_details : l10n.view_order_detail,
                         style: const TextStyle(
                           color: AppColor.royalBlue,
                           fontSize: 14,
@@ -568,13 +569,13 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _detailRow("Customer Name :", booking.userName),
-                          _detailRow("Customer Mobile :", booking.userMobile),
-                          _detailRow("Address :", booking.serviceAddress),
-                          _detailRow("Amount :", "₹${booking.amount}"),
-                          _detailRow("Final Amount :", "₹${booking.finalAmount}"),
-                          _detailRow("Payment Mode", formatPayMode(booking.payMode)),
-                          _detailRow("Service Date", formatDateTime(booking.serviceDatetime)),
+                          _detailRow("${l10n.customer_name} :", booking.userName),
+                          _detailRow("${l10n.customer_mobile} :", booking.userMobile),
+                          _detailRow("${l10n.address} :", booking.serviceAddress),
+                          _detailRow("${l10n.amount} :", "₹${booking.amount}"),
+                          _detailRow("${l10n.final_amount} :", "₹${booking.finalAmount}"),
+                          _detailRow(l10n.payment_mode, formatPayMode(booking.payMode, l10n)),
+                          _detailRow(l10n.service_date, formatDateTime(booking.serviceDatetime)),
                         ],
                       ),
                     ),
@@ -587,7 +588,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: InkWell(
-                        onTap: () => _showPayModeDialog(context, booking.id),
+                        onTap: () => _showPayModeDialog(context, booking.id, l10n),
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
@@ -602,15 +603,13 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     TextConst(
-                                      title:
-                                      "Current Pay Mode",
+                                      title: l10n.current_pay_mode,
                                       size: 12,
                                       color: Colors.grey.shade600,
                                     ),
                                     const SizedBox(height: 2),
                                     TextConst(
-                                      title:
-                                      formatPayMode(booking.payMode),
+                                      title: formatPayMode(booking.payMode, l10n),
                                       size: 14,
                                       fontWeight: FontWeight.w700,
                                       color: AppColor.royalBlue,
@@ -619,9 +618,8 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const TextConst(
-                                title:
-                                "Change",
+                              TextConst(
+                                title: l10n.change,
                                 size: 13,
                                 color: AppColor.royalBlue,
                                 fontWeight: FontWeight.w600,
@@ -632,7 +630,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                       ),
                     )
                   else
-                    _detailRow("Pay Mode", formatPayMode(booking.payMode)),
+                    _detailRow(l10n.payment_mode, formatPayMode(booking.payMode, l10n)),
 
                   const SizedBox(height: 10),
                   Container(
@@ -678,7 +676,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
 
                   /// ---------- STATUS BASED UI ----------
                   if (status == 1) ...[
-                    const Text("Enter OTP", style: TextStyle(fontWeight: FontWeight.w600)),
+                    Text(l10n.enter_otp, style: const TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     otpField(orderId),
                     const SizedBox(height: 12),
@@ -686,7 +684,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                       children: [
                         Expanded(
                           child: InkWell(
-                            onTap: () => showRejectDialog(orderId, changeVm),
+                            onTap: () => showRejectDialog(orderId, changeVm, l10n),
                             child: Container(
                               height: 46,
                               alignment: Alignment.center,
@@ -695,14 +693,14 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Colors.red),
                               ),
-                              child: const TextConst(title: "Reject", color: Colors.red),
+                              child: TextConst(title: l10n.reject, color: Colors.red),
                             ),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: actionButton(
-                            title: "Verify & Start",
+                            title: l10n.verify_start,
                             loading: changeVm.isLoading(orderId),
                             onTap: () {
                               changeVm.changeOrderStatusApi(orderId, 2, otpControllers[orderId]?.text ?? "", "", context);
@@ -714,22 +712,23 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                   ],
 
                   if (status == 2) ...[
-                    serviceStartedMessage(),
+                    serviceStartedMessage(l10n),
                     if (payMode == 2)
                       actionButton(
-                        title: "Work Completed Collect Cash",
+                        title: l10n.work_completed_collect_cash,
                         loading: false,
                         onTap: () {
                           showCollectCashDialog(
                             orderId: orderId,
                             amount: booking.amount ?? 0,
                             vm: changeVm,
+                            l10n: l10n,
                           );
                         },
                       )
                     else
                       SlideToButton(
-                        title: "Update Complete Status",
+                        title: l10n.update_complete_status,
                         onAccepted: () {
                           changeVm.changeOrderStatusApi(orderId, 3, "", "", context);
                         },
@@ -738,7 +737,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
 
                   if (status == 3)
                     actionButton(
-                      title: "Waiting for User Payment",
+                      title: l10n.waiting_for_user_payment,
                       loading: false,
                       onTap: () {},
                     ),
@@ -751,8 +750,8 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
                         color: Colors.green.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const TextConst(
-                        title: "Service Completed • Payment Done",
+                      child: TextConst(
+                        title: l10n.service_completed_payment_done,
                         color: Colors.green,
                       ),
                     ),
@@ -765,14 +764,14 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     );
   }
 
-  Widget _noDataFound() {
-    return const Center(
+  Widget _noDataFound(AppLocalizations l10n) {
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.inbox_rounded, size: 60, color: Colors.grey),
+          const Icon(Icons.inbox_rounded, size: 60, color: Colors.grey),
           const SizedBox(height: 12),
-          TextConst(title: "No Data Found", size: 16, color: Colors.grey, fontWeight: FontWeight.w600),
+          TextConst(title: l10n.no_data_found, size: 16, color: Colors.grey, fontWeight: FontWeight.w600),
         ],
       ),
     );
@@ -814,7 +813,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
         border: Border.all(color: AppColor.royalBlue),
       ),
       child: loading
-          ? CustomLoader(color: AppColor.royalBlue)
+          ? const CustomLoader(color: AppColor.royalBlue)
           : TextConst(
               title: title,
               color: AppColor.royalBlue,
@@ -829,7 +828,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 90,
+          width: 100,
           child: Text(label, style: const TextStyle(fontFamily: AppFonts.kanitReg, color: Colors.black54)),
         ),
         Expanded(
@@ -852,7 +851,7 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
     ),
   );
 
-  Widget serviceStartedMessage() {
+  Widget serviceStartedMessage(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12),
@@ -862,9 +861,9 @@ class _AcceptedBookingState extends State<AcceptedBooking> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.green),
       ),
-      child: const Text(
-        "Service has started successfully. Please complete the job and update the status once done.",
-        style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 13),
+      child: Text(
+        l10n.service_started_successfully_message,
+        style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 13),
       ),
     );
   }

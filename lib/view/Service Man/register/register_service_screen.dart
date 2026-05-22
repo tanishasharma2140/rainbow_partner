@@ -7,6 +7,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/main.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
@@ -40,8 +41,6 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
       cityVm.cityApi();
     });
   }
-
-
 
   // controllers
   final TextEditingController firstNameController = TextEditingController();
@@ -111,6 +110,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
   }
 
   Future<void> _pickImageOrPdfForPolice() async {
+    final l10n = AppLocalizations.of(context)!;
     // show option bottom sheet
     showModalBottomSheet(
       context: context,
@@ -128,7 +128,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                   Icons.photo_library,
                   color: AppColor.royalBlue,
                 ),
-                title: const Text("Choose Image from Gallery"),
+                title: Text(l10n.choose_image_gallery),
                 onTap: () async {
                   Navigator.pop(context);
                   final XFile? file = await _picker.pickImage(
@@ -144,7 +144,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                   Icons.camera_alt,
                   color: AppColor.royalBlue,
                 ),
-                title: const Text("Take Photo"),
+                title: Text(l10n.take_photo),
                 onTap: () async {
                   Navigator.pop(context);
                   final XFile? file = await _picker.pickImage(
@@ -160,7 +160,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                   Icons.picture_as_pdf,
                   color: AppColor.royalBlue,
                 ),
-                title: const Text("Upload PDF Document"),
+                title: Text(l10n.upload_pdf_document),
                 onTap: () async {
                   Navigator.pop(context);
                   try {
@@ -189,6 +189,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
   }
 
   Future<void> _pickDesignationDoc() async {
+    final l10n = AppLocalizations.of(context)!;
     // allow multiple — either image or pdf
     showModalBottomSheet(
       context: context,
@@ -206,7 +207,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                   Icons.photo_library,
                   color: AppColor.royalBlue,
                 ),
-                title: const Text("Choose Image from Gallery"),
+                title: Text(l10n.choose_image_gallery),
                 onTap: () async {
                   Navigator.pop(context);
                   final XFile? file = await _picker.pickImage(
@@ -222,7 +223,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                   Icons.camera_alt,
                   color: AppColor.royalBlue,
                 ),
-                title: const Text("Take Photo"),
+                title: Text(l10n.take_photo),
                 onTap: () async {
                   Navigator.pop(context);
                   final XFile? file = await _picker.pickImage(
@@ -238,7 +239,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                   Icons.picture_as_pdf,
                   color: AppColor.royalBlue,
                 ),
-                title: const Text("Upload PDF Document (Affidavit allowed)"),
+                title: Text(l10n.upload_pdf_document_affidavit_allowed),
                 onTap: () async {
                   Navigator.pop(context);
                   try {
@@ -307,11 +308,12 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
   }
 
   Widget _designationList() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const TextConst(
-          title: "Designation Certificates / Affidavits / CV",
+        TextConst(
+          title: l10n.designation_certificates_affidavits_cv,
           size: 15,
           fontWeight: FontWeight.w600,
         ),
@@ -354,7 +356,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                         color: Colors.grey.shade100,
                       ),
                       child: isPdf
-                          ? Center(
+                          ? const Center(
                               child: Icon(
                                 Icons.picture_as_pdf,
                                 size: 36,
@@ -368,7 +370,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            "Doc ${idx + 1}",
+                            "${l10n.doc} ${idx + 1}",
                             style: const TextStyle(fontSize: 13),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -401,10 +403,10 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.add, size: 28, color: Colors.grey),
-                    SizedBox(height: 6),
-                    Text("Add", style: TextStyle(color: Colors.grey)),
+                  children: [
+                    const Icon(Icons.add, size: 28, color: Colors.grey),
+                    const SizedBox(height: 6),
+                    Text(l10n.add, style: const TextStyle(color: Colors.grey)),
                   ],
                 ),
               ),
@@ -412,9 +414,8 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
           ],
         ),
         const SizedBox(height: 8),
-        const TextConst(
-          title:
-              "If you don't have a designation certificate, upload an affidavit (PDF) as alternate.",
+        TextConst(
+          title: l10n.designation_certificate_affidavit_message,
           size: 12,
           color: Colors.black54,
         ),
@@ -423,6 +424,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
   }
 
   void showCityBottomSheet() {
+    final l10n = AppLocalizations.of(context)!;
     TextEditingController searchController = TextEditingController();
 
     showModalBottomSheet(
@@ -430,128 +432,132 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.85,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // HEADER
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.85,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
-                  const SizedBox(width: 40),
-                  const Text(
-                    "Select City",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      height: 35,
-                      width: 35,
-                      decoration: BoxDecoration(
-                        color: AppColor.whiteDarkII,
-                        shape: BoxShape.circle,
+                  // HEADER
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(width: 40),
+                      Text(
+                        l10n.select_city,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                       ),
-                      child: const Icon(Icons.close, size: 20),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          height: 35,
+                          width: 35,
+                          decoration: BoxDecoration(
+                            color: AppColor.whiteDarkII,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close, size: 20),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // SEARCH BAR
+                  Container(
+                    height: 50,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffF1F2F6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search, color: Colors.grey),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: searchController,
+                            decoration: InputDecoration(
+                              hintText: l10n.search_city,
+                              border: InputBorder.none,
+                            ),
+                            onChanged: (_) => setModalState(() {}),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  // CITY LIST
+                  Expanded(
+                    child: Consumer<CitiesViewModel>(
+                      builder: (context, vm, _) {
+                        final allCities = vm.cityModel?.data ?? [];
+
+                        final filtered = allCities.where((city) {
+                          final query = searchController.text.trim().toLowerCase();
+                          return city.name!.toLowerCase().contains(query);
+                        }).toList();
+
+                        return ListView.separated(
+                          itemCount: filtered.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 16),
+                          itemBuilder: (_, index) {
+                            final city = filtered[index];
+
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedCity = city.name!;
+                                  cityController.text = selectedCity;
+                                });
+                                Navigator.pop(context);
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    city.name!,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    l10n.uttar_pradesh_india,
+                                    style:
+                                    const TextStyle(color: Colors.grey, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 20),
-
-              // SEARCH BAR
-              Container(
-                height: 50,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: const Color(0xffF1F2F6),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.search, color: Colors.grey),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: searchController,
-                        decoration: const InputDecoration(
-                          hintText: "Search city...",
-                          border: InputBorder.none,
-                        ),
-                        onChanged: (_) => setState(() {}),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              // CITY LIST
-              Expanded(
-                child: Consumer<CitiesViewModel>(
-                  builder: (context, vm, _) {
-                    final allCities = vm.cityModel?.data ?? [];
-
-                    final filtered = allCities.where((city) {
-                      final query = searchController.text.trim().toLowerCase();
-                      return city.name!.toLowerCase().contains(query);
-                    }).toList();
-
-                    return ListView.separated(
-                      itemCount: filtered.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
-                      itemBuilder: (_, index) {
-                        final city = filtered[index];
-
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedCity = city.name!;
-                              cityController.text = selectedCity;
-                            });
-                            Navigator.pop(context);
-                          },
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                city.name!,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              const Text(
-                                "Uttar Pradesh, India",
-                                style:
-                                TextStyle(color: Colors.grey, fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+            );
+          }
         );
       },
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final jobRequestVm = Provider.of<JobRequestViewModel>(context);
 
     return SafeArea(
@@ -616,14 +622,14 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                   ),
 
                   const SizedBox(height: 20),
-                  const TextConst(
-                    title: "Hello User !",
+                  TextConst(
+                    title: l10n.hello_user,
                     size: 25,
                     fontWeight: FontWeight.w700,
                   ),
                   const SizedBox(height: 6),
                   TextConst(
-                    title: "Create Your Account for Better\nExperience",
+                    title: l10n.create_account_better_experience,
                     textAlign: TextAlign.center,
                     size: 15,
                     color: Colors.grey.shade600,
@@ -631,8 +637,8 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                   const SizedBox(height: 24),
 
                   // fields
-                  _textField(hint: "First Name", controller: firstNameController),
-                  _textField(hint: "Last Name", controller: lastNameController),
+                  _textField(hint: l10n.first_name, controller: firstNameController),
+                  _textField(hint: l10n.last_name, controller: lastNameController),
                   GestureDetector(
                     onTap: () {
                       showCityBottomSheet();
@@ -649,7 +655,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            selectedCity,
+                            selectedCity == "Select City" ? l10n.select_city : selectedCity,
                             style: TextStyle(
                               color: selectedCity == "Select City" ? Colors.grey : Colors.black,
                               fontSize: 15,
@@ -661,18 +667,18 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                     ),
                   ),
                   _textField(
-                    hint: "Email Address",
+                    hint: l10n.email_address,
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                   ),
                   _textField(
-                    hint: "Designation (e.g. Plumber)",
+                    hint: l10n.designation_example,
                     controller: designationController,
                   ),
 
                   // mobile number (digits only)
                   _textField(
-                    hint: "Mobile Number",
+                    hint: l10n.mobile_number,
                     controller: mobileController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -684,9 +690,9 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                   // const SizedBox(height: 16),
                   Row(
                     children: [
-                      const Text(
-                        "Don't know any skill",
-                        style: TextStyle(fontSize: 13),
+                      Text(
+                        l10n.dont_know_any_skill,
+                        style: const TextStyle(fontSize: 13),
                       ),
                       const SizedBox(width: 6),
                       Checkbox(
@@ -714,7 +720,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
 
                   // submit
                   CustomButton(
-                      title: "Submit",
+                      title: l10n.submit,
                       bgColor: AppColor.royalBlue,
                       textColor: Colors.white,
                       onTap: () {
@@ -751,7 +757,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: Colors.black26,
                           blurRadius: 10,

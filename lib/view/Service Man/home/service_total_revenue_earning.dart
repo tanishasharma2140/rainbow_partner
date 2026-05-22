@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -29,6 +30,7 @@ class _ServiceTotalRevenueEarningState
   @override
   Widget build(BuildContext context) {
     final earningVm = Provider.of<ServicemanEarningViewModel>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return SafeArea(
       top: false,
@@ -47,8 +49,8 @@ class _ServiceTotalRevenueEarningState
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-              const TextConst(
-                title: "Earning List",
+              TextConst(
+                title: l10n.earning_list,
                 color: Colors.white,
                 size: 20,
                 fontWeight: FontWeight.w600,
@@ -65,7 +67,7 @@ class _ServiceTotalRevenueEarningState
               /// ---------------- TOTAL EARNINGS CARD ----------------
               earningVm.loading
                   ? const ShimmerLoader(height: 110, borderRadius: 18)
-                  : totalEarningCard(earningVm),
+                  : totalEarningCard(earningVm, l10n),
 
               const SizedBox(height: 22),
 
@@ -83,17 +85,17 @@ class _ServiceTotalRevenueEarningState
                   : Row(
                 children: [
                   summaryBox(
-                    "Today",
+                    l10n.today,
                     "₹${earningVm.servicemanEarningModel?.data?.todayEarning ?? "0"}",
                   ),
                   const SizedBox(width: 12),
                   summaryBox(
-                    "Week",
+                    l10n.week,
                     "₹${earningVm.servicemanEarningModel?.data?.weekEarning ?? "0"}",
                   ),
                   const SizedBox(width: 12),
                   summaryBox(
-                    "Month",
+                    l10n.month,
                     "₹${earningVm.servicemanEarningModel?.data?.monthEarning ?? "0"}",
                   ),
                 ],
@@ -101,15 +103,15 @@ class _ServiceTotalRevenueEarningState
 
               const SizedBox(height: 25),
 
-              const TextConst(
-                title: "Recent Earnings",
+              TextConst(
+                title: l10n.recent_earnings,
                 size: 18,
                 fontWeight: FontWeight.w600,
               ),
               const SizedBox(height: 14),
 
               /// ---------------- RECENT EARNINGS LIST ----------------
-              recentEarningList(earningVm),
+              recentEarningList(earningVm, l10n),
 
               const SizedBox(height: 25),
             ],
@@ -120,7 +122,7 @@ class _ServiceTotalRevenueEarningState
   }
 
   /// ---------------- TOTAL EARNING CARD ----------------
-  Widget totalEarningCard(ServicemanEarningViewModel vm) {
+  Widget totalEarningCard(ServicemanEarningViewModel vm, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
@@ -138,8 +140,8 @@ class _ServiceTotalRevenueEarningState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const TextConst(
-            title: "Total Earnings",
+          TextConst(
+            title: l10n.total_earnings,
             size: 16,
             color: Colors.white70,
           ),
@@ -196,7 +198,7 @@ class _ServiceTotalRevenueEarningState
   }
 
   /// ---------------- RECENT EARNING LIST ----------------
-  Widget recentEarningList(ServicemanEarningViewModel earning) {
+  Widget recentEarningList(ServicemanEarningViewModel earning, AppLocalizations l10n) {
     if (earning.loading) {
       return ListView.builder(
         shrinkWrap: true,
@@ -212,12 +214,12 @@ class _ServiceTotalRevenueEarningState
     final list = earning.servicemanEarningModel?.data?.recentEarnings;
 
     if (list == null || list.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 30),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 30),
         child: Center(
           child: Text(
-            "No recent earnings found",
-            style: TextStyle(color: Colors.grey),
+            l10n.no_recent_earnings_found,
+            style: const TextStyle(color: Colors.grey),
           ),
         ),
       );

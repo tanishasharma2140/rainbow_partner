@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/shimmer_loader.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -28,6 +29,7 @@ class _DriverWithdrawHistoryState extends State<DriverWithdrawHistory> {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<DriverWithdrawHistoryViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
     final List<Data> history = vm.driverWithdrawHistoryModel?.data ?? <Data>[];
 
     return SafeArea(
@@ -45,8 +47,8 @@ class _DriverWithdrawHistoryState extends State<DriverWithdrawHistory> {
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-              const TextConst(
-                title: "Withdraw History",
+              TextConst(
+                title: loc.withdraw_history,
                 color: Colors.white,
                 size: 20,
                 fontWeight: FontWeight.w600,
@@ -57,7 +59,7 @@ class _DriverWithdrawHistoryState extends State<DriverWithdrawHistory> {
         body: Column(
           children: [
             const SizedBox(height: 25),
-            buildTabs(),
+            buildTabs(loc),
             const SizedBox(height: 20),
 
             Expanded(
@@ -68,7 +70,7 @@ class _DriverWithdrawHistoryState extends State<DriverWithdrawHistory> {
                 itemBuilder: (_, __) => _buildShimmerCard(),
               )
                   : history.isEmpty
-                  ? Center(child: buildEmptyHistory())
+                  ? Center(child: buildEmptyHistory(loc))
                   : ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 itemCount: history.length,
@@ -81,13 +83,13 @@ class _DriverWithdrawHistoryState extends State<DriverWithdrawHistory> {
                   Color statusColor;
 
                   if (status == 0) {
-                    statusText = "Pending";
+                    statusText = loc.pending;
                     statusColor = Colors.orange;
                   } else if (status == 1) {
-                    statusText = "Success";
+                    statusText = loc.success;
                     statusColor = Colors.green;
                   } else {
-                    statusText = "Rejected";
+                    statusText = loc.rejected;
                     statusColor = Colors.red;
                   }
 
@@ -134,7 +136,7 @@ class _DriverWithdrawHistoryState extends State<DriverWithdrawHistory> {
 
                         const SizedBox(height: 6),
                         TextConst(
-                          title: "Txn ID: ${item.transactionId ?? "-"}",
+                          title: "${loc.txn_id}: ${item.transactionId ?? "-"}",
                           size: 12,
                           color: Colors.grey,
                         ),
@@ -181,7 +183,7 @@ class _DriverWithdrawHistoryState extends State<DriverWithdrawHistory> {
     );
   }
 
-  Widget buildTabs() {
+  Widget buildTabs(AppLocalizations loc) {
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
@@ -190,10 +192,10 @@ class _DriverWithdrawHistoryState extends State<DriverWithdrawHistory> {
       ),
       child: Row(
         children: [
-          tabItem("All", 0),
-          tabItem("Pending", 1),
-          tabItem("Success", 2),
-          tabItem("Reject", 3),
+          tabItem(loc.all, 0),
+          tabItem(loc.pending, 1),
+          tabItem(loc.success, 2),
+          tabItem(loc.reject, 3),
         ],
       ),
     );
@@ -265,18 +267,18 @@ class _DriverWithdrawHistoryState extends State<DriverWithdrawHistory> {
     );
   }
 
-  Widget buildEmptyHistory() {
+  Widget buildEmptyHistory(AppLocalizations loc) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: const [
+      children: [
         TextConst(
-          title: "No Withdraw History Found",
+          title: loc.no_withdraw_history_found,
           size: 17,
           fontWeight: FontWeight.w600,
         ),
-        SizedBox(height: 6),
+        const SizedBox(height: 6),
         TextConst(
-          title: "Your withdraw history will appear here",
+          title: loc.your_withdraw_history_will_appear_here,
           size: 13,
           color: Colors.grey,
         ),

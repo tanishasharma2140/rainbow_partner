@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
@@ -31,6 +32,8 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
   @override
   Widget build(BuildContext context) {
     final serviceAddBankVm = Provider.of<AddBankDetailViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
+
     return SafeArea(
       top: false,
       child: Scaffold(
@@ -47,8 +50,8 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-              const TextConst(
-                title: "Add Bank",
+              TextConst(
+                title: loc.add_bank,
                 color: Colors.white,
                 size: 20,
                 fontWeight: FontWeight.w600,
@@ -80,32 +83,32 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    _fieldTitle("Bank Name"),
+                    _fieldTitle(loc.bank_name),
                     _inputBox(
                       controller: bankName,
-                      hint: "State Bank of India",
+                      hint: loc.state_bank_of_india,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),
                       ],
                       validator: (v) =>
-                      v!.isEmpty ? "Please enter bank name" : null,
+                      v!.isEmpty ? loc.please_enter_bank_name : null,
                     ),
 
-                    _fieldTitle("Account Number"),
+                    _fieldTitle(loc.account_number),
                     _inputBox(
                       controller: accountNumber,
-                      hint: "Enter Account Number",
+                      hint: loc.enter_account_number,
                       keyboard: TextInputType.number,
                       maxLength: 18,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       validator: (v) =>
-                      v!.isEmpty ? "Please enter account number" : null,
+                      v!.isEmpty ? loc.please_re_enter_account_number : null, // Using re-enter for generic "enter" if not separate
                     ),
 
-                    _fieldTitle("Re-enter Account Number"),
+                    _fieldTitle(loc.re_enter_account_number),
                     _inputBox(
                       controller: reAccountNumber,
-                      hint: "Re-enter account number",
+                      hint: loc.re_enter_account_number,
                       maxLength: 18,
                       keyboard: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -125,34 +128,34 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                         },
                       ),
                       validator: (v) {
-                        if (v!.isEmpty) return "Please re-enter account number";
+                        if (v!.isEmpty) return loc.please_re_enter_account_number;
                         if (v != accountNumber.text) {
-                          return "Account numbers do not match";
+                          return loc.account_numbers_do_not_match;
                         }
                         return null;
                       },
                     ),
 
-                    _fieldTitle("Account Holder Name"),
+                    _fieldTitle(loc.account_holder_name),
                     _inputBox(
                       controller: holderName,
-                      hint: "Enter Account Holder Name",
+                      hint: loc.enter_account_holder_name,
                       maxLength: 35,
                       // ✅ Only alphabets and spaces allowed
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),
                       ],
                       validator: (v) =>
-                      v!.isEmpty ? "Please enter account holder name" : null,
+                      v!.isEmpty ? loc.please_enter_account_holder_name : null,
                     ),
 
-                    _fieldTitle("IFSC Code"),
+                    _fieldTitle(loc.ifsc_code),
                     _inputBox(
                       controller: ifscCode,
-                      hint: "Enter IFSC Code",
+                      hint: loc.enter_ifsc_code,
                       textCap: TextCapitalization.characters,
                       validator: (v) =>
-                      v!.isEmpty ? "Please enter IFSC code" : null,
+                      v!.isEmpty ? loc.please_enter_ifsc_code : null,
                     ),
 
                     const SizedBox(height: 35),
@@ -160,7 +163,7 @@ class _ServiceAddBankState extends State<ServiceAddBank> {
                     CustomButton(
                       bgColor: AppColor.royalBlue,
                       textColor: Colors.white,
-                      title: "Submit",
+                      title: loc.submit,
                       onTap: () {
                         if (_formKey.currentState!.validate()) {
                           serviceAddBankVm.addBankDetailApi(

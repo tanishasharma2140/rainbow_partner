@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -83,6 +84,7 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
   Widget build(BuildContext context) {
     final profile = Provider.of<ServicemanProfileViewModel>(context);
     final historyVm = Provider.of<ServiceWithdrawHistoryViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
 
     final List<Data> history =
         historyVm.serviceWithdrawHistoryModel?.data ?? <Data>[];
@@ -106,8 +108,8 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-              const TextConst(
-                title: "Withdraw",
+              TextConst(
+                title: loc.withdraw,
                 color: Colors.white,
                 size: 20,
                 fontWeight: FontWeight.w600,
@@ -125,13 +127,13 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildBalanceCard(profile),
+                buildBalanceCard(profile, loc),
                 const SizedBox(height: 25),
-                buildTabs(),
+                buildTabs(loc),
                 const SizedBox(height: 20),
                 filteredHistory.isEmpty
-                    ? buildEmptyHistory()
-                    : buildHistoryList(filteredHistory),
+                    ? buildEmptyHistory(loc)
+                    : buildHistoryList(filteredHistory, loc),
               ],
             ),
           ),
@@ -141,7 +143,7 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
   }
 
 
-  Widget buildBalanceCard(ServicemanProfileViewModel profile) {
+  Widget buildBalanceCard(ServicemanProfileViewModel profile, AppLocalizations loc) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -164,8 +166,8 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const TextConst(
-                  title: "Available Balance",
+                TextConst(
+                  title: loc.available_balance,
                   size: 15,
                   color: Colors.grey,
                 ),
@@ -196,9 +198,9 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 TextConst(
-                  title: "Withdraw",
+                  title: loc.withdraw,
                   color: Colors.white,
                   size: 16,
                   fontWeight: FontWeight.w500,
@@ -220,7 +222,7 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
   }
 
 
-  Widget buildTabs() {
+  Widget buildTabs(AppLocalizations loc) {
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
@@ -229,10 +231,10 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
       ),
       child: Row(
         children: [
-          tabItem("All", 0),
-          tabItem("Pending", 1),
-          tabItem("Success", 2),
-          tabItem("Reject", 3),
+          tabItem(loc.all, 0),
+          tabItem(loc.pending, 1),
+          tabItem(loc.success, 2),
+          tabItem(loc.reject, 3),
         ],
       ),
     );
@@ -280,19 +282,19 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
   // ----------------------------------------------------
   // EMPTY STATE
   // ----------------------------------------------------
-  Widget buildEmptyHistory() {
+  Widget buildEmptyHistory(AppLocalizations loc) {
     return Center(
       child: Column(
-        children: const [
+        children: [
           SizedBox(height: 150),
           TextConst(
-            title: "No Withdraw History Found",
+            title: loc.no_withdraw_history_found,
             size: 17,
             fontWeight: FontWeight.w600,
           ),
           SizedBox(height: 6),
           TextConst(
-            title: "Your withdraw history will appear here",
+            title: loc.your_withdraw_history_will_appear_here,
             size: 13,
             color: Colors.grey,
           ),
@@ -304,7 +306,7 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
   // ----------------------------------------------------
   // HISTORY LIST
   // ----------------------------------------------------
-  Widget buildHistoryList(List<Data> history) {
+  Widget buildHistoryList(List<Data> history, AppLocalizations loc) {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -318,13 +320,13 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
         String statusText;
 
         if (status == 0) {
-          statusText = "Pending";
+          statusText = loc.pending;
           statusColor = Colors.orange;
         } else if (status == 1) {
-          statusText = "Success";
+          statusText = loc.success;
           statusColor = Colors.green;
         } else {
-          statusText = "Rejected";
+          statusText = loc.rejected;
           statusColor = Colors.red;
         }
 
@@ -376,7 +378,7 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
               ),
               const SizedBox(height: 6),
               TextConst(
-                title: "Txn ID: ${item.transactionId ?? "-"}",
+                title: "${loc.txn_id}: ${item.transactionId ?? "-"}",
                 size: 12,
                 color: Colors.grey,
               ),

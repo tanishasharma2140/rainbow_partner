@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_loader.dart';
@@ -25,7 +26,6 @@ class ServiceTotalBooking extends StatefulWidget {
 class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
   List<Map<String, dynamic>> pending = [];
 
-  @override
   @override
   void initState() {
     super.initState();
@@ -96,6 +96,7 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       bottom: true,
@@ -115,8 +116,8 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                 },
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-              const TextConst(
-                title: "Pending Bookings",
+              TextConst(
+                title: loc.pending_bookings,
                 color: Colors.white,
                 size: 20,
                 fontWeight: FontWeight.w600,
@@ -126,10 +127,10 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
         ),
 
         body: pending.isEmpty
-            ? const Center(
+            ? Center(
                 child: Text(
-                  "No pending bookings available",
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                  loc.no_pending_bookings_available,
+                  style: const TextStyle(color: Colors.grey, fontSize: 16),
                 ),
               )
             : ListView.builder(
@@ -139,7 +140,7 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
 
                 itemBuilder: (context, index) {
                   print("📦 UI INDEX $index → ${pending[index]["order_id"]}");
-                  return bookingCard(pending[index]);
+                  return bookingCard(pending[index], loc);
                 },
               ),
       ),
@@ -147,7 +148,7 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
   }
 
   // ---------------- BOOKING CARD ----------------
-  Widget bookingCard(Map<String, dynamic> b) {
+  Widget bookingCard(Map<String, dynamic> b, AppLocalizations loc) {
     final acceptOrderVm = Provider.of<AcceptOrderViewModel>(context);
     final ignoreOrderVm = Provider.of<IgnoreServiceOrderViewModel>(context);
     final int orderId = b["order_id"];
@@ -227,9 +228,9 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                               borderRadius: BorderRadius.circular(18),
                               border: Border.all(color: Colors.orange),
                             ),
-                            child: const Text(
-                              "Pending",
-                              style: TextStyle(
+                            child: Text(
+                              loc.pending,
+                              style: const TextStyle(
                                 color: Colors.orange,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 12,
@@ -270,14 +271,14 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
 
             const SizedBox(height: 12),
 
-            infoRow("Address:", b["address"], marquee: true),
-            infoRow("Date:", b["datetime"]),
-            infoRow("Customer:", b["customer"]),
-            infoRow("Distance:", b["distance"]),
-            infoRow("Qty:", b["Quantity"].toString()),
+            infoRow("${loc.address}:", b["address"], marquee: true),
+            infoRow("${loc.date}:", b["datetime"]),
+            infoRow("${loc.customer}:", b["customer"]),
+            infoRow("${loc.distance}:", b["distance"]),
+            infoRow("${loc.qty}:", b["Quantity"].toString()),
             if (b["Description"] != null &&
                 b["Description"].toString().trim().isNotEmpty)
-              infoRow("Desc:", b["Description"].toString(), marquee: true),
+              infoRow("${loc.desc}:", b["Description"].toString(), marquee: true),
 
             const SizedBox(height: 14),
 
@@ -327,9 +328,9 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                       width: 22,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                        : const Text(
-                      "Ignore",
-                      style: TextStyle(
+                        : Text(
+                      loc.ignore,
+                      style: const TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.w600,
                       ),
@@ -363,7 +364,7 @@ class _ServiceTotalBookingState extends State<ServiceTotalBooking> {
                             child: CustomLoader(color: AppColor.royalBlue),
                           )
                         : TextConst(
-                            title: "Accept",
+                            title: loc.accept,
                             fontWeight: FontWeight.w600,
                             size: 15,
                             color: AppColor.royalBlue,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
@@ -26,6 +27,7 @@ class _ServiceHelpSupportState extends State<ServiceHelpSupport> {
   @override
   Widget build(BuildContext context) {
     final helpSupportVm = Provider.of<HelpSupportViewModel>(context);
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -41,8 +43,8 @@ class _ServiceHelpSupportState extends State<ServiceHelpSupport> {
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.arrow_back, color: Colors.white),
             ),
-            const TextConst(
-              title: "Help & Support",
+            TextConst(
+              title: loc.help_support,
               color: Colors.white,
               size: 20,
               fontWeight: FontWeight.w600,
@@ -59,19 +61,16 @@ class _ServiceHelpSupportState extends State<ServiceHelpSupport> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            const TextConst(
-              title: "Need help with services?",
+            TextConst(
+              title: loc.need_help_services,
               size: 18,
               fontWeight: FontWeight.w600,
             ),
 
             const SizedBox(height: 15),
 
-            const TextConst(
-              title:
-              "If you are facing issues related to adding, updating, or managing "
-                  "your services, we are here to help.\n\n"
-                  "Our support team is always available.",
+            TextConst(
+              title: loc.help_support_description,
               size: 14,
               color: Colors.black87,
               fontFamily: AppFonts.poppinsReg,
@@ -79,8 +78,8 @@ class _ServiceHelpSupportState extends State<ServiceHelpSupport> {
 
             const SizedBox(height: 25),
 
-            const TextConst(
-              title: "Contact Support",
+            TextConst(
+              title: loc.contact_support,
               size: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -88,6 +87,7 @@ class _ServiceHelpSupportState extends State<ServiceHelpSupport> {
             const SizedBox(height: 12),
 
             _supportCard(
+              loc: loc,
               phone: helpSupportVm.helpSupportModel?.data?.supportMobile,
               email: helpSupportVm.helpSupportModel?.data?.email,
             ),
@@ -98,7 +98,7 @@ class _ServiceHelpSupportState extends State<ServiceHelpSupport> {
   }
 
   /// SUPPORT CARD
-  Widget _supportCard({String? phone, String? email}) {
+  Widget _supportCard({required AppLocalizations loc, String? phone, String? email}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -109,13 +109,13 @@ class _ServiceHelpSupportState extends State<ServiceHelpSupport> {
         children: [
 
           Row(
-            children: const [
-              Icon(Icons.support_agent,
+            children: [
+              const Icon(Icons.support_agent,
                   size: 32, color: AppColor.royalBlue),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: TextConst(
-                  title: "Need Quick Support?",
+                  title: loc.need_quick_support,
                   size: 15,
                   fontWeight: FontWeight.w600,
                 ),

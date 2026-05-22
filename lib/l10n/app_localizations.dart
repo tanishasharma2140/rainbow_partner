@@ -749,7 +749,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcome_back.
   ///
   /// In en, this message translates to:
-  /// **'Welcome back 👋'**
+  /// **'Welcome back!'**
   String get welcome_back;
 
   /// No description provided for @rides.
@@ -1205,7 +1205,7 @@ abstract class AppLocalizations {
   /// No description provided for @no_transactions_found.
   ///
   /// In en, this message translates to:
-  /// **'No Transactions Found'**
+  /// **'No transactions found'**
   String get no_transactions_found;
 
   /// No description provided for @amount.
@@ -1397,7 +1397,7 @@ abstract class AppLocalizations {
   /// No description provided for @enter_account_number.
   ///
   /// In en, this message translates to:
-  /// **'Enter account number'**
+  /// **'Enter Account Number'**
   String get enter_account_number;
 
   /// No description provided for @confirm_account_number.
@@ -1451,7 +1451,7 @@ abstract class AppLocalizations {
   /// No description provided for @no_bank_details_found.
   ///
   /// In en, this message translates to:
-  /// **'No Bank Details Found'**
+  /// **'No bank details found'**
   String get no_bank_details_found;
 
   /// No description provided for @bank_account_verified.
@@ -2173,6 +2173,906 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your withdraw history will appear here'**
   String get your_withdraw_history_will_appear_here;
+
+  /// No description provided for @upload_file.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload File'**
+  String get upload_file;
+
+  /// No description provided for @camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get camera;
+
+  /// No description provided for @gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get gallery;
+
+  /// No description provided for @upload_pdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload PDF'**
+  String get upload_pdf;
+
+  /// No description provided for @create_your_account.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your Account'**
+  String get create_your_account;
+
+  /// No description provided for @fill_your_details_below.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill your details below'**
+  String get fill_your_details_below;
+
+  /// No description provided for @first_name.
+  ///
+  /// In en, this message translates to:
+  /// **'First Name'**
+  String get first_name;
+
+  /// No description provided for @last_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Name'**
+  String get last_name;
+
+  /// No description provided for @city.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get city;
+
+  /// No description provided for @email_address_optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address (Optional)'**
+  String get email_address_optional;
+
+  /// No description provided for @full_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Address'**
+  String get full_address;
+
+  /// No description provided for @select_category.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Category'**
+  String get select_category;
+
+  /// No description provided for @select_gender.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Gender'**
+  String get select_gender;
+
+  /// No description provided for @male.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get male;
+
+  /// No description provided for @female.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get female;
+
+  /// No description provided for @other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
+  /// No description provided for @dont_have_any_skill.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have any skill?'**
+  String get dont_have_any_skill;
+
+  /// No description provided for @upload_experience_certificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Experience Certificate (Image/PDF)'**
+  String get upload_experience_certificate;
+
+  /// No description provided for @upload_aadhaar_front.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Aadhaar Front'**
+  String get upload_aadhaar_front;
+
+  /// No description provided for @upload_aadhaar_back.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Aadhaar Back'**
+  String get upload_aadhaar_back;
+
+  /// No description provided for @submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get submit;
+
+  /// No description provided for @location_permission_denied_permanently.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission denied permanently'**
+  String get location_permission_denied_permanently;
+
+  /// No description provided for @error_fetching_location.
+  ///
+  /// In en, this message translates to:
+  /// **'Error fetching location'**
+  String get error_fetching_location;
+
+  /// No description provided for @no_cities_found.
+  ///
+  /// In en, this message translates to:
+  /// **'No Cities Found'**
+  String get no_cities_found;
+
+  /// No description provided for @select_city.
+  ///
+  /// In en, this message translates to:
+  /// **'Select City'**
+  String get select_city;
+
+  /// No description provided for @you_can_select_maximum_3_categories.
+  ///
+  /// In en, this message translates to:
+  /// **'You can select maximum 3 categories'**
+  String get you_can_select_maximum_3_categories;
+
+  /// No description provided for @please_enter_first_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter first name'**
+  String get please_enter_first_name;
+
+  /// No description provided for @please_enter_last_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter last name'**
+  String get please_enter_last_name;
+
+  /// No description provided for @please_select_city.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select city'**
+  String get please_select_city;
+
+  /// No description provided for @please_enter_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter address'**
+  String get please_enter_address;
+
+  /// No description provided for @please_fetch_current_location.
+  ///
+  /// In en, this message translates to:
+  /// **'Please click on the location icon in address field to fetch your current location'**
+  String get please_fetch_current_location;
+
+  /// No description provided for @select_gender_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Select gender'**
+  String get select_gender_error;
+
+  /// No description provided for @select_at_least_one_category.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one category'**
+  String get select_at_least_one_category;
+
+  /// No description provided for @upload_experience_certificate_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Experience Certificate'**
+  String get upload_experience_certificate_error;
+
+  /// No description provided for @upload_aadhaar_front_back.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Aadhaar front & back'**
+  String get upload_aadhaar_front_back;
+
+  /// No description provided for @upload_profile_photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Profile Photo'**
+  String get upload_profile_photo;
+
+  /// No description provided for @verification_pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Pending'**
+  String get verification_pending;
+
+  /// No description provided for @admin_is_verifying_your_profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin is verifying your profile.\nPlease wait for approval.'**
+  String get admin_is_verifying_your_profile;
+
+  /// No description provided for @account_inactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Inactive'**
+  String get account_inactive;
+
+  /// No description provided for @reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get reason;
+
+  /// No description provided for @enable_display_over_other_apps.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable display over other apps'**
+  String get enable_display_over_other_apps;
+
+  /// No description provided for @are_you_sure_you_want_to_exit.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to exit?'**
+  String get are_you_sure_you_want_to_exit;
+
+  /// No description provided for @handyman_home.
+  ///
+  /// In en, this message translates to:
+  /// **'Handyman Home'**
+  String get handyman_home;
+
+  /// No description provided for @hello.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello'**
+  String get hello;
+
+  /// No description provided for @on.
+  ///
+  /// In en, this message translates to:
+  /// **'ON'**
+  String get on;
+
+  /// No description provided for @off.
+  ///
+  /// In en, this message translates to:
+  /// **'OFF'**
+  String get off;
+
+  /// No description provided for @total_cash_in_hand.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Cash in Hand'**
+  String get total_cash_in_hand;
+
+  /// No description provided for @find_services.
+  ///
+  /// In en, this message translates to:
+  /// **'Find Services'**
+  String get find_services;
+
+  /// No description provided for @accepted_bookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted Bookings'**
+  String get accepted_bookings;
+
+  /// No description provided for @booking_history.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking History'**
+  String get booking_history;
+
+  /// No description provided for @total_revenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Revenue'**
+  String get total_revenue;
+
+  /// No description provided for @reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get reviews;
+
+  /// No description provided for @updating_status.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating status...'**
+  String get updating_status;
+
+  /// No description provided for @no_reviews_found.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews found'**
+  String get no_reviews_found;
+
+  /// No description provided for @anonymous.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous'**
+  String get anonymous;
+
+  /// No description provided for @service.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get service;
+
+  /// No description provided for @location_services_are_disabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Location services are disabled'**
+  String get location_services_are_disabled;
+
+  /// No description provided for @location_permission_denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission denied'**
+  String get location_permission_denied;
+
+  /// No description provided for @location_permission_permanently_denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission permanently denied'**
+  String get location_permission_permanently_denied;
+
+  /// No description provided for @no_address.
+  ///
+  /// In en, this message translates to:
+  /// **'No address'**
+  String get no_address;
+
+  /// No description provided for @pending_bookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Bookings'**
+  String get pending_bookings;
+
+  /// No description provided for @no_pending_bookings_available.
+  ///
+  /// In en, this message translates to:
+  /// **'No pending bookings available'**
+  String get no_pending_bookings_available;
+
+  /// No description provided for @address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get address;
+
+  /// No description provided for @date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// No description provided for @qty.
+  ///
+  /// In en, this message translates to:
+  /// **'Qty'**
+  String get qty;
+
+  /// No description provided for @desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Desc'**
+  String get desc;
+
+  /// No description provided for @ignore.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore'**
+  String get ignore;
+
+  /// No description provided for @reject_booking.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject Booking'**
+  String get reject_booking;
+
+  /// No description provided for @please_mention_rejection_reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Please mention rejection reason'**
+  String get please_mention_rejection_reason;
+
+  /// No description provided for @enter_reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter reason...'**
+  String get enter_reason;
+
+  /// No description provided for @please_enter_reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter reason'**
+  String get please_enter_reason;
+
+  /// No description provided for @please_select_your_preferred_payment_mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select your preferred payment mode'**
+  String get please_select_your_preferred_payment_mode;
+
+  /// No description provided for @pay_online.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay Online'**
+  String get pay_online;
+
+  /// No description provided for @pay_offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay Offline'**
+  String get pay_offline;
+
+  /// No description provided for @please_collect_amount_from_customer.
+  ///
+  /// In en, this message translates to:
+  /// **'Please collect ₹amount from customer'**
+  String get please_collect_amount_from_customer;
+
+  /// No description provided for @cash_collected.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash Collected'**
+  String get cash_collected;
+
+  /// No description provided for @meter.
+  ///
+  /// In en, this message translates to:
+  /// **'meter'**
+  String get meter;
+
+  /// No description provided for @km.
+  ///
+  /// In en, this message translates to:
+  /// **'km'**
+  String get km;
+
+  /// No description provided for @accept_booking.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept Booking'**
+  String get accept_booking;
+
+  /// No description provided for @quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantity;
+
+  /// No description provided for @hide_details.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide Details'**
+  String get hide_details;
+
+  /// No description provided for @view_order_detail.
+  ///
+  /// In en, this message translates to:
+  /// **'View Order Detail'**
+  String get view_order_detail;
+
+  /// No description provided for @customer_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Name'**
+  String get customer_name;
+
+  /// No description provided for @customer_mobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Mobile'**
+  String get customer_mobile;
+
+  /// No description provided for @payment_mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Mode'**
+  String get payment_mode;
+
+  /// No description provided for @service_date.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Date'**
+  String get service_date;
+
+  /// No description provided for @current_pay_mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Pay Mode'**
+  String get current_pay_mode;
+
+  /// No description provided for @change.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get change;
+
+  /// No description provided for @verify_start.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify & Start'**
+  String get verify_start;
+
+  /// No description provided for @work_completed_collect_cash.
+  ///
+  /// In en, this message translates to:
+  /// **'Work Completed Collect Cash'**
+  String get work_completed_collect_cash;
+
+  /// No description provided for @update_complete_status.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Complete Status'**
+  String get update_complete_status;
+
+  /// No description provided for @waiting_for_user_payment.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for User Payment'**
+  String get waiting_for_user_payment;
+
+  /// No description provided for @service_completed_payment_done.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Completed • Payment Done'**
+  String get service_completed_payment_done;
+
+  /// No description provided for @service_started_successfully_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Service has started successfully. Please complete the job and update the status once done.'**
+  String get service_started_successfully_message;
+
+  /// No description provided for @rejected_by_me.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected by Me'**
+  String get rejected_by_me;
+
+  /// No description provided for @address_not_available.
+  ///
+  /// In en, this message translates to:
+  /// **'Address not available'**
+  String get address_not_available;
+
+  /// No description provided for @date_time.
+  ///
+  /// In en, this message translates to:
+  /// **'Date & Time'**
+  String get date_time;
+
+  /// No description provided for @reason_not_available.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason not available'**
+  String get reason_not_available;
+
+  /// No description provided for @payment_status.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Status'**
+  String get payment_status;
+
+  /// No description provided for @offline_payment.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline Payment'**
+  String get offline_payment;
+
+  /// No description provided for @by_wallet.
+  ///
+  /// In en, this message translates to:
+  /// **'By Wallet'**
+  String get by_wallet;
+
+  /// No description provided for @earning_list.
+  ///
+  /// In en, this message translates to:
+  /// **'Earning List'**
+  String get earning_list;
+
+  /// No description provided for @week.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get week;
+
+  /// No description provided for @month.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get month;
+
+  /// No description provided for @recent_earnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Earnings'**
+  String get recent_earnings;
+
+  /// No description provided for @no_recent_earnings_found.
+  ///
+  /// In en, this message translates to:
+  /// **'No recent earnings found'**
+  String get no_recent_earnings_found;
+
+  /// No description provided for @no_profile_found.
+  ///
+  /// In en, this message translates to:
+  /// **'No Profile Found'**
+  String get no_profile_found;
+
+  /// No description provided for @basic_details.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Details'**
+  String get basic_details;
+
+  /// No description provided for @mobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile'**
+  String get mobile;
+
+  /// No description provided for @service_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Name'**
+  String get service_name;
+
+  /// No description provided for @documents.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents'**
+  String get documents;
+
+  /// No description provided for @aadhaar_front.
+  ///
+  /// In en, this message translates to:
+  /// **'Aadhaar Front'**
+  String get aadhaar_front;
+
+  /// No description provided for @aadhaar_back.
+  ///
+  /// In en, this message translates to:
+  /// **'Aadhaar Back'**
+  String get aadhaar_back;
+
+  /// No description provided for @experience_certificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience Certificate'**
+  String get experience_certificate;
+
+  /// No description provided for @other_info.
+  ///
+  /// In en, this message translates to:
+  /// **'Other Info'**
+  String get other_info;
+
+  /// No description provided for @created_at.
+  ///
+  /// In en, this message translates to:
+  /// **'Created At'**
+  String get created_at;
+
+  /// No description provided for @document.
+  ///
+  /// In en, this message translates to:
+  /// **'Document'**
+  String get document;
+
+  /// No description provided for @transaction_history.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction History'**
+  String get transaction_history;
+
+  /// No description provided for @clear_due_amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Due Amount'**
+  String get clear_due_amount;
+
+  /// No description provided for @due_amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Amount'**
+  String get due_amount;
+
+  /// No description provided for @no_due_amount_available.
+  ///
+  /// In en, this message translates to:
+  /// **'No due amount available'**
+  String get no_due_amount_available;
+
+  /// No description provided for @failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get failed;
+
+  /// No description provided for @wallet_balance.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet Balance'**
+  String get wallet_balance;
+
+  /// No description provided for @clear_due.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Due'**
+  String get clear_due;
+
+  /// No description provided for @from_wallet.
+  ///
+  /// In en, this message translates to:
+  /// **'From Wallet'**
+  String get from_wallet;
+
+  /// No description provided for @service_transaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Transaction'**
+  String get service_transaction;
+
+  /// No description provided for @please_enter_bank_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter bank name'**
+  String get please_enter_bank_name;
+
+  /// No description provided for @please_re_enter_account_number.
+  ///
+  /// In en, this message translates to:
+  /// **'Please re-enter account number'**
+  String get please_re_enter_account_number;
+
+  /// No description provided for @account_numbers_do_not_match.
+  ///
+  /// In en, this message translates to:
+  /// **'Account numbers do not match'**
+  String get account_numbers_do_not_match;
+
+  /// No description provided for @enter_account_holder_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Account Holder Name'**
+  String get enter_account_holder_name;
+
+  /// No description provided for @please_enter_account_holder_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter account holder name'**
+  String get please_enter_account_holder_name;
+
+  /// No description provided for @please_enter_ifsc_code.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter IFSC code'**
+  String get please_enter_ifsc_code;
+
+  /// No description provided for @state_bank_of_india.
+  ///
+  /// In en, this message translates to:
+  /// **'State Bank of India'**
+  String get state_bank_of_india;
+
+  /// No description provided for @change_language.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Language'**
+  String get change_language;
+
+  /// No description provided for @choose_image_gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Image from Gallery'**
+  String get choose_image_gallery;
+
+  /// No description provided for @upload_pdf_document_affidavit_allowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload PDF Document (Affidavit allowed)'**
+  String get upload_pdf_document_affidavit_allowed;
+
+  /// No description provided for @designation_certificates_affidavits_cv.
+  ///
+  /// In en, this message translates to:
+  /// **'Designation Certificates / Affidavits / CV'**
+  String get designation_certificates_affidavits_cv;
+
+  /// No description provided for @doc.
+  ///
+  /// In en, this message translates to:
+  /// **'Doc'**
+  String get doc;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @designation_certificate_affidavit_message.
+  ///
+  /// In en, this message translates to:
+  /// **'If you don\'t have a designation certificate, upload an affidavit (PDF) as alternate.'**
+  String get designation_certificate_affidavit_message;
+
+  /// No description provided for @search_city.
+  ///
+  /// In en, this message translates to:
+  /// **'Search city...'**
+  String get search_city;
+
+  /// No description provided for @uttar_pradesh_india.
+  ///
+  /// In en, this message translates to:
+  /// **'Uttar Pradesh, India'**
+  String get uttar_pradesh_india;
+
+  /// No description provided for @hello_user.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello User !'**
+  String get hello_user;
+
+  /// No description provided for @create_account_better_experience.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your Account for Better\nExperience'**
+  String get create_account_better_experience;
+
+  /// No description provided for @email_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address'**
+  String get email_address;
+
+  /// No description provided for @designation_example.
+  ///
+  /// In en, this message translates to:
+  /// **'Designation (e.g. Plumber)'**
+  String get designation_example;
+
+  /// No description provided for @dont_know_any_skill.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t know any skill'**
+  String get dont_know_any_skill;
+
+  /// No description provided for @request_submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Submitted!'**
+  String get request_submitted;
+
+  /// No description provided for @job_request_successfully_submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your job request has been successfully submitted.\nNow please wait for the job to be assigned'**
+  String get job_request_successfully_submitted;
+
+  /// No description provided for @go_to_home.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Home'**
+  String get go_to_home;
 }
 
 class _AppLocalizationsDelegate

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/no_data_found.dart';
+import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view_model/policy_view_model.dart';
 
 class ServiceContactUs extends StatefulWidget {
@@ -27,7 +29,7 @@ class _ServiceContactUsState extends State<ServiceContactUs> {
   @override
   Widget build(BuildContext context) {
     final privacyVm = Provider.of<PolicyViewModel>(context);
-
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       bottom: true,
@@ -37,13 +39,12 @@ class _ServiceContactUsState extends State<ServiceContactUs> {
           backgroundColor: AppColor.royalBlue,
           elevation: 0,
           centerTitle: true,
-          title: const Text(
-            "Contact us",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
+          title:  TextConst(
+            title:
+            loc.contact_us,
+            size: 20,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios, color: Colors.white),

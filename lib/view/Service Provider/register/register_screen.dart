@@ -6,7 +6,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:rainbow_partner/main.dart';
+import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/custom_button.dart';
@@ -66,6 +66,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController mobileController = TextEditingController();
 
   Future<void> getCurrentAddress(TextEditingController addressController) async {
+    final loc = AppLocalizations.of(context)!;
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -89,7 +90,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        Utils.showErrorMessage(context, "Location permission denied permanently");
+        Utils.showErrorMessage(context, loc.location_permission_denied_permanently);
         setState(() => isFetchingLocation = false);
         return;
       }
@@ -113,7 +114,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       addressController.text = address;
     } catch (e) {
-      Utils.showErrorMessage(context, "Error fetching location: $e");
+      Utils.showErrorMessage(context, "${loc.error_fetching_location}: $e");
     } finally {
       setState(() => isFetchingLocation = false);
     }
@@ -127,6 +128,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // PICK IMAGE OR PDF — BOTTOM SHEET
   Future<void> pickFileBottomSheet(Function(File) onSelected) async {
+    final loc = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -145,13 +147,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(10)),
               ),
               const SizedBox(height: 14),
-              const Text("Upload File",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+              Text(loc.upload_file,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
               const Divider(),
 
               ListTile(
                 leading: const Icon(Icons.camera_alt, color: Colors.blue),
-                title: const Text("Camera"),
+                title: Text(loc.camera),
                 onTap: () async {
                   final XFile? img =
                   await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
@@ -162,7 +164,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               ListTile(
                 leading: const Icon(Icons.photo, color: Colors.green),
-                title: const Text("Gallery"),
+                title: Text(loc.gallery),
                 onTap: () async {
                   final XFile? img =
                   await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
@@ -173,7 +175,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               ListTile(
                 leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
-                title: const Text("Upload PDF"),
+                title: Text(loc.upload_pdf),
                 onTap: () async {
                   FilePickerResult? result = await FilePicker.platform.pickFiles(
                     type: FileType.custom,
@@ -203,6 +205,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final serviceRegisterVm = Provider.of<ServicemanRegisterViewModel>(context);
 
     return SafeArea(
@@ -265,29 +268,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: 20),
 
-                    const TextConst(
-                      title: "Create Your Account",
+                    TextConst(
+                      title: loc.create_your_account,
                       size: 26,
                       fontWeight: FontWeight.w700,
                     ),
 
                     const SizedBox(height: 10),
-                    greyText("Fill your details below"),
+                    greyText(loc.fill_your_details_below),
 
                     const SizedBox(height: 30),
 
                     // INPUT FIELDS
-                    cardField("First Name", firstController, icon: Icons.person_outline),
-                    cardField("Last Name", lastController, icon: Icons.person_outline),
+                    cardField(loc.first_name, firstController, icon: Icons.person_outline),
+                    cardField(loc.last_name, lastController, icon: Icons.person_outline),
                     cardField(
-                      "City",
+                      loc.city,
                       cityController,
                       isCity: true,
                       icon: Icons.location_city_outlined,
                     ),
-                    cardField("Email Address (Optional)", emailController, icon: Icons.email_outlined),
+                    cardField(loc.email_address_optional, emailController, icon: Icons.email_outlined),
                     cardField(
-                      "Full Address",
+                      loc.full_address,
                       addressController,
                       isAddress: true,
                       icon: Icons.map_outlined,
@@ -297,7 +300,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   pickerCard(
                     title: selectedCategoryNames.isNotEmpty
                         ? selectedCategoryNames.join(", ")
-                        : "Select Category",
+                        : loc.select_category,
                     onTap: showCategoryBottomSheet,
                   ),
 
@@ -319,14 +322,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 if (noSkill) experienceCertificate = null;
                               });
                             }),
-                        greyText("Don't have any skill?")
+                        greyText(loc.dont_have_any_skill)
                       ],
                     ),
 
                     if (!noSkill)
                       uploadBox(
                         title: experienceCertificate == null
-                            ? "Upload Experience Certificate (Image/PDF)"
+                            ? loc.upload_experience_certificate
                             : experienceCertificate!.path.split('/').last,
                         onTap: () {
                           pickFileBottomSheet((file) {
@@ -337,7 +340,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     uploadBox(
                       title: aadhaarFront == null
-                          ? "Upload Aadhaar Front"
+                          ? loc.upload_aadhaar_front
                           : aadhaarFront!.path.split('/').last,
                       onTap: () {
                         pickFileBottomSheet((file) {
@@ -348,7 +351,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     uploadBox(
                       title: aadhaarBack == null
-                          ? "Upload Aadhaar Back"
+                          ? loc.upload_aadhaar_back
                           : aadhaarBack!.path.split('/').last,
                       onTap: () {
                         pickFileBottomSheet((file) {
@@ -362,7 +365,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     CustomButton(
                       bgColor: AppColor.royalBlue,
                       textColor: Colors.white,
-                      title: "Submit",
+                      title: loc.submit,
                       onTap: submitForm,
                     ),
 
@@ -408,6 +411,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void showCityBottomSheet() async {
+    final loc = AppLocalizations.of(context)!;
     final zoneVm = Provider.of<ZoneCitiesViewModel>(context, listen: false);
 
     await zoneVm.zoneCitiesApi(); 
@@ -432,9 +436,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             }
 
             if (cities.isEmpty) {
-              return const SizedBox(
+              return SizedBox(
                 height: 200,
-                child: Center(child: Text("No Cities Found")),
+                child: Center(child: Text(loc.no_cities_found)),
               );
             }
 
@@ -452,9 +456,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const Text(
-                    "Select City",
-                    style: TextStyle(
+                  Text(
+                    loc.select_city,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -492,18 +496,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // GENDER SELECTOR UI
   Widget genderSelector() {
+    final loc = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        greyText("Select Gender"),
+        greyText(loc.select_gender),
         const SizedBox(height: 8),
         Row(
           children: [
-            genderChip("Male"),
+            genderChip(loc.male, "Male"),
             const SizedBox(width: 10),
-            genderChip("Female"),
+            genderChip(loc.female, "Female"),
             const SizedBox(width: 10),
-            genderChip("Other"),
+            genderChip(loc.other, "Other"),
           ],
         ),
         const SizedBox(height: 18),
@@ -511,11 +516,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget genderChip(String g) {
-    final bool selected = gender == g;
+  Widget genderChip(String display, String value) {
+    final bool selected = gender == value;
     return GestureDetector(
       onTap: () {
-        setState(() => gender = g);
+        setState(() => gender = value);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
@@ -524,7 +529,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
-          g,
+          display,
           style: TextStyle(
             color: selected ? Colors.white : Colors.black,
           ),
@@ -601,7 +606,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Text(
                 title,
                 style: TextStyle(
-                    color: title.contains("Upload") ? Colors.grey : Colors.black),
+                    color: (title.contains("Upload") || title.contains("Select")) ? Colors.grey : Colors.black),
               ),
             )
           ],
@@ -616,6 +621,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // CATEGORY BOTTOM SHEET
   void showCategoryBottomSheet() {
+    final loc = AppLocalizations.of(context)!;
     final categoriesVm =
     Provider.of<CategoriesViewModel>(context, listen: false);
 
@@ -648,9 +654,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const SizedBox(height: 14),
 
-                  const Text(
-                    "Select Category",
-                    style: TextStyle(
+                  Text(
+                    loc.select_category,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Colors.black,
@@ -681,7 +687,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             setModalState(() {
                               if (val == true) {
                                 if (selectedCategoryIds.length >= 3) {
-                                  Utils.showErrorMessage(context, "You can select maximum 3 categories");
+                                  Utils.showErrorMessage(context, loc.you_can_select_maximum_3_categories);
                                   return;
                                 }
                                 selectedCategoryIds.add(catId);
@@ -700,7 +706,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   padding: const EdgeInsets.all(16.0),
                   child: CustomButton(
                     bgColor: AppColor.royalBlue,
-                      title: "Done", onTap: (){
+                      title: loc.done, onTap: (){
                     setState(() {});
                     Navigator.pop(context);
                   }),
@@ -719,58 +725,59 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // SUBMIT
   Future<void> submitForm() async {
+    final loc = AppLocalizations.of(context)!;
     final serviceRegisterVm = Provider.of<ServicemanRegisterViewModel>(context, listen: false);
     final deviceVm = Provider.of<DeviceViewModel>(context, listen: false);
     await deviceVm.fetchDeviceId();
     final deviceId = deviceVm.deviceId ??"unknown";
 
     if (firstController.text.trim().isEmpty) {
-      Utils.showErrorMessage(context, "Please enter first name");
+      Utils.showErrorMessage(context, loc.please_enter_first_name);
       return;
     }
 
     if (lastController.text.trim().isEmpty) {
-      Utils.showErrorMessage(context, "Please enter last name");
+      Utils.showErrorMessage(context, loc.please_enter_last_name);
       return;
     }
 
     if (selectedCityId == null) {
-      Utils.showErrorMessage(context, "Please select city");
+      Utils.showErrorMessage(context, loc.please_select_city);
       return;
     }
 
     if (addressController.text.trim().isEmpty) {
-      Utils.showErrorMessage(context, "Please enter address");
+      Utils.showErrorMessage(context, loc.please_enter_address);
       return;
     }
 
     if (currentLat.isEmpty || currentLng.isEmpty) {
-      Utils.showErrorMessage(context, "Please click on the location icon in address field to fetch your current location");
+      Utils.showErrorMessage(context, loc.please_fetch_current_location);
       return;
     }
 
     if (gender == null) {
-      Utils.showErrorMessage(context, "Select gender");
+      Utils.showErrorMessage(context, loc.select_gender_error);
       return;
     }
 
     if (selectedCategoryIds.isEmpty) {
-      Utils.showErrorMessage(context, "Select at least one category");
+      Utils.showErrorMessage(context, loc.select_at_least_one_category);
       return;
     }
 
     if (!noSkill && experienceCertificate == null) {
-      Utils.showErrorMessage(context, "Upload Experience Certificate");
+      Utils.showErrorMessage(context, loc.upload_experience_certificate_error);
       return;
     }
 
     if (aadhaarFront == null || aadhaarBack == null) {
-      Utils.showErrorMessage(context, "Upload Aadhaar front & back");
+      Utils.showErrorMessage(context, loc.upload_aadhaar_front_back);
       return;
     }
 
     if (profileImage == null) {
-      Utils.showErrorMessage(context, "Upload Profile Photo");
+      Utils.showErrorMessage(context, loc.upload_profile_photo);
       return;
     }
 
@@ -820,7 +827,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 16,
-                  color: title.contains("Select") ? Colors.grey : Colors.black,
+                  color: (title.contains("Select") || title.contains("Select")) ? Colors.grey : Colors.black,
                 ),
               ),
             ),

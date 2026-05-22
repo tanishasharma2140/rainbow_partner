@@ -358,7 +358,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get no_vehicle_found => 'No vehicle found';
 
   @override
-  String get welcome_back => 'Welcome back 👋';
+  String get welcome_back => 'Welcome back!';
 
   @override
   String get rides => 'Rides';
@@ -589,7 +589,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recent_transactions => 'Recent Transactions';
 
   @override
-  String get no_transactions_found => 'No Transactions Found';
+  String get no_transactions_found => 'No transactions found';
 
   @override
   String get amount => 'Amount';
@@ -688,7 +688,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get account_number => 'Account Number';
 
   @override
-  String get enter_account_number => 'Enter account number';
+  String get enter_account_number => 'Enter Account Number';
 
   @override
   String get confirm_account_number => 'Confirm Account Number';
@@ -716,7 +716,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get edit => 'Edit';
 
   @override
-  String get no_bank_details_found => 'No Bank Details Found';
+  String get no_bank_details_found => 'No bank details found';
 
   @override
   String get bank_account_verified => 'Bank Account Verified';
@@ -1087,4 +1087,472 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get your_withdraw_history_will_appear_here =>
       'Your withdraw history will appear here';
+
+  @override
+  String get upload_file => 'Upload File';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get upload_pdf => 'Upload PDF';
+
+  @override
+  String get create_your_account => 'Create Your Account';
+
+  @override
+  String get fill_your_details_below => 'Fill your details below';
+
+  @override
+  String get first_name => 'First Name';
+
+  @override
+  String get last_name => 'Last Name';
+
+  @override
+  String get city => 'City';
+
+  @override
+  String get email_address_optional => 'Email Address (Optional)';
+
+  @override
+  String get full_address => 'Full Address';
+
+  @override
+  String get select_category => 'Select Category';
+
+  @override
+  String get select_gender => 'Select Gender';
+
+  @override
+  String get male => 'Male';
+
+  @override
+  String get female => 'Female';
+
+  @override
+  String get other => 'Other';
+
+  @override
+  String get dont_have_any_skill => 'Don\'t have any skill?';
+
+  @override
+  String get upload_experience_certificate =>
+      'Upload Experience Certificate (Image/PDF)';
+
+  @override
+  String get upload_aadhaar_front => 'Upload Aadhaar Front';
+
+  @override
+  String get upload_aadhaar_back => 'Upload Aadhaar Back';
+
+  @override
+  String get submit => 'Submit';
+
+  @override
+  String get location_permission_denied_permanently =>
+      'Location permission denied permanently';
+
+  @override
+  String get error_fetching_location => 'Error fetching location';
+
+  @override
+  String get no_cities_found => 'No Cities Found';
+
+  @override
+  String get select_city => 'Select City';
+
+  @override
+  String get you_can_select_maximum_3_categories =>
+      'You can select maximum 3 categories';
+
+  @override
+  String get please_enter_first_name => 'Please enter first name';
+
+  @override
+  String get please_enter_last_name => 'Please enter last name';
+
+  @override
+  String get please_select_city => 'Please select city';
+
+  @override
+  String get please_enter_address => 'Please enter address';
+
+  @override
+  String get please_fetch_current_location =>
+      'Please click on the location icon in address field to fetch your current location';
+
+  @override
+  String get select_gender_error => 'Select gender';
+
+  @override
+  String get select_at_least_one_category => 'Select at least one category';
+
+  @override
+  String get upload_experience_certificate_error =>
+      'Upload Experience Certificate';
+
+  @override
+  String get upload_aadhaar_front_back => 'Upload Aadhaar front & back';
+
+  @override
+  String get upload_profile_photo => 'Upload Profile Photo';
+
+  @override
+  String get verification_pending => 'Verification Pending';
+
+  @override
+  String get admin_is_verifying_your_profile =>
+      'Admin is verifying your profile.\nPlease wait for approval.';
+
+  @override
+  String get account_inactive => 'Account Inactive';
+
+  @override
+  String get reason => 'Reason';
+
+  @override
+  String get enable_display_over_other_apps => 'Enable display over other apps';
+
+  @override
+  String get are_you_sure_you_want_to_exit => 'Are you sure you want to exit?';
+
+  @override
+  String get handyman_home => 'Handyman Home';
+
+  @override
+  String get hello => 'Hello';
+
+  @override
+  String get on => 'ON';
+
+  @override
+  String get off => 'OFF';
+
+  @override
+  String get total_cash_in_hand => 'Total Cash in Hand';
+
+  @override
+  String get find_services => 'Find Services';
+
+  @override
+  String get accepted_bookings => 'Accepted Bookings';
+
+  @override
+  String get booking_history => 'Booking History';
+
+  @override
+  String get total_revenue => 'Total Revenue';
+
+  @override
+  String get reviews => 'Reviews';
+
+  @override
+  String get updating_status => 'Updating status...';
+
+  @override
+  String get no_reviews_found => 'No reviews found';
+
+  @override
+  String get anonymous => 'Anonymous';
+
+  @override
+  String get service => 'Service';
+
+  @override
+  String get location_services_are_disabled => 'Location services are disabled';
+
+  @override
+  String get location_permission_denied => 'Location permission denied';
+
+  @override
+  String get location_permission_permanently_denied =>
+      'Location permission permanently denied';
+
+  @override
+  String get no_address => 'No address';
+
+  @override
+  String get pending_bookings => 'Pending Bookings';
+
+  @override
+  String get no_pending_bookings_available => 'No pending bookings available';
+
+  @override
+  String get address => 'Address';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get qty => 'Qty';
+
+  @override
+  String get desc => 'Desc';
+
+  @override
+  String get ignore => 'Ignore';
+
+  @override
+  String get reject_booking => 'Reject Booking';
+
+  @override
+  String get please_mention_rejection_reason =>
+      'Please mention rejection reason';
+
+  @override
+  String get enter_reason => 'Enter reason...';
+
+  @override
+  String get please_enter_reason => 'Please enter reason';
+
+  @override
+  String get please_select_your_preferred_payment_mode =>
+      'Please select your preferred payment mode';
+
+  @override
+  String get pay_online => 'Pay Online';
+
+  @override
+  String get pay_offline => 'Pay Offline';
+
+  @override
+  String get please_collect_amount_from_customer =>
+      'Please collect ₹amount from customer';
+
+  @override
+  String get cash_collected => 'Cash Collected';
+
+  @override
+  String get meter => 'meter';
+
+  @override
+  String get km => 'km';
+
+  @override
+  String get accept_booking => 'Accept Booking';
+
+  @override
+  String get quantity => 'Quantity';
+
+  @override
+  String get hide_details => 'Hide Details';
+
+  @override
+  String get view_order_detail => 'View Order Detail';
+
+  @override
+  String get customer_name => 'Customer Name';
+
+  @override
+  String get customer_mobile => 'Customer Mobile';
+
+  @override
+  String get payment_mode => 'Payment Mode';
+
+  @override
+  String get service_date => 'Service Date';
+
+  @override
+  String get current_pay_mode => 'Current Pay Mode';
+
+  @override
+  String get change => 'Change';
+
+  @override
+  String get verify_start => 'Verify & Start';
+
+  @override
+  String get work_completed_collect_cash => 'Work Completed Collect Cash';
+
+  @override
+  String get update_complete_status => 'Update Complete Status';
+
+  @override
+  String get waiting_for_user_payment => 'Waiting for User Payment';
+
+  @override
+  String get service_completed_payment_done =>
+      'Service Completed • Payment Done';
+
+  @override
+  String get service_started_successfully_message =>
+      'Service has started successfully. Please complete the job and update the status once done.';
+
+  @override
+  String get rejected_by_me => 'Rejected by Me';
+
+  @override
+  String get address_not_available => 'Address not available';
+
+  @override
+  String get date_time => 'Date & Time';
+
+  @override
+  String get reason_not_available => 'Reason not available';
+
+  @override
+  String get payment_status => 'Payment Status';
+
+  @override
+  String get offline_payment => 'Offline Payment';
+
+  @override
+  String get by_wallet => 'By Wallet';
+
+  @override
+  String get earning_list => 'Earning List';
+
+  @override
+  String get week => 'Week';
+
+  @override
+  String get month => 'Month';
+
+  @override
+  String get recent_earnings => 'Recent Earnings';
+
+  @override
+  String get no_recent_earnings_found => 'No recent earnings found';
+
+  @override
+  String get no_profile_found => 'No Profile Found';
+
+  @override
+  String get basic_details => 'Basic Details';
+
+  @override
+  String get mobile => 'Mobile';
+
+  @override
+  String get service_name => 'Service Name';
+
+  @override
+  String get documents => 'Documents';
+
+  @override
+  String get aadhaar_front => 'Aadhaar Front';
+
+  @override
+  String get aadhaar_back => 'Aadhaar Back';
+
+  @override
+  String get experience_certificate => 'Experience Certificate';
+
+  @override
+  String get other_info => 'Other Info';
+
+  @override
+  String get created_at => 'Created At';
+
+  @override
+  String get document => 'Document';
+
+  @override
+  String get transaction_history => 'Transaction History';
+
+  @override
+  String get clear_due_amount => 'Clear Due Amount';
+
+  @override
+  String get due_amount => 'Due Amount';
+
+  @override
+  String get no_due_amount_available => 'No due amount available';
+
+  @override
+  String get failed => 'Failed';
+
+  @override
+  String get wallet_balance => 'Wallet Balance';
+
+  @override
+  String get clear_due => 'Clear Due';
+
+  @override
+  String get from_wallet => 'From Wallet';
+
+  @override
+  String get service_transaction => 'Service Transaction';
+
+  @override
+  String get please_enter_bank_name => 'Please enter bank name';
+
+  @override
+  String get please_re_enter_account_number => 'Please re-enter account number';
+
+  @override
+  String get account_numbers_do_not_match => 'Account numbers do not match';
+
+  @override
+  String get enter_account_holder_name => 'Enter Account Holder Name';
+
+  @override
+  String get please_enter_account_holder_name =>
+      'Please enter account holder name';
+
+  @override
+  String get please_enter_ifsc_code => 'Please enter IFSC code';
+
+  @override
+  String get state_bank_of_india => 'State Bank of India';
+
+  @override
+  String get change_language => 'Change Language';
+
+  @override
+  String get choose_image_gallery => 'Choose Image from Gallery';
+
+  @override
+  String get upload_pdf_document_affidavit_allowed =>
+      'Upload PDF Document (Affidavit allowed)';
+
+  @override
+  String get designation_certificates_affidavits_cv =>
+      'Designation Certificates / Affidavits / CV';
+
+  @override
+  String get doc => 'Doc';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get designation_certificate_affidavit_message =>
+      'If you don\'t have a designation certificate, upload an affidavit (PDF) as alternate.';
+
+  @override
+  String get search_city => 'Search city...';
+
+  @override
+  String get uttar_pradesh_india => 'Uttar Pradesh, India';
+
+  @override
+  String get hello_user => 'Hello User !';
+
+  @override
+  String get create_account_better_experience =>
+      'Create Your Account for Better\nExperience';
+
+  @override
+  String get email_address => 'Email Address';
+
+  @override
+  String get designation_example => 'Designation (e.g. Plumber)';
+
+  @override
+  String get dont_know_any_skill => 'Don\'t know any skill';
+
+  @override
+  String get request_submitted => 'Request Submitted!';
+
+  @override
+  String get job_request_successfully_submitted =>
+      'Your job request has been successfully submitted.\nNow please wait for the job to be assigned';
+
+  @override
+  String get go_to_home => 'Go to Home';
 }
