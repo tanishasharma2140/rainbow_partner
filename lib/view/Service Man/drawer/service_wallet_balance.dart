@@ -121,8 +121,9 @@ class _ServiceWalletBalanceState extends State<ServiceWalletBalance> {
         body: RefreshIndicator(
           color: AppColor.royalBlue,
           onRefresh: _refreshData,
-          backgroundColor: AppColor.royalBlue,
+          backgroundColor: AppColor.white,
           child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

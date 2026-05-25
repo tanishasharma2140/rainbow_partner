@@ -26,6 +26,7 @@ class AcceptOrderViewModel with ChangeNotifier {
       "serviceman_id": userId,
       "distance": distance,
     };
+    print("accept order: $data");
 
     try {
       final response = await _acceptOrderRepo.acceptOrderApi(data);

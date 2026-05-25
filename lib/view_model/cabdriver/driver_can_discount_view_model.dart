@@ -29,6 +29,7 @@ class DriverCanDiscountViewModel with ChangeNotifier {
     try {
       final Map<String, dynamic> data = {
         "vehicle_id": vehicleId,
+
         "amount": amount,
       };
 

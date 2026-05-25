@@ -279,6 +279,7 @@ class MainActivity : FlutterActivity() {
             val pickup = intent.getStringExtra("pickup_address") ?: ""
             val drop = intent.getStringExtra("drop_address") ?: ""
             val distance = intent.getStringExtra("distance") ?: ""
+            val distanceKm = intent.getStringExtra("distance_km") ?: ""
             val amount = intent.getStringExtra("amount") ?: ""
             val userId = intent.getStringExtra("user_id") ?: ""
             val orderType = intent.getIntExtra("order_type", 1)
@@ -289,6 +290,7 @@ class MainActivity : FlutterActivity() {
                 "pickup_address" to pickup,
                 "drop_address" to drop,
                 "distance" to distance,
+                "distance_km" to distanceKm,
                 "amount" to amount,
                 "panel" to panel,
                 "user_id" to userId,

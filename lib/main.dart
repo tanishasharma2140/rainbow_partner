@@ -170,11 +170,22 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
       if (panel == 'serviceman') {
         final String orderId = data['id']?.toString() ?? '';
-        final String distance = data['distance']?.toString() ?? '';
+        final String distanceKm = data['distance_km']?.toString() ?? '';
+        final String distanceRaw = data['distance']?.toString() ?? '';
+
+        // Priority for distance_km if it's not empty and not "0.0" (or fallback to distance)
+        String finalDistance = (distanceKm.isNotEmpty && distanceKm != "0.0")
+            ? distanceKm
+            : (distanceRaw.isNotEmpty ? distanceRaw : "0.0");
+
+        debugPrint("📍 Distance KM (Overlay): $distanceKm");
+        debugPrint("📍 Distance Raw (Overlay): $distanceRaw");
+        debugPrint("📍 Sending Distance to API: $finalDistance");
+
         if (orderId.isNotEmpty) {
           await Provider.of<AcceptOrderViewModel>(ctx, listen: false)
-              .acceptOrderApiSilent(int.parse(orderId), distance);
-          navigatorKey.currentState?.pushReplacementNamed(RoutesName.acceptedBooking);
+              .acceptOrderApiSilent(int.parse(orderId), finalDistance);
+          navigatorKey.currentState?.pushNamed(RoutesName.acceptedBooking);
         }
       } else {
         final String orderId = data['id']?.toString() ?? '';
@@ -311,6 +322,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           : <String, dynamic>{};
 
       if (call.method == 'onOverlayAcceptRide') {
+        debugPrint("🔥 FULL OVERLAY DATA: $data");
         await _handleOverlayAcceptRide(data);
       } else if (call.method == 'onOverlayIgnoreRide') {
         await _handleOverlayIgnoreRide(data);

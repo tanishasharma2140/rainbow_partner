@@ -58,6 +58,7 @@ class Data {
   dynamic dropLocation;
   dynamic pickupLatitude;
   dynamic pickupLongitude;
+  dynamic createdAt;
 
   Data(
       {this.id,
@@ -90,6 +91,7 @@ class Data {
         this.dropLocation,
         this.pickupLatitude,
         this.pickupLongitude,
+        this.createdAt,
       });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -124,6 +126,7 @@ class Data {
     dropLocation = json['drop_location'];
     pickupLatitude = json['pickup_latitude'];
     pickupLongitude = json['pickup_longitude'];
+    createdAt = json['created_at'];
   }
 
   Map<String, dynamic> toJson() {
@@ -158,6 +161,7 @@ class Data {
     data['drop_location'] = dropLocation;
     data['pickup_latitude'] = pickupLatitude;
     data['pickup_longitude'] = pickupLongitude;
+    data['created_at'] = createdAt;
     return data;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/animated_gradient_border.dart';
@@ -294,6 +295,8 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
     );
   }
 
+
+
   // ---------------- SINGLE TRIP CARD ----------------
 
   Widget _buildTripItem(AppLocalizations loc, TripDetails trip) {
@@ -304,6 +307,10 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
     (trip.finalAmount is num) ? (trip.finalAmount as num).toDouble() : 0.0;
 
     final bool isOnline = trip.payMode == 1;
+
+    final String createdDate;
+    createdDate = DateFormat('dd MMM yyyy, hh:mm a')
+      .format(DateTime.parse(trip.createdAt.toString()).toLocal());
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -397,6 +404,24 @@ class _DailyWeeklyEarningReportState extends State<DailyWeeklyEarningReport> {
                 "₹${amount.toStringAsFixed(2)}",
                 style: const TextStyle(
                     fontWeight: FontWeight.w700, fontSize: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          Row(
+            children: [
+              const Icon(Icons.access_time, size: 16, color: Colors.grey),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  createdDate,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ],
           ),

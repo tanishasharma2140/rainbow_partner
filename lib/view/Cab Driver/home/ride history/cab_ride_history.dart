@@ -196,6 +196,8 @@ class _CabRideHistoryState extends State<CabRideHistory> {
         ? _getStatusText(ride.orderStatus)
         : _getLaterStatusText(ride.orderStatus);
     String payModeText = _getPayModeText(ride.payMode);
+    final String createdAtText = DateFormat('dd MMM yyyy, hh:mm a')
+        .format(DateTime.parse(ride.createdAt.toString()).toLocal());
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6),
@@ -295,6 +297,7 @@ class _CabRideHistoryState extends State<CabRideHistory> {
 
             SizedBox(height: isNowTab ? 0 : 12),
 
+
             // Pickup Location
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,8 +388,44 @@ class _CabRideHistoryState extends State<CabRideHistory> {
               ),
             ),
 
-            SizedBox(height: 16),
+            SizedBox(height: 12),
 
+            if (isNowTab)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColor.royalBlue.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColor.royalBlue.withOpacity(0.15),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.access_time_rounded,
+                      size: 18,
+                      color: AppColor.royalBlue,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        createdAtText,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColor.royalBlue,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            SizedBox(height: 12),
             // Footer Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

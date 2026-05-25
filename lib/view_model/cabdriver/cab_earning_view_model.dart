@@ -43,6 +43,7 @@ class CabEarningViewModel with ChangeNotifier {
       "driver_id": driverId,
       "type": type.toString(),
     };
+    print("data hyghygr : $data");
 
     try {
       final response = await _cabEarningRepo.cabEarningApi(data);
