@@ -19,6 +19,7 @@ import 'package:rainbow_partner/view_model/cabdriver/driver_transaction_view_mod
 import 'package:rainbow_partner/view_model/cabdriver/driver_withdraw_request_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/payment_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_get_bank_detail_view_model.dart';
+import 'package:rainbow_partner/view_model/user_view_model.dart';
 
 import 'add_bank.dart' show AddBank;
 
@@ -972,9 +973,13 @@ class _WalletSettlementState extends State<WalletSettlement> {
                           return ElevatedButton(
                             onPressed: (dueAmount == 0 || isLoading)
                                 ? null
-                                : () {
+                                : () async {
+                              UserViewModel userViewModel = UserViewModel();
+                              String? userId = await userViewModel.getUser();
                               payment.cabPaymentApi(
-                                dueAmount.toString(),   // full due
+                                userId,
+                                dueAmount.toString(),
+                                  "",// full due
                                 5,                      // payment mode
                                 "",
                                 context// serviceOrderId

@@ -730,5 +730,11 @@
           "submit": "Submit",
           "request_submitted": "Request Submitted!",
           "job_request_successfully_submitted": "Your job request has been successfully submitted.\nNow please wait for the job to be assigned",
-          "go_to_home": "Go to Home"
+          "go_to_home": "Go to Home",
+          "generate_qr" : "Generate QR",
+          "scan_pay" : "Scan & Pay",
+          "show_this_qr_to_customer" : "Show this QR to customer",
+          "amount_to_collect" : "Amount to Collect",
+          "waiting_for_payment" : "Waiting for payment...",
+          "ask_customer_scan_qr" : "Ask the customer to scan this QR using any UPI app to complete payment."
 }

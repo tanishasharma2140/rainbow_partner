@@ -22,6 +22,7 @@ import 'package:rainbow_partner/view_model/cabdriver/cab_history_view_model.dart
 import 'package:rainbow_partner/view_model/cabdriver/cab_payment_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_paymode_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/check_payment_status_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_can_discount_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_ignore_order_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_offer_view_model.dart';
@@ -470,6 +471,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               create: (context) => ChangeCabPayModeViewModel()),
           ChangeNotifierProvider(create: (context) => CabPaymentViewmodel()),
           ChangeNotifierProvider(create: (context) => LanguageController()),
+          ChangeNotifierProvider(create: (context) => CheckPaymentStatusViewModel()),
         ],
         child: Consumer<LanguageController>(
             builder: (context, provider, child) {

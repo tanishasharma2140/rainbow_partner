@@ -1051,7 +1051,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get change_pay_mode => 'भुगतान मोड बदलें';
 
   @override
-  String get waiting_for_payment => 'भुगतान की प्रतीक्षा हो रही है';
+  String get waiting_for_payment => 'भुगतान की प्रतीक्षा हो रही है...';
 
   @override
   String get to_complete_payment => 'भुगतान पूरा करने के लिए';
@@ -1560,4 +1560,17 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get go_to_home => 'होम पर जाएं';
+
+  @override
+  String get generate_qr => 'क्यूआर जनरेट करें';
+
+  @override
+  String get scan_pay => 'स्कैन करें और भुगतान करें';
+
+  @override
+  String get show_this_qr_to_customer => 'यह क्यूआर ग्राहक को दिखाएं';
+
+  @override
+  String get ask_customer_scan_qr =>
+      'भुगतान पूरा करने के लिए ग्राहक से किसी भी UPI ऐप द्वारा इस क्यूआर को स्कैन करने के लिए कहें।';
 }

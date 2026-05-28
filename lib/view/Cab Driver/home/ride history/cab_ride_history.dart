@@ -55,13 +55,12 @@ class _CabRideHistoryState extends State<CabRideHistory> {
         appBar: AppBar(
           backgroundColor: cardColor,
           elevation: 0.5,
-          title: Text(
+          title: TextConst(
+            title:
             loc.ride_history,
-            style: TextStyle(
-              color: textPrimary,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
+            color: textPrimary,
+            size: 20,
+            fontWeight: FontWeight.w700,
           ),
           centerTitle: true,
           leading: IconButton(
@@ -563,34 +562,32 @@ class _CabRideHistoryState extends State<CabRideHistory> {
 
             // Rating for completed rides (Now & Later dono)
             if (ride.orderStatus == 5 &&
-                ride.rating != null &&
-                ride.rating.toString() != '0') ...[
+                ride.orderRating != null &&
+                ride.orderRating.toString() != '0') ...[
+
               SizedBox(height: 12),
+
               Row(
                 children: [
-                  Icon(Icons.star_rounded,
-                      color: Color(0xFFFFCC00), size: 18),
-                  SizedBox(width: 6),
-                  Text(
-                    ride.rating.toString(),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: textPrimary,
-                      fontSize: 14,
+
+                  /// ⭐ Dynamic Stars
+                  Row(
+                    children: List.generate(
+                      int.parse(ride.orderRating.toString()),
+                          (index) => const Padding(
+                        padding: EdgeInsets.only(right: 2),
+                        child: Icon(
+                          Icons.star_rounded,
+                          color: Color(0xFFFFCC00),
+                          size: 18,
+                        ),
+                      ),
                     ),
                   ),
-                  SizedBox(width: 4),
-                  Text(
-                    loc.rating,
-                    style: TextStyle(
-                      color: textSecondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+
                 ],
               ),
-            ],
+                        ],
 
             if (!isNowTab && ride.orderStatus == 1) ...[
               SizedBox(height: 16),

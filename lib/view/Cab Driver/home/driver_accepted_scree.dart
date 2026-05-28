@@ -13,6 +13,7 @@ import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/driver_home_page.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_cancel_reason_view_model.dart';
+import 'package:rainbow_partner/view_model/cabdriver/cab_payment_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_paymode_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -160,7 +161,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
             orderData = data;
             isLoading = false;
           });
-
+          print("ORDER DATA = $orderData");
           print("🟡 OLD STATUS = $oldStatus → NEW STATUS = $newStatus");
           print("🟡 OLD PAYMODE = $oldPayMode → NEW PAYMODE = $newPayMode");
           _updateMapMarkers();
@@ -189,7 +190,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
 
               final amount = _getPayableAmount(orderData!);
               final userName = orderData!['user_name'];
-
+              final userId = orderData!['user_id'];
               /// 🔥 IMPORTANT: replace current payment screen
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -209,6 +210,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
                         orderId: widget.orderId,
                         amount: amount,
                         userName: userName,
+                        userid: userId,
                       );
                     }
 
@@ -366,6 +368,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
     final payMode = orderData!['pay_mode'] ?? 1;
     final walletApply = orderData!['wallet_apply'] ?? 0;
     final amount = _getPayableAmount(orderData!);
+    final userId = orderData!['user_id'];
 
     if (_navigatedToPaymentScreen) return;
     _navigatedToPaymentScreen = true;
@@ -395,6 +398,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
               orderId: widget.orderId,
               amount: amount,
               userName: orderData!['user_name'],
+              userid: userId,
             ),
           ),
         );
@@ -554,6 +558,7 @@ class _DriverRideAcceptedScreenState extends State<DriverRideAcceptedScreen> {
               orderId: widget.orderId,
               amount: amount,
               userName: orderData!['user_name'],
+              userid: orderData!['user_id'],
             ),
           ),
         );
@@ -2230,13 +2235,12 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: Text(
+          title: TextConst(
+            title:
             loc.payment,
-            style: const TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            size: 18,
           ),
           actions: [
             // ── Pay Mode Toggle Icon ──────────────────────────────────
@@ -2305,26 +2309,24 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                   const SizedBox(height: 30),
 
                   // ── Title ───────────────────────────────────────────
-                  Text(
+                  TextConst(
+                    title:
                     loc.waiting_for_payment,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    size: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
 
                   const SizedBox(height: 10),
 
                   // ── Subtitle ────────────────────────────────────────
-                  Text(
+                  TextConst(
+                    title:
                     "${loc.waiting_for_payment} ${widget.userName} ${loc.to_complete_payment}",
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    size: 16,
+                    color: Colors.grey,
                   ),
 
                   const SizedBox(height: 36),
@@ -2347,26 +2349,25 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                     ),
                     child: Column(
                       children: [
-                        Text(
+                        TextConst(
+                          title:
                           loc.amount,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.black54,
-                          ),
+                          size: 14,
+                          color: Colors.black54,
                         ),
                         const SizedBox(height: 8),
-                        Text(
+                        TextConst(
+                          title:
                           "₹${widget.amount}",
-                          style: TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade700,
-                          ),
+                          size: 42,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange.shade700,
                         ),
                         const SizedBox(height: 6),
-                        Text(
+                        TextConst(
+                          title:
                           "${loc.order} #${widget.orderId}",
-                          style: const TextStyle(color: Colors.black54),
+                            color: Colors.black54
                         ),
                       ],
                     ),
@@ -2387,12 +2388,11 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
+                      TextConst(
+                        title:
                         loc.please_wait,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.black54,
-                        ),
+                        size: 15,
+                        color: Colors.black54,
                       ),
                     ],
                   ),
@@ -2406,20 +2406,19 @@ class _WaitingForPaymentScreenState extends State<WaitingForPaymentScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// COLLECT CASH SCREEN  (Offline / Cash payment)
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 class CollectCashScreen extends StatefulWidget {
   final int orderId;
   final dynamic amount;
   final String userName;
+  final dynamic userid;
 
   const CollectCashScreen({
     super.key,
     required this.orderId,
     required this.amount,
-    required this.userName,
+    required this.userName, this.userid
   });
 
   @override
@@ -2645,6 +2644,7 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
     final changeCabOrder =
     Provider.of<ChangeCabOrderStatusViewModel>(context);
     final loc = AppLocalizations.of(context)!;
+    final payment = Provider.of<CabPaymentViewmodel>(context, listen: false);
 
     return WillPopScope(
       onWillPop: () async {
@@ -2716,32 +2716,30 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
 
                 const SizedBox(height: 32),
 
-                Text(
+                TextConst(
+                  title:
                   loc.collect_cash_payment,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                  size: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
 
                 const SizedBox(height: 12),
 
-                Text(
+                TextConst(
+                  title:
                   "${loc.collect_cash_from} ${widget.userName}",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey.shade600,
-                  ),
+                  size: 15,
+                  color: Colors.grey.shade600,
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 30),
 
                 // ── Amount Card ─────────────────────────────────────────
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -2756,22 +2754,20 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
                   ),
                   child: Column(
                     children: [
-                      Text(
+                      TextConst(
+                        title:
                         loc.amount_to_collect,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        size: 14,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w600,
                       ),
                       const SizedBox(height: 8),
-                      Text(
+                      TextConst(
+                        title:
                         "₹${widget.amount}",
-                        style: TextStyle(
-                          fontSize: 42,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green.shade700,
-                        ),
+                        size: 42,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green.shade700,
                       ),
                       const SizedBox(height: 8),
                       Container(
@@ -2783,22 +2779,80 @@ class _CollectCashScreenState extends State<CollectCashScreen> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text(
+                        child: TextConst(
+                          title:
                           "${loc.order} #${widget.orderId}",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade700,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          size: 13,
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 50),
+                const SizedBox(height: 35),
+                Consumer<CabPaymentViewmodel>(
+                  builder: (context, payment, child) {
+                    return GestureDetector(
+                      onTap: payment.loading
+                          ? null
+                          : () {
+                        print(
+                            "DEBUG: Calling Generate QR with userid: ${widget.userid}");
 
-                // ── Slide to collect ────────────────────────────────────
+                        payment.cabPaymentApi(
+                          widget.userid,
+                          widget.amount,
+                          1,
+                          1,
+                          widget.orderId,
+                          context,
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        margin: const EdgeInsets.only(bottom: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.07),
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(
+                            color: Colors.green.withOpacity(0.3),
+                            width: 1.8,
+                          ),
+                        ),
+                        child: payment.loading
+                            ? SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.green.shade700,
+                          ),
+                        )
+                            : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.qr_code_2_rounded,
+                              color: Colors.green.shade700,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 10),
+                            TextConst(
+                              title: loc.generate_qr,
+                              size: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green.shade800,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
                 SlideToButton(
                   title: loc.collect_cash,
                   onAccepted: () async {

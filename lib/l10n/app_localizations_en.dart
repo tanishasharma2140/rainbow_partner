@@ -1049,7 +1049,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get change_pay_mode => 'Change pay mode';
 
   @override
-  String get waiting_for_payment => 'Waiting for Payment';
+  String get waiting_for_payment => 'Waiting for payment...';
 
   @override
   String get to_complete_payment => 'to complete payment';
@@ -1555,4 +1555,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get go_to_home => 'Go to Home';
+
+  @override
+  String get generate_qr => 'Generate QR';
+
+  @override
+  String get scan_pay => 'Scan & Pay';
+
+  @override
+  String get show_this_qr_to_customer => 'Show this QR to customer';
+
+  @override
+  String get ask_customer_scan_qr =>
+      'Ask the customer to scan this QR using any UPI app to complete payment.';
 }

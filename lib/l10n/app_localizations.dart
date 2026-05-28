@@ -2099,7 +2099,7 @@ abstract class AppLocalizations {
   /// No description provided for @waiting_for_payment.
   ///
   /// In en, this message translates to:
-  /// **'Waiting for Payment'**
+  /// **'Waiting for payment...'**
   String get waiting_for_payment;
 
   /// No description provided for @to_complete_payment.
@@ -3073,6 +3073,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Go to Home'**
   String get go_to_home;
+
+  /// No description provided for @generate_qr.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate QR'**
+  String get generate_qr;
+
+  /// No description provided for @scan_pay.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan & Pay'**
+  String get scan_pay;
+
+  /// No description provided for @show_this_qr_to_customer.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this QR to customer'**
+  String get show_this_qr_to_customer;
+
+  /// No description provided for @ask_customer_scan_qr.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the customer to scan this QR using any UPI app to complete payment.'**
+  String get ask_customer_scan_qr;
 }
 
 class _AppLocalizationsDelegate

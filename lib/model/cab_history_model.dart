@@ -59,6 +59,7 @@ class Data {
   dynamic pickupLatitude;
   dynamic pickupLongitude;
   dynamic createdAt;
+  dynamic orderRating;
 
   Data(
       {this.id,
@@ -92,6 +93,7 @@ class Data {
         this.pickupLatitude,
         this.pickupLongitude,
         this.createdAt,
+        this.orderRating,
       });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -127,6 +129,7 @@ class Data {
     pickupLatitude = json['pickup_latitude'];
     pickupLongitude = json['pickup_longitude'];
     createdAt = json['created_at'];
+    orderRating = json['order_rating'];
   }
 
   Map<String, dynamic> toJson() {
@@ -162,6 +165,7 @@ class Data {
     data['pickup_latitude'] = pickupLatitude;
     data['pickup_longitude'] = pickupLongitude;
     data['created_at'] = createdAt;
+    data['order_rating'] = orderRating;
     return data;
   }
 }

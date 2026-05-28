@@ -7,6 +7,7 @@ import 'package:rainbow_partner/repo/cabdriver/cab_payment_repo.dart';
 import 'package:rainbow_partner/repo/serviceman/payment_repo.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/driver_home_page.dart';
+import 'package:rainbow_partner/view/Cab%20Driver/qr_screen.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
@@ -42,7 +43,9 @@ class CabPaymentViewmodel with ChangeNotifier {
   }
 
   Future<void> cabPaymentApi(
+      dynamic userId,
       dynamic amount,
+      dynamic qrStatus,
       dynamic paymentType,
       dynamic serviceOrderId,
       BuildContext context,
@@ -51,12 +54,12 @@ class CabPaymentViewmodel with ChangeNotifier {
     setLoading(true);
 
     try {
-      UserViewModel userViewModel = UserViewModel();
-      String? userId = await userViewModel.getUser();
+
 
       final Map data = {
         "user_id": userId,
         "amount": amount,
+        "qr_status" : qrStatus,
         "payment_type": paymentType,
         "service_order_id": serviceOrderId,
       };
@@ -74,13 +77,43 @@ class CabPaymentViewmodel with ChangeNotifier {
           Utils.showErrorMessage(context, body["message"] ?? "Payment failed");
           return;
         }
-
-        Utils.showSuccessMessage(context, body["message"]);
+           debugPrint(body["message"]);
+        // Utils.showSuccessMessage(context, body["message"]);
 
         final orderId = body["data"]["order_id"];
         final txnToken = body["data"]["txnToken"];
         // API response doesn't have amount, so use the amount passed to this function
         final amountValue = body["data"]["amount"] ?? amount;
+        final qrStatusResponse = body["data"]["qr_status"];
+        final qrImage = body["data"]["qrImage"];
+        final price = body["data"]["amount"];
+        final qrOrderId = body["data"]["order_id"];
+
+
+        print("✅ QR STATUS = $qrStatusResponse");
+
+        if (qrStatusResponse == 1 && qrImage != null) {
+
+          print("✅ NAVIGATE TO QR SCREEN");
+          print("📦 QR IMAGE = $qrImage");
+          print("💰 AMOUNT = $price");
+          print("🆔 ORDER ID = $qrOrderId");
+          print("🚕 SERVICE ORDER ID = $serviceOrderId");
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => QrScreen(
+                qrImage: qrImage,
+                amount : price,
+                orderId :qrOrderId,
+                serviceOrderId : serviceOrderId
+              ),
+            ),
+          );
+
+          return;
+        }
 
         if (orderId == null || txnToken == null || amountValue == null) {
           Utils.showErrorMessage(context, "Payment details missing from server");
