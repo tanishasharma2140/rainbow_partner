@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart' as AppSettings;
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/l10n/app_localizations.dart';
@@ -40,6 +41,8 @@ class _DriverHomePageState extends State<DriverHomePage> {
   Future<void> hitProfileApi() async {
     final vm = Provider.of<DriverProfileViewModel>(context, listen: false);
     final position = await LocationUtils.getLocation();
+
+
 
     await vm.driverProfileApi(
       position.latitude.toString(),
@@ -206,28 +209,37 @@ class _DriverHomePageState extends State<DriverHomePage> {
   Future<void> _handleExit() async {
     final driverOnlineVm =
     Provider.of<DriverOnlineStatusViewModel>(context, listen: false);
+    final position = await LocationUtils.getLocation();
 
+
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+
+    Placemark place = placemarks.first;
+
+    String currentLocation =
+        "${place.name ?? ''}, "
+        "${place.street ?? ''}, "
+        "${place.subLocality ?? ''}, "
+        "${place.locality ?? ''}, "
+        "${place.administrativeArea ?? ''}, "
+        "${place.postalCode ?? ''}, "
+        "${place.country ?? ''}";
     try {
-      // 🔥 Make driver offline
       await driverOnlineVm.driverOnlineStatusApi(
         0, // offline
-        0.0,
-        0.0,
+        position.longitude,
+        position.latitude,
         context,
+        currentLocation,
       );
-      // ✅ Inform native
+
       await _channel.invokeMethod('setDriverOnline', {'online': false});
     } catch (e) {
       debugPrint("Offline API error: $e");
     }
-
-    // 🔌 Disconnect socket
-    // DriverSocketService().disconnect();
-
-    // 📴 Stop background service
-    // await stopBackgroundService();
-
-    // 🚪 Close app
     SystemNavigator.pop();
   }
 
@@ -257,6 +269,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                   await hitProfileApi();
                 },
                 child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
                     children: [
                       Stack(
@@ -317,7 +330,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                                     ),
                                     SizedBox(height: 5),
 
-                                    TextConst(// ✅ no Expanded
+                                    TextConst(
                                       title:
                                       "${driverProfileVm.driverProfileModel?.data?.firstName ?? ""} "
                                           "${driverProfileVm.driverProfileModel?.data?.lastName ?? ""}",
@@ -634,6 +647,24 @@ class _DriverHomePageState extends State<DriverHomePage> {
                 showLocationPermissionDialog(
                   context,
                   onAccept: () async {
+                    final position = await LocationUtils.getLocation();
+
+
+                    List<Placemark> placemarks = await placemarkFromCoordinates(
+                      position.latitude,
+                      position.longitude,
+                    );
+
+                    Placemark place = placemarks.first;
+
+                    String currentLocation =
+                        "${place.name ?? ''}, "
+                        "${place.street ?? ''}, "
+                        "${place.subLocality ?? ''}, "
+                        "${place.locality ?? ''}, "
+                        "${place.administrativeArea ?? ''}, "
+                        "${place.postalCode ?? ''}, "
+                        "${place.country ?? ''}";
 
                     try {
 
@@ -646,6 +677,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                         1,
                         position.latitude,
                         position.longitude,
+                        currentLocation,
                         context,
                       );
 
@@ -692,11 +724,28 @@ class _DriverHomePageState extends State<DriverHomePage> {
                   final position =
                   await LocationUtils.getLocation();
 
+                  List<Placemark> placemarks = await placemarkFromCoordinates(
+                    position.latitude,
+                    position.longitude,
+                  );
+
+                  Placemark place = placemarks.first;
+
+                  String currentLocation =
+                      "${place.name ?? ''}, "
+                      "${place.street ?? ''}, "
+                      "${place.subLocality ?? ''}, "
+                      "${place.locality ?? ''}, "
+                      "${place.administrativeArea ?? ''}, "
+                      "${place.postalCode ?? ''}, "
+                      "${place.country ?? ''}";
+
                   /// 🌐 OFFLINE API
                   await driverOnlineVm.driverOnlineStatusApi(
                     0,
                     position.latitude,
                     position.longitude,
+                    currentLocation,
                     context,
                   );
 
@@ -949,9 +998,6 @@ class _DriverHomePageState extends State<DriverHomePage> {
     );
   }
 
-  // -------------------------------------------------
-  //                QUICK ACTION ITEM
-  // -------------------------------------------------
   Widget _actionItem(IconData icon, String label, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,

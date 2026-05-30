@@ -20,6 +20,7 @@ class DriverOnlineStatusViewModel with ChangeNotifier {
       dynamic onlineStatus,
       dynamic currentLatitude,
       dynamic currentLongitude,
+      dynamic currentLocation,
       context,
       ) async {
     setLoading(true);
@@ -29,7 +30,8 @@ class DriverOnlineStatusViewModel with ChangeNotifier {
       "driver_id": userId,
       "online_status": onlineStatus,
       "current_latitude": currentLatitude,
-      "current_longitude": currentLongitude
+      "current_longitude": currentLongitude,
+      "current_location" : currentLocation,
     };
     print("dfedfvfebgrgrefg");
     print(data);

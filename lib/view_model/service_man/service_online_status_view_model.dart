@@ -20,6 +20,7 @@ class ServiceOnlineStatusViewModel with ChangeNotifier {
     dynamic onlineStatus,
     dynamic currentLatitude,
     dynamic currentLongitude,
+    dynamic currentLocation,
     context,
   ) async {
     setLoading(true);
@@ -30,6 +31,7 @@ class ServiceOnlineStatusViewModel with ChangeNotifier {
       "online_status": onlineStatus,
       "current_latitude": currentLatitude,
       "current_longitude": currentLongitude,
+      "current_location" : currentLocation,
     };
     print("dfedfvfebgrgrefg");
     print(data);

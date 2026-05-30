@@ -736,5 +736,9 @@
           "show_this_qr_to_customer" : "Show this QR to customer",
           "amount_to_collect" : "Amount to Collect",
           "waiting_for_payment" : "Waiting for payment...",
-          "ask_customer_scan_qr" : "Ask the customer to scan this QR using any UPI app to complete payment."
+          "ask_customer_scan_qr" : "Ask the customer to scan this QR using any UPI app to complete payment.",
+          "cancel_ride": "Cancel Ride",
+          "please_tell_us_why_you_want_to_cancel": "Please tell us why you want to cancel?",
+          "no_cancel_reasons_available": "No cancel reasons available",
+          "confirm_cancel": "Confirm Cancel"
 }

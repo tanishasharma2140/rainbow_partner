@@ -31,6 +31,8 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
   File? profileImage;
   final ImagePicker _picker = ImagePicker();
   String selectedCity = "Select City";
+  final ImagePicker picker = ImagePicker();
+
 
   @override
   void initState() {
@@ -59,14 +61,48 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
   // -----------------------
   // Helpers — pick image or pdf
   // -----------------------
-  Future<void> pickProfileImage() async {
-    final XFile? file = await _picker.pickImage(
-      source: ImageSource.gallery,
+  Future<void> pickImage(bool fromCamera) async {
+    final XFile? file = await picker.pickImage(
+      source: fromCamera ? ImageSource.camera : ImageSource.gallery,
       imageQuality: 70,
     );
+
     if (file != null) {
-      setState(() => profileImage = File(file.path));
+      setState(() {
+        profileImage = File(file.path);
+      });
     }
+  }
+
+  void showImagePickerOptions() {
+    showModalBottomSheet(
+      backgroundColor: AppColor.white,
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading:  Icon(Icons.photo_library,color: AppColor.royalBlue,),
+                title:  TextConst(title: "Gallery"),
+                onTap: () {
+                  Navigator.pop(context);
+                  pickImage(false);
+                },
+              ),
+              ListTile(
+                leading:  Icon(Icons.camera_alt,color: AppColor.royalBlue,),
+                title:  TextConst(title: "Camera"),
+                onTap: () {
+                  Navigator.pop(context);
+                  pickImage(true);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> getCurrentAddress(
@@ -603,7 +639,7 @@ class _RegisterServiceScreenState extends State<RegisterServiceScreen> {
                         bottom: 2,
                         right: 2,
                         child: GestureDetector(
-                          onTap: () => pickProfileImage(),
+                          onTap: () => showImagePickerOptions(),
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: const BoxDecoration(

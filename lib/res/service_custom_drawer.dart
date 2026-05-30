@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/auth/splash.dart';
 import 'package:rainbow_partner/controller/language_controller.dart';
@@ -153,12 +154,26 @@ class _ServiceCustomDrawerState extends State<ServiceCustomDrawer> {
       final position = await LocationUtils.getLocation();
       final lat = position.latitude.toString();
       final lng = position.longitude.toString();
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+      Placemark place = placemarks.first;
 
-      // 🔴 1️⃣ Make serviceman offline (API call)
+      String currentLocation =
+          "${place.name ?? ''}, "
+          "${place.street ?? ''}, "
+          "${place.subLocality ?? ''}, "
+          "${place.locality ?? ''}, "
+          "${place.administrativeArea ?? ''}, "
+          "${place.postalCode ?? ''}, "
+          "${place.country ?? ''}";
+
       await serviceOnlineVm.serviceOnlineStatusApi(
         0,
         lat,
         lng,
+        currentLocation,
         context,
       );
 

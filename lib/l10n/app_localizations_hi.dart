@@ -1018,7 +1018,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get no_cancel_reasons_available =>
-      'कोई रद्द करने का कारण उपलब्ध नहीं है';
+      'राइड रद्द करने के लिए कोई कारण उपलब्ध नहीं है';
 
   @override
   String get confirm_cancel => 'रद्द करने की पुष्टि करें';

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/auth/splash.dart';
 import 'package:rainbow_partner/l10n/app_localizations.dart';
@@ -7,6 +8,7 @@ import 'package:rainbow_partner/res/pdf_view_screen.dart';
 import 'package:rainbow_partner/res/sizing_const.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/res/app_color.dart';
+import 'package:rainbow_partner/utils/location_utils.dart';
 import 'package:rainbow_partner/view_model/cabdriver/driver_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/driver_online_status_view_model.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
@@ -467,12 +469,33 @@ Future<void> _handleLogout(BuildContext context) async {
   final driverProfileVm =
   Provider.of<DriverProfileViewModel>(context, listen: false);
 
+
+  final position = await LocationUtils.getLocation();
+
+
+  List<Placemark> placemarks = await placemarkFromCoordinates(
+    position.latitude,
+    position.longitude,
+  );
+
+  Placemark place = placemarks.first;
+
+  String currentLocation =
+      "${place.name ?? ''}, "
+      "${place.street ?? ''}, "
+      "${place.subLocality ?? ''}, "
+      "${place.locality ?? ''}, "
+      "${place.administrativeArea ?? ''}, "
+      "${place.postalCode ?? ''}, "
+      "${place.country ?? ''}";
+
   try {
     // 🔥 1️⃣ Make driver offline via API
     await driverOnlineVm.driverOnlineStatusApi(
       0, // offline
-      0.0,
-      0.0,
+      position.latitude,
+      position.longitude,
+      currentLocation,
       context,
     );
 

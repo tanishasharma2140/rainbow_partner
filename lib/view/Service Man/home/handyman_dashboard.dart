@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow_partner/l10n/app_localizations.dart';
@@ -54,17 +55,8 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       Provider.of<ServiceInfoViewModel>(context, listen: false)
           .serviceInfoApi(context);
 
-      profileVm.addListener(() {
-        final data = profileVm.servicemanProfileModel?.data;
-
-        if (data?.loginStatus == 0) {
-          if (data?.rejectReasion == null || data!.rejectReasion!.isEmpty) {
-            _showPendingDialog();
-          } else {
-            _showRejectedDialog(data.rejectReasion!);
-          }
-        }
-      });
+      // Removed listener that shows Dialog to allow Pull-to-Refresh functionality.
+      // Status is now handled reactively in the build method.
 
       final completeVm = context.read<CompleteBookingViewModel>();
       await completeVm.completeBookingApi([1, 2, 3], context);
@@ -95,84 +87,6 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     });
   }
 
-  void _showPendingDialog() {
-    final loc = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => WillPopScope(
-        onWillPop: () async => false,
-        child: Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(22),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.hourglass_bottom, color: Colors.orange, size: 42),
-                const SizedBox(height: 14),
-                TextConst(
-                  title: loc.verification_pending,
-                  size: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-                const SizedBox(height: 10),
-                TextConst(
-                  title: loc.admin_is_verifying_your_profile,
-                  textAlign: TextAlign.center,
-                  size: 14,
-                  color: Colors.grey,
-                ),
-                const SizedBox(height: 15),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showRejectedDialog(String reason) {
-    final loc = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => WillPopScope(
-        onWillPop: () async => false,
-        child: Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(22),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.block, color: Colors.red, size: 42),
-                const SizedBox(height: 14),
-                TextConst(
-                  title: loc.account_inactive,
-                  size: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-                const SizedBox(height: 10),
-                TextConst(
-                  title: "${loc.reason}: $reason",
-                  textAlign: TextAlign.center,
-                  size: 14,
-                  color: Colors.red,
-                ),
-                const SizedBox(height: 15),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _onRefresh() async {
     final position = await LocationUtils.getLocation();
     final lat = position.latitude.toString();
@@ -191,6 +105,69 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     // ✅ Re-sync online status on refresh
     final isOnline = context.read<ServicemanProfileViewModel>().servicemanProfileModel?.data?.onlineStatus == 1;
     _channel.invokeMethod('setServicemanOnline', {'online': isOnline});
+  }
+
+  Widget _buildVerificationStatus(AppLocalizations loc, dynamic data) {
+    final isRejected = data?.rejectReasion != null && data!.rejectReasion!.isNotEmpty;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+      margin: const EdgeInsets.only(top: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isRejected ? Icons.block : Icons.hourglass_bottom,
+            color: isRejected ? Colors.red : Colors.orange,
+            size: 60,
+          ),
+          const SizedBox(height: 20),
+          TextConst(
+            title: isRejected ? loc.account_inactive : loc.verification_pending,
+            size: 22,
+            fontWeight: FontWeight.w700,
+          ),
+          const SizedBox(height: 12),
+          TextConst(
+            title: isRejected
+                ? "${loc.reason}: ${data.rejectReasion}"
+                : loc.admin_is_verifying_your_profile,
+            textAlign: TextAlign.center,
+            size: 16,
+            color: isRejected ? Colors.red : Colors.grey.shade600,
+          ),
+          const SizedBox(height: 40),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.refresh, size: 18, color: AppColor.royalBlue),
+              const SizedBox(width: 8),
+              Text(
+                "Pull down to refresh status",
+                style: TextStyle(
+                  color: AppColor.royalBlue,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   String formatDateTime(String? dateTimeString) {
@@ -367,12 +344,27 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
       final lat = position.latitude.toString();
       final lng = position.longitude.toString();
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+      Placemark place = placemarks.first;
+
+      String currentLocation =
+          "${place.name ?? ''}, "
+          "${place.street ?? ''}, "
+          "${place.subLocality ?? ''}, "
+          "${place.locality ?? ''}, "
+          "${place.administrativeArea ?? ''}, "
+          "${place.postalCode ?? ''}, "
+          "${place.country ?? ''}";
 
       /// ================= ONLINE STATUS API =================
       await serviceOnlineVm.serviceOnlineStatusApi(
         newStatus,
         lat,
         lng,
+        currentLocation,
         context,
       );
 
@@ -570,18 +562,33 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
       final position = await LocationUtils.getLocation();
       final lat = position.latitude.toString();
       final lng = position.longitude.toString();
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+      Placemark place = placemarks.first;
+
+      String currentLocation =
+          "${place.name ?? ''}, "
+          "${place.street ?? ''}, "
+          "${place.subLocality ?? ''}, "
+          "${place.locality ?? ''}, "
+          "${place.administrativeArea ?? ''}, "
+          "${place.postalCode ?? ''}, "
+          "${place.country ?? ''}";
 
       // 🔴 1️⃣ Make serviceman offline
       await serviceOnlineVm.serviceOnlineStatusApi(
         0,
         lat,
         lng,
+        currentLocation,
         context,
       );
-      
+
       // ✅ Inform native
       await _channel.invokeMethod('setServicemanOnline', {'online': false});
-      
+
     } catch (e) {
       debugPrint("Exit Offline API error: $e");
     }
@@ -606,6 +613,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
     final serviceVm = Provider.of<ServiceInfoViewModel>(context);
 
     final isOnline = serviceProfileVm.servicemanProfileModel?.data?.onlineStatus == 1;
+    final loginStatus = serviceProfileVm.servicemanProfileModel?.data?.loginStatus;
 
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -692,6 +700,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                             ),
 
                             // 🔥 TOGGLE SWITCH
+                            if (loginStatus != 0)
                             GestureDetector(
                               onTap: () => _toggleOnlineStatus(isOnline),
                               child: Container(
@@ -775,6 +784,9 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
 
                         const SizedBox(height: 25),
 
+                        if (loginStatus == 0)
+                          _buildVerificationStatus(loc, serviceProfileVm.servicemanProfileModel?.data)
+                        else ...[
                         Container(
                           padding: const EdgeInsets.all(15),
                           decoration: BoxDecoration(
@@ -904,6 +916,7 @@ class _HandymanDashboardState extends State<HandymanDashboard> {
                         const SizedBox(height: 15),
 
                         reviewList(reviewVm),
+                        ],
                       ],
                     ),
                   ),

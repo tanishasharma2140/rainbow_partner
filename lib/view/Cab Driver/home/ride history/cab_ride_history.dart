@@ -6,6 +6,7 @@ import 'package:rainbow_partner/res/app_color.dart';
 import 'package:rainbow_partner/res/app_fonts.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/driver_home_page.dart';
+import 'package:rainbow_partner/view_model/cabdriver/cab_cancel_reason_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/cab_history_view_model.dart';
 import 'package:rainbow_partner/view_model/cabdriver/change_cab_order_status_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -30,6 +31,11 @@ class _CabRideHistoryState extends State<CabRideHistory> {
         context,
         listen: false,
       ).cabHistoryApi(1, context);
+      final cabCancelReasonVm = Provider.of<CabCancelReasonViewModel>(
+        context,
+        listen: false,
+      );
+      cabCancelReasonVm.cabCancelReasonApi("2");
     });
   }
 
@@ -659,12 +665,228 @@ class _CabRideHistoryState extends State<CabRideHistory> {
                   ),
                 ],
               ),
+              if (!isNowTab &&
+                  (ride.orderStatus == 1 || ride.orderStatus == 2)) ...[
+                const SizedBox(height: 16),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: GestureDetector(
+                    onTap: () {
+                      _showCancelReasonBottomSheet(context,ride.id);
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.red, width: 1.5),
+                        color: Colors.transparent,
+                      ),
+                      alignment: Alignment.center,
+                      child:  TextConst(
+                        title:
+                        loc.cancel_ride,
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ]
             ],
           ],
         ),
       ),
     );
   }
+
+  void _showCancelReasonBottomSheet(BuildContext context, int rideId) {
+    String? selectedReason;
+    int? selectedReasonId;
+    final  loc = AppLocalizations.of(context)!;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              child: Consumer<CabCancelReasonViewModel>(
+                builder: (context, vm, _) {
+                  final reasons = vm.cabCancelReasonModel?.data ?? [];
+
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// HEADER
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                       TextConst(title:
+                         loc.cancel_ride,
+                         size: 18,
+                         fontWeight: FontWeight.w700,
+                      ),
+                      const SizedBox(height: 10),
+                       TextConst(
+                        title:
+                        loc.please_tell_us_why_you_want_to_cancel,
+                      ),
+                      const SizedBox(height: 18),
+
+                      /// LOADER
+                      if (vm.loading)
+                        const Center(child: CircularProgressIndicator()),
+
+                      /// EMPTY STATE
+                      if (!vm.loading && reasons.isEmpty)
+                         Center(
+                          child: Text(loc.no_cancel_reasons_available),
+                        ),
+
+                      /// LIST
+                      if (reasons.isNotEmpty)
+                        ...reasons.map((e) {
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                selectedReason = e.reasonTitle;
+                                selectedReasonId = e.id;
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    height: 20,
+                                    width: 20,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: selectedReasonId == e.id
+                                            ? Colors.red
+                                            : Colors.grey,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: selectedReasonId == e.id
+                                        ? Center(
+                                      child: Container(
+                                        height: 10,
+                                        width: 10,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    )
+                                        : null,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      e.reasonTitle,
+                                      style: const TextStyle(fontSize: 15),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: selectedReasonId != null
+                                ? Colors.red
+                                : Colors.grey,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: selectedReasonId == null
+                              ? null
+                              : () {
+                            Navigator.pop(context);
+                            _confirmRideCancellation(
+                              rideId,
+                              selectedReasonId!,
+                              selectedReason!,
+                            );
+                          },
+                          // _confirmRideCancellation(selectedReasonId!, selectedReason!);
+                          child:  Text(
+                            loc.confirm_cancel,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+  void _confirmRideCancellation(int rideId,int reasonId, String reasonTitle) async {
+    if (!mounted) return;
+
+    final changeStatusVm = Provider.of<ChangeCabOrderStatusViewModel>(
+      context,
+      listen: false,
+    );
+
+    // API call
+    await changeStatusVm.changeCabOrderApi(
+      rideId,
+      7, // Cancel status
+      "",
+      reasonTitle,
+      context,
+    );
+
+
+    if (!mounted) return;
+    // Navigator.pop(context);
+    Provider.of<CabHistoryViewModel>(
+      context,
+      listen: false,
+    ).cabHistoryApi(2, context);
+
+    // Navigator.of(context).pushAndRemoveUntil(
+    //   MaterialPageRoute(builder: (_) => DriverHomePage()),
+    //       (_) => false,
+    // );
+  }
+
+
 
   void _showOtpDialog(Data ride) {
     final loc = AppLocalizations.of(context)!;

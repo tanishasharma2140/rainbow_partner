@@ -197,12 +197,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
 
   // PICK PROFILE IMAGE ONLY (IMAGE)
-  Future<void> pickProfileImage() async {
-    final XFile? img =
-    await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-    if (img != null) setState(() => profileImage = File(img.path));
+  Future<void> pickImage(bool fromCamera) async {
+    final XFile? file = await picker.pickImage(
+      source: fromCamera ? ImageSource.camera : ImageSource.gallery,
+      imageQuality: 70,
+    );
+
+    if (file != null) {
+      setState(() {
+        profileImage = File(file.path);
+      });
+    }
   }
 
+  void showImagePickerOptions() {
+    showModalBottomSheet(
+      backgroundColor: AppColor.white,
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading:  Icon(Icons.photo_library,color: AppColor.royalBlue,),
+                title:  TextConst(title: "Gallery"),
+                onTap: () {
+                  Navigator.pop(context);
+                  pickImage(false);
+                },
+              ),
+              ListTile(
+                leading:  Icon(Icons.camera_alt,color: AppColor.royalBlue,),
+                title:  TextConst(title: "Camera"),
+                onTap: () {
+                  Navigator.pop(context);
+                  pickImage(true);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -235,7 +272,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: 20),
 
-                    // PROFILE IMAGE
                     Stack(
                       children: [
                         CircleAvatar(
@@ -251,18 +287,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           bottom: 3,
                           right: 4,
                           child: GestureDetector(
-                            onTap: pickProfileImage,
+                            onTap: showImagePickerOptions,
                             child: Container(
                               padding: const EdgeInsets.all(6),
                               decoration: const BoxDecoration(
                                 color: AppColor.royalBlue,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.camera_alt,
-                                  color: Colors.white, size: 18),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                             ),
                           ),
-                        ),
+                        )
                       ],
                     ),
 
