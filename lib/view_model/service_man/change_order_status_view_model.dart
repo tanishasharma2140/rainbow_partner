@@ -43,6 +43,8 @@ class ChangeOrderStatusViewModel with ChangeNotifier {
       final response =
       await _changeOrderStatusRepo.changeOrderStatusApi(data);
 
+      if (!context.mounted) return;
+
       final int statusCode = response['statusCode'] ?? 0;
       final Map<String, dynamic> body = response['body'] ?? {};
 
@@ -55,7 +57,9 @@ class ChangeOrderStatusViewModel with ChangeNotifier {
       }
     } catch (e) {
       if (kDebugMode) print("❌ ViewModel Error → $e");
-      Utils.showErrorMessage(context, "$e");
+      if (context.mounted) {
+        Utils.showErrorMessage(context, "$e");
+      }
     } finally {
       /// ✅ remove order from loading
       _loadingOrders.remove(orderId);

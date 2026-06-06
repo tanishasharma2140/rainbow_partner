@@ -6,6 +6,7 @@ import 'package:rainbow_partner/repo/serviceman/payment_repo.dart';
 import 'package:rainbow_partner/utils/utils.dart';
 import 'package:rainbow_partner/view/Cab%20Driver/home/driver_home_page.dart';
 import 'package:rainbow_partner/view/Service%20Man/home/handyman_dashboard.dart';
+import 'package:rainbow_partner/view/Service%20Man/service_qr_screen.dart';
 import 'package:rainbow_partner/view_model/user_view_model.dart';
 
 class PaymentViewModel with ChangeNotifier {
@@ -40,7 +41,9 @@ class PaymentViewModel with ChangeNotifier {
   }
 
   Future<void> paymentApi(
+      dynamic userId,
       dynamic amount,
+      dynamic qrStatus,
       dynamic paymentType,
       dynamic serviceOrderId,
       BuildContext context,
@@ -49,12 +52,12 @@ class PaymentViewModel with ChangeNotifier {
     setLoading(true);
 
     try {
-      UserViewModel userViewModel = UserViewModel();
-      String? userId = await userViewModel.getUser();
+
 
       final Map data = {
         "user_id": userId,
         "amount": amount,
+        "qr_status" : qrStatus,
         "payment_type": paymentType,
         "service_order_id": serviceOrderId,
       };
@@ -62,6 +65,8 @@ class PaymentViewModel with ChangeNotifier {
       print(data);
 
       final response = await _paymentRepo.paymentApi(data);
+
+      if (!context.mounted) return;
 
       final int statusCode = response['statusCode'] ?? 0;
       final Map<String, dynamic> body = response['body'] ?? {};
@@ -80,6 +85,36 @@ class PaymentViewModel with ChangeNotifier {
         
         // FIX: API response doesn't have 'amount', so use the parameter 'amount'
         final amountValue = body["data"]["amount"] ?? amount;
+        final qrStatusResponse = body["data"]["qr_status"];
+        final qrImage = body["data"]["qrImage"];
+        final price = body["data"]["amount"];
+        final qrOrderId = body["data"]["order_id"];
+
+
+        print("✅ QR STATUS = $qrStatusResponse");
+
+        if (qrStatusResponse == 1 && qrImage != null) {
+
+          print("✅ NAVIGATE TO QR SCREEN");
+          print("📦 QR IMAGE = $qrImage");
+          print("💰 AMOUNT = $price");
+          print("🆔 ORDER ID = $qrOrderId");
+          print("🚕 SERVICE ORDER ID = $serviceOrderId");
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ServiceQrScreen(
+                  qrImage: qrImage,
+                  amount : price,
+                  orderId :qrOrderId,
+                  serviceOrderId : serviceOrderId
+              ),
+            ),
+          );
+
+          return;
+        }
 
         if (orderId == null || txnToken == null || amountValue == null) {
           Utils.showErrorMessage(context, "Payment details missing from server");
@@ -147,6 +182,8 @@ class PaymentViewModel with ChangeNotifier {
         enableAssist,
       );
 
+      if (!context.mounted) return;
+
       debugPrint("PAYTM RESPONSE => $response");
 
       if (response != null && response["STATUS"] == "TXN_SUCCESS") {
@@ -165,9 +202,13 @@ class PaymentViewModel with ChangeNotifier {
         );
       }
     } on PlatformException catch (e) {
-      Utils.showErrorMessage(context, e.message ?? "Payment Error");
+      if (context.mounted) {
+        Utils.showErrorMessage(context, e.message ?? "Payment Error");
+      }
     } catch (e) {
-      Utils.showErrorMessage(context, e.toString());
+      if (context.mounted) {
+        Utils.showErrorMessage(context, e.toString());
+      }
     }
   }
 }

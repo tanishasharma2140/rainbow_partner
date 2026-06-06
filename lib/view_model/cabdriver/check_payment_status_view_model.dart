@@ -33,6 +33,9 @@
 
 
         final response = await _checkPaymentStatusRepo.checkPaymentStatusApi(data);
+
+        if (!context.mounted) return;
+
         final cabOrderStatusVm =
         Provider.of<ChangeCabOrderStatusViewModel>(
           context,
@@ -44,15 +47,13 @@
         final serviceOrder = body["service_order_id"];
 
         if ((statusCode == 200 || statusCode == 201)) {
-          if (context.mounted) {
-            cabOrderStatusVm.changeCabOrderApi(serviceOrder, 5, "", "", context) ;
-            Navigator.pop(context);
-            // Utils.showSuccessMessage(context, body["message"]);
-          }
+          cabOrderStatusVm.changeCabOrderApi(serviceOrder, 3, "", "", context) ;
+          Navigator.pop(context);
+          // Utils.showSuccessMessage(context, body["message"]);
         } else {
-          if (context.mounted) {
-            // Utils.showErrorMessage(context, body["message"]);
-          }
+          // if (context.mounted) {
+          //   Utils.showErrorMessage(context, body["message"]);
+          // }
         }
       } catch (e) {
         if (context.mounted) {

@@ -9,6 +9,7 @@ import 'package:rainbow_partner/view_model/service_man/payment_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/serviceman_profile_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/transaction_history_view_model.dart';
 import 'package:rainbow_partner/model/transaction_history_model.dart';
+import 'package:rainbow_partner/view_model/user_view_model.dart';
 
 class ServiceDueWallet extends StatefulWidget {
   const ServiceDueWallet({super.key});
@@ -92,7 +93,9 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              onPressed: () {
+              onPressed: () async {
+                UserViewModel userViewModel = UserViewModel();
+                String? userId = await userViewModel.getUser();
                 if (dueAmount <= 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(loc.no_due_amount_available)),
@@ -101,7 +104,9 @@ class _ServiceDueWalletState extends State<ServiceDueWallet> {
                 }
 
                 payment.paymentApi(
-                    dueAmount.toInt().toString(), // full due amount
+                    userId,
+                    dueAmount.toInt().toString(),
+                  0,// full due amount
                   5, // due wallet mode
                   "", // order// module
                   context,

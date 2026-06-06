@@ -68,6 +68,8 @@ class CabPaymentViewmodel with ChangeNotifier {
 
       final response = await _paymentRepo.cabPaymentApi(data);
 
+      if (!context.mounted) return;
+
       final int statusCode = response['statusCode'] ?? 0;
       final Map<String, dynamic> body = response['body'] ?? {};
 
@@ -180,6 +182,8 @@ class CabPaymentViewmodel with ChangeNotifier {
         enableAssist,
       );
 
+      if (!context.mounted) return;
+
       debugPrint("PAYTM RESPONSE => $response");
 
       if (response != null &&
@@ -202,9 +206,13 @@ class CabPaymentViewmodel with ChangeNotifier {
         );
       }
     } on PlatformException catch (e) {
-      Utils.showErrorMessage(context, e.message ?? "Payment Error");
+      if (context.mounted) {
+        Utils.showErrorMessage(context, e.message ?? "Payment Error");
+      }
     } catch (e) {
-      Utils.showErrorMessage(context, e.toString());
+      if (context.mounted) {
+        Utils.showErrorMessage(context, e.toString());
+      }
     }
   }
 }

@@ -59,6 +59,7 @@ import 'package:rainbow_partner/view_model/service_man/payment_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/review_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_bank_edit_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_bank_update_view_model.dart';
+import 'package:rainbow_partner/view_model/service_man/service_check_payment_status_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_get_bank_detail_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_info_view_model.dart';
 import 'package:rainbow_partner/view_model/service_man/service_online_status_view_model.dart';
@@ -472,6 +473,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           ChangeNotifierProvider(create: (context) => CabPaymentViewmodel()),
           ChangeNotifierProvider(create: (context) => LanguageController()),
           ChangeNotifierProvider(create: (context) => CheckPaymentStatusViewModel()),
+          ChangeNotifierProvider(create: (context) => ServiceCheckPaymentStatusViewModel()),
         ],
         child: Consumer<LanguageController>(
             builder: (context, provider, child) {

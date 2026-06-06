@@ -6,23 +6,25 @@ import 'package:rainbow_partner/l10n/app_localizations.dart';
 import 'package:rainbow_partner/res/text_const.dart';
 import 'package:rainbow_partner/view_model/cabdriver/check_payment_status_view_model.dart';
 
-class QrScreen extends StatefulWidget {
+import '../../view_model/service_man/service_check_payment_status_view_model.dart';
+
+class ServiceQrScreen extends StatefulWidget {
   final String qrImage;
   final dynamic amount;
   final dynamic orderId;
   final dynamic serviceOrderId;
 
-  const QrScreen({
+  const ServiceQrScreen({
     super.key,
     required this.qrImage,
     this.amount, this.orderId, this.serviceOrderId,
   });
 
   @override
-  State<QrScreen> createState() => _QrScreenState();
+  State<ServiceQrScreen> createState() => _ServiceQrScreenState();
 }
 
-class _QrScreenState extends State<QrScreen> {
+class _ServiceQrScreenState extends State<ServiceQrScreen> {
   Timer? paymentTimer;
   @override
   void dispose() {
@@ -36,8 +38,9 @@ class _QrScreenState extends State<QrScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-     final paymentStatus = Provider.of<CheckPaymentStatusViewModel>(context,listen: false);
-     paymentStatus.checkPaymentStatusApi(widget.orderId,widget.serviceOrderId, context);
+      final paymentStatus = Provider.of<ServiceCheckPaymentStatusViewModel>(context, listen: false);
+      paymentStatus.serviceCheckPaymentStatusApi(widget.orderId, widget.serviceOrderId, context);
+
       paymentTimer = Timer.periodic(
         const Duration(seconds: 3),
             (timer) {
@@ -48,7 +51,7 @@ class _QrScreenState extends State<QrScreen> {
 
           debugPrint("🔥 PAYMENT STATUS API HIT");
 
-          paymentStatus.checkPaymentStatusApi(
+          paymentStatus.serviceCheckPaymentStatusApi(
             widget.orderId,
             widget.serviceOrderId,
             context,
@@ -85,12 +88,12 @@ class _QrScreenState extends State<QrScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
 
-               TextConst(
-                 title:
-                 loc.show_this_qr_to_customer,
-                 size: 14,
-                 color: Colors.grey,
-                 fontWeight: FontWeight.w500,
+              TextConst(
+                title:
+                loc.show_this_qr_to_customer,
+                size: 14,
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
               ),
 
               const SizedBox(height: 28),
@@ -146,12 +149,12 @@ class _QrScreenState extends State<QrScreen> {
                     const SizedBox(height: 20),
 
                     // ── Amount Section ──────────────────
-                     TextConst(
-                       title:
+                    TextConst(
+                      title:
                       loc.amount_to_collect,
-                       size: 13,
-                       color: Colors.grey,
-                       fontWeight: FontWeight.w500,
+                      size: 13,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
                     ),
 
                     const SizedBox(height: 6),
@@ -185,7 +188,7 @@ class _QrScreenState extends State<QrScreen> {
                           const SizedBox(width: 6),
                           TextConst(
                             title:
-                              loc.waiting_for_payment,
+                            loc.waiting_for_payment,
                             size: 12,
                             color: Colors.orange.shade700,
                             fontWeight: FontWeight.w600,
@@ -215,7 +218,7 @@ class _QrScreenState extends State<QrScreen> {
                     Expanded(
                       child: TextConst(
                         title:
-                       loc.ask_customer_scan_qr,
+                        loc.ask_customer_scan_qr,
                         size: 12,
                         color: Colors.blue.shade700,
                       ),
